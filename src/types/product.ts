@@ -8,6 +8,7 @@ export interface Product {
   bonus: number;
   manufacturer: string;
   manufacturer_id: number | string;
+  brands: Brand[];
 }
 
 export interface PraductsResponse {

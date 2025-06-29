@@ -1,5 +1,4 @@
 import GoBackHeader from '@/components/GoBackHeader';
-import { Icon } from '@/components/ui/Icon';
 import { Text } from '@/components/ui/Text';
 import { colors } from '@/constants/colors';
 import { SettingsStackParamList } from '@/navigation/SettingsNavigator';
@@ -7,7 +6,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
-import { FlatList, SafeAreaView, StyleSheet, TouchableOpacity, View, Switch } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { SafeAreaView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
   SettingsStackParamList,
@@ -24,6 +24,7 @@ type SettingsItem = {
 export const SettingsScreen = () => {
   const navigation = useNavigation<SettingsScreenNavigationProp>();
   const [notifications, setNotifications] = useState(true);
+  const { t } = useTranslation();
 
   const settingsItems: SettingsItem[] = [
     {
@@ -40,23 +41,12 @@ export const SettingsScreen = () => {
     },
   ];
 
-  const renderSettingsItem = ({ item }: { item: SettingsItem }) => (
-    <TouchableOpacity style={styles.settingsItem} onPress={item.onPress} activeOpacity={0.7}>
-      <View style={styles.settingsItemLeft}>
-        <Icon name={item.icon} size={24} color={colors.primary} />
-        <Text style={styles.settingsItemText}>{item.title}</Text>
-      </View>
-      <Icon name="chevron-forward-outline" size={24} color={colors.gray[400]} />
-    </TouchableOpacity>
-  );
-
   return (
     <SafeAreaView style={styles.container}>
       <GoBackHeader title="Sozlamalar" />
       <View style={styles.list}>
-        {/* Xabarlar */}
         <View style={styles.item}>
-          <Text style={styles.text}>Xabarlar</Text>
+          <Text style={styles.text}>{t('profilePage.messages')}</Text>
           <Switch
             value={notifications}
             onValueChange={setNotifications}
@@ -65,21 +55,18 @@ export const SettingsScreen = () => {
           />
         </View>
         <View style={styles.divider} />
-        {/* Foydalanish qoidalari */}
         <TouchableOpacity style={styles.item} onPress={() => {}}>
-          <Text style={styles.text}>Foydalanish qoidalari</Text>
+          <Text style={styles.text}>{t('profilePage.termsOfUse')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#bbb" />
         </TouchableOpacity>
         <View style={styles.divider} />
-        {/* Maxfiylik siyosati */}
         <TouchableOpacity style={styles.item} onPress={() => {}}>
-          <Text style={styles.text}>Maxfiylik siyosati</Text>
+          <Text style={styles.text}>{t('profilePage.privacyPolicy')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#bbb" />
         </TouchableOpacity>
         <View style={styles.divider} />
-        {/* Akkountni o'chirish */}
         <TouchableOpacity style={styles.item} onPress={() => {}}>
-          <Text style={[styles.text, { color: '#E32F45' }]}>Akkountni o'chirish</Text>
+          <Text style={[styles.text, { color: '#E32F45' }]}>{t('profilePage.deleteAccount')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#E32F45" />
         </TouchableOpacity>
       </View>

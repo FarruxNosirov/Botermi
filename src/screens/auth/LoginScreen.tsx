@@ -1,16 +1,21 @@
 import GoBackHeader from '@/components/GoBackHeader';
 import { colors } from '@/constants/colors';
 import { AppDispatch } from '@/store';
+import { useAppSelector } from '@/store/hooks';
 import { loginWithSms, verifyCode } from '@/store/slices/authSlice';
 import { AuthScreenProps } from '@/types/navigation';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import {
   ActivityIndicator,
   Dimensions,
   ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -25,12 +30,17 @@ const { width } = Dimensions.get('window');
 type LoginScreenProps = AuthScreenProps<'Login'>;
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
-  // const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const top = useSafeAreaInsets().top + 5;
+  const isChecked2 = useAppSelector((state) => state.auth.isAgreementChecked);
+
   const [isChecked, setIsChecked] = useState(false);
+  useEffect(() => {
+    setIsChecked(isChecked2);
+  }, [isChecked2]);
 
   const handlePhoneChange = (text: string) => {
     const cleaned = text.replace(/\D/g, '').slice(0, 9);
@@ -90,107 +100,115 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ navigation }) => {
   };
 
   return (
-    <ImageBackground
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1 }}
-      imageStyle={{ resizeMode: 'cover' }}
-      source={require('../../../assets/Apk1.png')}
     >
-      <GoBackHeader
-        title=""
-        style={{
-          borderBottomWidth: 0,
-          marginTop: top,
-          backgroundColor: 'transparent',
-          marginLeft: 16,
-        }}
-        buttonStyle={{ backgroundColor: '#747373', borderRadius: 10 }}
-        iconStyle={{ color: colors.white }}
-      />
-      <View style={[styles.content, { justifyContent: 'flex-end', flex: 1 }]}>
-        <View
-          style={{
-            backgroundColor: '#fff',
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            padding: 24,
-            paddingBottom: 40,
-          }}
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <ImageBackground
+          style={{ flex: 1 }}
+          imageStyle={{ resizeMode: 'cover' }}
+          source={require('../../../assets/Apk1.png')}
         >
-          <Text
-            style={[
-              styles.title,
-              {
-                color: '#222',
-                textAlign: 'left',
-                fontSize: 22,
-                fontWeight: '700',
-                marginBottom: 8,
-              },
-            ]}
-          >
-            Введите свой номер
-          </Text>
-          <Text style={{ color: '#888', fontSize: 14, marginBottom: 20 }}>
-            Код подтверждения отправится на ваш номер телефона
-          </Text>
-          <View style={[styles.phoneInputContainer]}>
-            <Text style={styles.prefix}>+998 </Text>
-            <TextInput
-              style={styles.input}
-              value={phone}
-              onChangeText={handlePhoneChange}
-              placeholder="00 000-00-00"
-              keyboardType="number-pad"
-              maxLength={12}
-            />
-          </View>
-          {error ? (
-            <View style={{ marginBottom: 20 }}>
-              <Text style={styles.errorText}>{error}</Text>
-            </View>
-          ) : null}
-
-          <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-            <Pressable
-              onPress={() => setIsChecked(!isChecked)}
+          <GoBackHeader
+            title=""
+            style={{
+              borderBottomWidth: 0,
+              marginTop: top,
+              backgroundColor: 'transparent',
+              marginLeft: 16,
+            }}
+            buttonStyle={{ backgroundColor: '#747373', borderRadius: 10 }}
+            iconStyle={{ color: colors.white }}
+          />
+          <View style={[styles.content, { justifyContent: 'flex-end', flex: 1 }]}>
+            <View
               style={{
-                width: 24,
-                height: 24,
-                borderWidth: 1.5,
-                borderColor: isChecked ? '#E32F45' : '#888',
-                borderRadius: 4,
-                marginRight: 8,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: isChecked ? '#E32F45' : '#fff',
+                backgroundColor: '#fff',
+                borderTopLeftRadius: 24,
+                borderTopRightRadius: 24,
+                padding: 24,
+                paddingBottom: 40,
               }}
             >
-              {isChecked && <AntDesign name="check" size={23} color="white" />}
-            </Pressable>
-            <Text style={{ fontSize: 13, color: '#888', flex: 1 }}>
-              Авторизуясь, вы соглашаетесь с нашей{' '}
               <Text
-                style={{ color: '#E32F45', textDecorationLine: 'underline' }}
-                onPress={() => navigation.navigate('Agreement', { isRegistration: false })}
+                style={[
+                  styles.title,
+                  {
+                    color: '#222',
+                    textAlign: 'left',
+                    fontSize: 22,
+                    fontWeight: '700',
+                    marginBottom: 8,
+                  },
+                ]}
               >
-                политикой конфиденциальности.
+                {t('enterYourNumber')}
               </Text>
-            </Text>
+              <Text style={{ color: '#888', fontSize: 14, marginBottom: 20 }}>{t('codeSend')}</Text>
+              <View style={[styles.phoneInputContainer]}>
+                <Text style={styles.prefix}>+998 </Text>
+                <TextInput
+                  style={styles.input}
+                  value={phone}
+                  onChangeText={handlePhoneChange}
+                  placeholder="00 000-00-00"
+                  keyboardType="number-pad"
+                  maxLength={12}
+                />
+              </View>
+              {error ? (
+                <View style={{ marginBottom: 20 }}>
+                  <Text style={styles.errorText}>{error}</Text>
+                </View>
+              ) : null}
+
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
+                <Pressable
+                  onPress={() => setIsChecked(!isChecked)}
+                  style={{
+                    width: 24,
+                    height: 24,
+                    borderWidth: 1.5,
+                    borderColor: isChecked ? '#b60017' : '#888',
+                    borderRadius: 4,
+                    marginRight: 8,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    backgroundColor: isChecked ? '#b60017' : '#fff',
+                  }}
+                >
+                  {isChecked && <AntDesign name="check" size={23} color="white" />}
+                </Pressable>
+                <Text style={{ fontSize: 13, color: '#888', flex: 1 }}>
+                  {t('agreement')}{' '}
+                  <Text
+                    style={{ color: '#b60017', textDecorationLine: 'underline' }}
+                    onPress={() => navigation.navigate('Agreement', { isRegistration: false })}
+                  >
+                    {t('terms')}
+                  </Text>
+                </Text>
+              </View>
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  (!phone || !isChecked || isLoading) && styles.buttonDisabled,
+                ]}
+                onPress={handleSubmit}
+                disabled={!phone || !isChecked || isLoading}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>{t('getCode')}</Text>
+                )}
+              </TouchableOpacity>
+            </View>
           </View>
-          <TouchableOpacity
-            style={[styles.button, (!phone || !isChecked || isLoading) && styles.buttonDisabled]}
-            onPress={handleSubmit}
-            disabled={!phone || !isChecked || isLoading}
-          >
-            {isLoading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Получить код</Text>
-            )}
-          </TouchableOpacity>
-        </View>
-      </View>
-    </ImageBackground>
+        </ImageBackground>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -308,12 +326,12 @@ const styles = StyleSheet.create({
     paddingLeft: 4,
   },
   errorText: {
-    color: '#E32F45',
+    color: '#b60017',
     fontSize: 14,
     marginTop: 8,
   },
   button: {
-    backgroundColor: '#E32F45',
+    backgroundColor: '#b60017',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

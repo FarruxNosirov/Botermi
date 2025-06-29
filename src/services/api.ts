@@ -84,8 +84,15 @@ export const catalogAPI = {
     const response = await api.get(`/filterSubCategory?category_id=${categoryId}`);
     return response.data;
   },
-  getPraductsSubCategoriesId: async (praductId: number) => {
-    const response = await api.get(`/filterProducts?sub_category_id=${praductId}`);
+  getPraductsSubCategoriesId: async (
+    subCategoryId: number,
+    brandId?: number,
+    manufacturerId?: number,
+  ) => {
+    const params: any = { sub_category_id: subCategoryId };
+    if (brandId) params.brand_id = brandId;
+    if (manufacturerId) params.manufacturer_id = manufacturerId;
+    const response = await api.get(`/filterProducts`, { params });
     return response.data;
   },
 

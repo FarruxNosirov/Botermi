@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   FlatList,
   Linking,
@@ -23,6 +24,7 @@ export const CatalogScreen = () => {
   };
   const { data, isLoading } = useGetFirstCategories();
   const animation = useRef<LottieView>(null);
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -42,7 +44,7 @@ export const CatalogScreen = () => {
         </>
       ) : (
         <>
-          <Text style={styles.header}>Katalog</Text>
+          <Text style={styles.header}>{t('katalog.title')}</Text>
           <FlatList
             contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 10 }}
             data={data?.data || []}
@@ -55,9 +57,9 @@ export const CatalogScreen = () => {
             showsVerticalScrollIndicator={false}
             ListFooterComponent={
               <View style={styles.epamarketSection}>
-                <Text style={styles.epamarketLabel}>Перейти в интернет магазин</Text>
+                <Text style={styles.epamarketLabel}>{t('katalog.description')}</Text>
                 <TouchableOpacity style={styles.epamarketButton} onPress={handleEpamarketPress}>
-                  <Text style={styles.epamarketButtonText}>epamarket.uz</Text>
+                  <Text style={styles.epamarketButtonText}>botermi.uz</Text>
                   <Ionicons name="cart-outline" size={28} color="#fff" style={{ marginLeft: 8 }} />
                 </TouchableOpacity>
               </View>
@@ -140,6 +142,7 @@ const styles = StyleSheet.create({
   },
   epamarketSection: {
     marginTop: 16,
+    marginBottom: 110,
   },
   epamarketLabel: {
     fontSize: 16,

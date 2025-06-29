@@ -14,16 +14,16 @@ export const useGetSubCategories = (categoryId: number) => {
     queryFn: () => catalogAPI.getSubCategories(categoryId),
   });
 };
-export const usePraducts = (praductId: number) => {
+export const usePraducts = (subCategoryId: number, brandId?: number, manufacturerId?: number) => {
   return useQuery({
-    queryKey: ['getPraductsSubCategoriesId', praductId],
-    queryFn: () => catalogAPI.getPraductsSubCategoriesId(praductId),
+    queryKey: ['getPraductsSubCategoriesId', subCategoryId, brandId, manufacturerId],
+    queryFn: () => catalogAPI.getPraductsSubCategoriesId(subCategoryId, brandId, manufacturerId),
   });
 };
 export const useBrands = () => {
   return useQuery({
     queryKey: ['getFirstBrands'],
-    queryFn: catalogAPI.getCatalog,
+    queryFn: catalogAPI.getBrands,
   });
 };
 export const useCities = () => {

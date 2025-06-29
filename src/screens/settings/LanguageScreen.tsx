@@ -1,22 +1,33 @@
-import React from 'react';
-import { View, StyleSheet, TouchableOpacity, FlatList, SafeAreaView } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Text } from '@/components/ui/Text';
-import { Header } from '@/components/Header';
-import { Icon } from '@/components/ui/Icon';
-import { colors } from '@/constants/colors';
 import GoBackHeader from '@/components/GoBackHeader';
-
-const languages = [
-  { id: 'uz', title: "O'zbek tili", selected: true },
-  { id: 'ru', title: 'Русский язык', selected: false },
-];
+import { Icon } from '@/components/ui/Icon';
+import { Text } from '@/components/ui/Text';
+import { colors } from '@/constants/colors';
+import { useAppDispatch } from '@/store/hooks';
+import { setLanguage } from '@/store/slices/languageSlice';
+import { useNavigation } from '@react-navigation/native';
+import React from 'react';
+import { useTranslation } from 'react-i18next';
+import { FlatList, SafeAreaView, StyleSheet, TouchableOpacity } from 'react-native';
 
 export const LanguageScreen = () => {
+  const { i18n, t } = useTranslation();
   const navigation = useNavigation();
+  const dispatch = useAppDispatch();
+  const handleLanguageSelect = (lang: any) => {
+    dispatch(setLanguage(lang.code));
+    navigation.goBack();
+  };
+  const languages = [
+    { code: 'uz', title: "O'zbek tili", selected: i18n.language === 'uz' },
+    { code: 'ru', title: 'Русский язык', selected: i18n.language === 'ru' },
+  ];
 
   const renderLanguageItem = ({ item }: { item: (typeof languages)[0] }) => (
-    <TouchableOpacity style={styles.languageItem} activeOpacity={0.7}>
+    <TouchableOpacity
+      style={styles.languageItem}
+      activeOpacity={0.7}
+      onPress={() => handleLanguageSelect(item)}
+    >
       <Text style={styles.languageText}>{item.title}</Text>
       {item.selected && <Icon name="checkmark" size={24} color={colors.primary} />}
     </TouchableOpacity>
@@ -24,11 +35,11 @@ export const LanguageScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <GoBackHeader title="Language" />
+      <GoBackHeader title={t('profilePage.language')} />
       <FlatList
         data={languages}
         renderItem={renderLanguageItem}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.code}
         contentContainerStyle={styles.content}
       />
     </SafeAreaView>

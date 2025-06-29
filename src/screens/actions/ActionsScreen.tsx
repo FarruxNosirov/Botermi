@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import React, { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   Modal,
@@ -31,23 +32,24 @@ export const ActionsScreen = () => {
     setShowScanner(false);
   };
 
+  const { t } = useTranslation();
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </Pressable>
-        <Text style={styles.headerTitle}>Yangi xarid</Text>
+        <Text style={styles.headerTitle}>{t('newPurchase')}</Text>
       </View>
 
       <View style={styles.content}>
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Mahsulot qadog'idagi kodni kiriting</Text>
+          <Text style={styles.label}>{t('enterCodeProductPackaging')}</Text>
           <TextInput style={styles.input} placeholder="_ _ _ _ _ _ _" placeholderTextColor="#999" />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Do'kon kodini kiriting</Text>
+          <Text style={styles.label}>{t('enterStoreCode')}</Text>
           <View style={styles.scanInputContainer}>
             <TextInput
               style={styles.input}
@@ -64,11 +66,11 @@ export const ActionsScreen = () => {
 
         <TouchableOpacity style={styles.submitButton}>
           <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
-          <Text style={styles.submitButtonText}>Tasdiqlash</Text>
+          <Text style={styles.submitButtonText}>{t('confirm')}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.sampleButton}>
-          <Text style={styles.sampleButtonText}>Namuna</Text>
+          <Text style={styles.sampleButtonText}>{t('sample')}</Text>
         </TouchableOpacity>
 
         <View style={styles.sampleImageContainer}>
@@ -87,7 +89,7 @@ export const ActionsScreen = () => {
               <TouchableOpacity onPress={() => setShowScanner(false)} style={styles.closeButton}>
                 <Ionicons name="close" size={24} color="#000" />
               </TouchableOpacity>
-              <Text style={styles.scannerTitle}>QR kodni skanerlang</Text>
+              <Text style={styles.scannerTitle}>{t('scanQRCode')}</Text>
             </View>
             {permission?.granted && (
               <CameraView

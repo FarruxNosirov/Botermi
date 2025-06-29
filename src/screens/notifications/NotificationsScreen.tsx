@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import { colors } from '@/constants/colors';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/types/navigation';
+import { useTranslation } from 'react-i18next';
 
 type Notification = {
   id: string;
@@ -24,7 +25,6 @@ const notifications: Notification[] = [
     time: '12:10',
     isRead: false,
   },
-  // Boshqa bildirishnomalarni shu yerga qo'shish mumkin
 ];
 
 export const NotificationsScreen = () => {
@@ -38,6 +38,7 @@ export const NotificationsScreen = () => {
       time: notification.time,
     });
   };
+  const { t } = useTranslation();
 
   const renderNotificationItem = ({ item }: { item: Notification }) => (
     <TouchableOpacity
@@ -66,7 +67,7 @@ export const NotificationsScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="chevron-back" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Bildirishnomalar</Text>
+        <Text style={styles.headerTitle}>{t('notifications')}</Text>
         <TouchableOpacity>
           <Ionicons name="notifications-outline" size={24} color="black" />
         </TouchableOpacity>

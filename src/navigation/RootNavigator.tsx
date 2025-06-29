@@ -6,19 +6,21 @@ import { AppDispatch, RootState } from '@/store';
 import { RootStackParamList } from '@/types/navigation';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { AuthNavigator } from './AuthNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMe } from '@/store/slices/authSlice';
+import i18n from '@/i18n';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const RootNavigator = () => {
   const { isAuthenticated, isFullyRegistered } = useSelector((state: RootState) => state.auth);
+  const locale = useSelector((state: RootState) => state.language.locale);
   const dispatch = useDispatch<AppDispatch>();
-  React.useEffect(() => {
+  useEffect(() => {
     (async () => {
       const token = await AsyncStorage.getItem('@auth_token');
       if (token) {
@@ -26,8 +28,9 @@ const RootNavigator = () => {
       }
     })();
   }, [dispatch]);
-  console.log('isAuthenticated', isAuthenticated);
-  console.log('isFullyRegistered', isFullyRegistered);
+  useEffect(() => {
+    i18n.changeLanguage(locale);
+  }, [locale]);
 
   return (
     <NavigationContainer>

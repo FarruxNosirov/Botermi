@@ -1,13 +1,15 @@
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity, FlatList } from 'react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 const STATUS_OPTIONS = ['Hammasi', "Ko'rilmoqda", 'Tasdiqlangan', 'Rad etilgan', 'Ishlatilgan'];
 
 const OperationsFilterScreen = () => {
   const navigation = useNavigation();
   const [selectedStatus, setSelectedStatus] = useState('Hammasi');
+  const { t } = useTranslation();
 
   const renderItem = ({ item }: { item: string }) => (
     <TouchableOpacity style={styles.option} onPress={() => setSelectedStatus(item)}>
@@ -28,12 +30,12 @@ const OperationsFilterScreen = () => {
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <AntDesign name="left" size={24} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Filter</Text>
+        <Text style={styles.headerTitle}>{t('katalog.filter')}</Text>
         <View style={styles.rightPlaceholder} />
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.title}>Status:</Text>
+        <Text style={styles.title}>{t('profilePage.status')}:</Text>
         <FlatList
           data={STATUS_OPTIONS}
           keyExtractor={(item) => item}

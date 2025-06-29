@@ -13,7 +13,10 @@ import {
   ActivityIndicator,
   Animated,
   ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
   Pressable,
+  ScrollView,
   StyleSheet,
   TextInput,
   TouchableOpacity,
@@ -49,16 +52,26 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
   }, []);
 
   const handleOtpChange = (text: string, index: number) => {
+    let newOtp = [...otp];
+
+    // Agar bir nechta raqam kiritilsa (paste yoki autofill)
     if (text.length > 1) {
-      text = text[text.length - 1];
-    }
+      // Har bir raqamni inputlarga joylashtiramiz
+      for (let i = 0; i < OTP_LENGTH - index && i < text.length; i++) {
+        newOtp[index + i] = text[i];
+      }
+      setOtp(newOtp);
 
-    const newOtp = [...otp];
-    newOtp[index] = text;
-    setOtp(newOtp);
+      // Oxirgi to‘ldirilgan inputga fokus beramiz
+      const nextIndex = Math.min(index + text.length, OTP_LENGTH - 1);
+      inputRefs.current[nextIndex]?.focus();
+    } else {
+      newOtp[index] = text;
+      setOtp(newOtp);
 
-    if (text && index < OTP_LENGTH - 1) {
-      inputRefs.current[index + 1]?.focus();
+      if (text && index < OTP_LENGTH - 1) {
+        inputRefs.current[index + 1]?.focus();
+      }
     }
   };
 
@@ -71,14 +84,13 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
   const handleSubmit = async () => {
     const otpString = otp.join('');
     if (otpString.length !== OTP_LENGTH) {
-      setError("SMS kodni to'liq kiriting");
+      setError(t('smsError'));
       return;
     }
     try {
       setIsLoading(true);
       setError(null);
       const resultAction = await dispatch(verifyCode({ phone, code: otpString }));
-      console.log('resultAction', resultAction);
 
       if (verifyCode.fulfilled.match(resultAction)) {
         const user = resultAction.payload.user;
@@ -95,17 +107,17 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
           });
         }
       } else {
-        setError((resultAction.payload as string) || "SMS kod noto'g'ri");
+        setError((resultAction.payload as string) || t('errorSms'));
       }
     } catch (err: any) {
-      setError(err.message || 'Xatolik yuz berdi');
+      setError(err.message || t('anErrorOccurred'));
     } finally {
       setIsLoading(false);
     }
   };
   const handleSubmitResend = async () => {
     if (!phone || phone.length < 9) {
-      setError('Please enter your phone number');
+      setError(t('enterPhoneNumber'));
       return;
     }
     try {
@@ -115,7 +127,7 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
       const fullPhone = phone.replace(/\s/g, '');
       await dispatch(loginWithSms(fullPhone));
     } catch (err: any) {
-      setError(err.message || 'Something went wrong');
+      setError(err.message || t('somethingWentWrong'));
     } finally {
       setIsLoading(false);
     }
@@ -150,110 +162,123 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
     outputRange: ['0deg', '360deg'],
   });
   return (
-    <ImageBackground
-      style={{ flex: 1, backgroundColor: colors.primary }}
-      imageStyle={{ resizeMode: 'cover' }}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={{ flex: 1 }}
     >
-      <GoBackHeader
-        title=""
-        style={{
-          borderBottomWidth: 0,
-          marginTop: top,
-          backgroundColor: 'transparent',
-          marginLeft: 16,
-        }}
-        buttonStyle={{ backgroundColor: 'rgba(255 255 255 / 0.3)', borderRadius: 10 }}
-        iconStyle={{ color: colors.white }}
-      />
-      <View style={{ flex: 1, justifyContent: 'flex-end' }}>
-        <View
-          style={{
-            backgroundColor: '#fff',
-            borderTopLeftRadius: 24,
-            borderTopRightRadius: 24,
-            padding: 24,
-            paddingBottom: 40,
-          }}
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+        <ImageBackground
+          style={{ flex: 1 }}
+          imageStyle={{ resizeMode: 'cover' }}
+          source={require('../../../assets/Apk1.png')}
         >
-          <Text variant="title">Введите код</Text>
-          <Text variant="languageTitle">
-            Код подтверждения отправлен на номер{'\n'}
-            <Text variant="phone">{phone}</Text>
-          </Text>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32 }}>
-            {otp.map((digit, index) => (
-              <TextInput
-                key={index}
-                ref={(ref) => (inputRefs.current[index] = ref)}
-                style={{
-                  width: 58,
-                  height: 48,
-                  borderRadius: 12,
-                  borderWidth: 1,
-                  borderColor: digit ? '#E32F45' : '#E8E8E8',
-                  backgroundColor: digit ? '#FFF5F6' : '#F5F5F5',
-                  fontSize: 24,
-                  fontWeight: '600',
-                  textAlign: 'center',
-                  color: '#E32F45',
-                }}
-                value={digit}
-                onChangeText={(text) => handleOtpChange(text, index)}
-                onKeyPress={(e) => handleKeyPress(e, index)}
-                keyboardType="number-pad"
-                maxLength={1}
-              />
-            ))}
-          </View>
-          {timeLeft > 0 ? (
-            <Text variant="timeLeft" style={{ marginVertical: 5 }}>
-              Если код не пришел, новый код можно получить через {timeLeft} секунд.
-            </Text>
-          ) : (
-            <Text variant="error" style={{ marginVertical: 5, textAlign: 'center' }}>
-              Kod eskirgan yoki xato
-            </Text>
-          )}
-
-          {error && (
-            <Box p="s" borderRadius="s" mb="s">
-              <Text variant="error">{error}</Text>
-            </Box>
-          )}
-          {timeLeft > 0 ? (
-            <Pressable
-              style={[
-                styles.button,
-                (otp.some((d) => !d) || isLoading) && styles.disabledButton,
-                { marginTop: 10 },
-              ]}
-              onPress={handleSubmit}
-              disabled={otp.some((d) => !d) || isLoading}
+          <GoBackHeader
+            title=""
+            style={{
+              borderBottomWidth: 0,
+              marginTop: top,
+              backgroundColor: 'transparent',
+              marginLeft: 16,
+            }}
+            buttonStyle={{ backgroundColor: 'rgba(255 255 255 / 0.3)', borderRadius: 10 }}
+            iconStyle={{ color: colors.white }}
+          />
+          <View style={{ flex: 1, justifyContent: 'flex-end' }}>
+            <View
+              style={{
+                backgroundColor: '#fff',
+                borderTopLeftRadius: 24,
+                borderTopRightRadius: 24,
+                padding: 24,
+                paddingBottom: 40,
+              }}
             >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text variant="buttonText">Подтвердить</Text>
-              )}
-            </Pressable>
-          ) : (
-            <TouchableOpacity
-              style={[styles.resend, { marginTop: 10 }]}
-              onPress={handleSubmitResend}
-            >
-              <Animated.Image
-                style={[styles.logo, { transform: [{ rotate: spin }] }]}
-                source={require(`../../../assets/resend.png`)}
-              />
-
-              <Text variant="buttonText" style={{ color: 'red' }}>
-                Qayta yuborish
+              <Text variant="title">{t('enterTheCode')}</Text>
+              <Text variant="languageTitle">
+                {t('confirmationCodeSentToNumber')}
+                {'\n'}
+                <Text variant="phone">{phone}</Text>
               </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-    </ImageBackground>
+              <View
+                style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32 }}
+              >
+                {otp.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    ref={(ref) => {
+                      inputRefs.current[index] = ref;
+                    }}
+                    style={{
+                      width: 58,
+                      height: 48,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: digit ? '#b60017' : '#E8E8E8',
+                      backgroundColor: digit ? '#FFF5F6' : '#F5F5F5',
+                      fontSize: 24,
+                      fontWeight: '600',
+                      textAlign: 'center',
+                      color: '#b60017',
+                    }}
+                    value={digit}
+                    onChangeText={(text) => handleOtpChange(text, index)}
+                    onKeyPress={(e) => handleKeyPress(e, index)}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                  />
+                ))}
+              </View>
+              {timeLeft > 0 ? (
+                <Text variant="timeLeft" style={{ marginVertical: 5 }}>
+                  {t('resetCodeSms')} {timeLeft} {t('seconds')}
+                </Text>
+              ) : (
+                <Text variant="error" style={{ marginVertical: 5, textAlign: 'center' }}>
+                  {t('outdatedOrIncorrect')}
+                </Text>
+              )}
+
+              {error && (
+                <Box p="s" borderRadius="s" mb="s">
+                  <Text variant="error">{error}</Text>
+                </Box>
+              )}
+              {timeLeft > 0 ? (
+                <Pressable
+                  style={[
+                    styles.button,
+                    (otp.some((d) => !d) || isLoading) && styles.disabledButton,
+                    { marginTop: 10 },
+                  ]}
+                  onPress={handleSubmit}
+                  disabled={otp.some((d) => !d) || isLoading}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator color="#fff" />
+                  ) : (
+                    <Text variant="buttonText">{t('confirm')}</Text>
+                  )}
+                </Pressable>
+              ) : (
+                <TouchableOpacity
+                  style={[styles.resend, { marginTop: 10 }]}
+                  onPress={handleSubmitResend}
+                >
+                  <Animated.Image
+                    style={[styles.logo, { transform: [{ rotate: spin }] }]}
+                    source={require(`../../../assets/resend.png`)}
+                  />
+
+                  <Text variant="buttonText" style={{ color: 'red' }}>
+                    {t('resendCode')}
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          </View>
+        </ImageBackground>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
@@ -313,11 +338,11 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     textAlign: 'center',
-    color: '#E32F45',
+    color: '#b60017',
     backgroundColor: '#fff',
   },
   otpInputFilled: {
-    borderColor: '#E32F45',
+    borderColor: '#b60017',
     backgroundColor: '#FFF5F6',
   },
   timerContainer: {
@@ -331,14 +356,14 @@ const styles = StyleSheet.create({
     color: '#666',
   },
   timerActive: {
-    color: '#E32F45',
+    color: '#b60017',
   },
   footer: {
     padding: 20,
     paddingBottom: 40,
   },
   button: {
-    backgroundColor: '#E32F45',
+    backgroundColor: '#b60017',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
@@ -365,7 +390,7 @@ const styles = StyleSheet.create({
     marginTop: 16,
   },
   errorText: {
-    color: '#E32F45',
+    color: '#b60017',
     fontSize: 14,
   },
   logo: {

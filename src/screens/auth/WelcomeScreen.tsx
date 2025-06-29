@@ -1,23 +1,32 @@
 import Box from '@/shared/ui/Box';
 import { Image } from '@/shared/ui/Image';
 import { Text } from '@/shared/ui/Text';
+import { useAppDispatch } from '@/store/hooks';
+import { setAgreementChecked } from '@/store/slices/authSlice';
+import { setLanguage } from '@/store/slices/languageSlice';
 import { AuthScreenProps } from '@/types/navigation';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import React, { FC, useState } from 'react';
-import { Dimensions, FlatList, ImageBackground, StyleSheet, TouchableOpacity } from 'react-native';
-const { width, height, scale } = Dimensions.get('window');
+import React, { FC, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Dimensions, ImageBackground, StyleSheet, TouchableOpacity } from 'react-native';
+const { width } = Dimensions.get('window');
 type LoginScreenProps = AuthScreenProps<'Welcome'>;
 const WelcomeScreen: FC<LoginScreenProps> = ({ navigation }) => {
+  const { t } = useTranslation();
   const languages = [
-    { code: 'uz', name: "O'zbekcha", flag: require('../../../assets/uz.webp'), icon: '' },
-    { code: 'ru', name: 'Русский', flag: require('../../../assets/rus.png') },
+    { code: 'uz', name: t('languagesUz'), flag: require('../../../assets/uz.webp'), icon: '' },
+    { code: 'ru', name: t('languagesRus'), flag: require('../../../assets/rus.png') },
   ];
-  const [selectedLang, setSelectedLang] = useState(languages[0]);
-
+  const dispatch = useAppDispatch();
   const handleLanguageSelect = (lang: any) => {
-    setSelectedLang(lang);
+    dispatch(setLanguage(lang.code));
     navigation.navigate('Login');
   };
+
+  useEffect(() => {
+    dispatch(setAgreementChecked(false));
+  }, []);
+
   const RenderItem = ({ item }: any) => {
     return (
       <TouchableOpacity
@@ -77,16 +86,14 @@ const WelcomeScreen: FC<LoginScreenProps> = ({ navigation }) => {
           shadowOpacity={0.08}
           shadowRadius={8}
           elevation={8}
-          height={height * 0.3}
+          height={250}
         >
-          <Text variant="languageTitle" mb="m">
-            Выберите язык
+          <Text variant="languageTitle" mb="m" fontSize={24} color="black" fontWeight={'bold'}>
+            {t('languageTitle')}
           </Text>
-          <FlatList
-            data={languages}
-            keyExtractor={(item) => item.code}
-            renderItem={({ item }) => RenderItem({ item })}
-          />
+          {languages?.map((lang) => {
+            return <RenderItem item={lang} key={lang.code} />;
+          })}
         </Box>
       </Box>
     </ImageBackground>

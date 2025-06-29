@@ -106,8 +106,7 @@ type Props = {
 
 export const RegistrationScreen = ({ navigation }: Props) => {
   const route = useRoute<RouteProp<AuthStackParamList, 'Registration'>>();
-  const { data, isLoading } = useCities();
-  console.log('route', JSON.stringify(route?.params, null, 2));
+  const { data } = useCities();
 
   const regions = data?.data?.data;
 
@@ -137,13 +136,13 @@ export const RegistrationScreen = ({ navigation }: Props) => {
 
   const steps: Step[] = [
     {
-      title: "Shaxsiy ma'lumotlar",
+      title: t('personalInformation'),
       fields: [
-        { key: 'firstName', label: 'Ism*', value: formData.firstName, type: 'text' },
-        { key: 'lastName', label: 'Familiya*', value: formData.lastName, type: 'text' },
+        { key: 'firstName', label: t('firstName'), value: formData.firstName, type: 'text' },
+        { key: 'lastName', label: t('lastName'), value: formData.lastName, type: 'text' },
         {
           key: 'birthDate',
-          label: "Tug'ilgan sana",
+          label: t('birthDate'),
           value: formData.birthDate,
           type: 'text',
           placeholder: 'DD-MM-YYYY',
@@ -151,7 +150,7 @@ export const RegistrationScreen = ({ navigation }: Props) => {
 
         {
           key: 'region',
-          label: 'Viloyat*',
+          label: t('region'),
           value: formData.region,
           type: 'select',
         },
@@ -195,7 +194,7 @@ export const RegistrationScreen = ({ navigation }: Props) => {
   };
   const handleSubmit = async () => {
     if (!route.params?.id) {
-      setError('User ID is required for registration');
+      setError(t('userIDRegistration'));
       return;
     }
 
@@ -336,12 +335,12 @@ export const RegistrationScreen = ({ navigation }: Props) => {
         />
       </View>
       <View style={styles.footer}>
-        <Button title="Зарегистрироваться" onPress={handleSubmit} loading={loading} />
+        <Button title={t('register')} onPress={handleSubmit} loading={loading} />
       </View>
 
       <SelectPicker
         visible={showRegionModal}
-        title="Viloyatni tanlang"
+        title={t('selectRegion')}
         items={regions}
         selectedValue={formData.region}
         onValueChange={handleRegionSelect}

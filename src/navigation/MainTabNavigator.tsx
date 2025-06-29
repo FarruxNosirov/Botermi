@@ -3,16 +3,15 @@ import { ActionsScreen } from '@/screens/actions/ActionsScreen';
 import { OperationsScreen } from '@/screens/operations/OperationsScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { createDrawerNavigator } from '@react-navigation/drawer';
 import React from 'react';
 import { TouchableOpacity, View } from 'react-native';
-import { DrawerParamList, MainTabParamList } from '../types/navigation';
+import { MainTabParamList } from '../types/navigation';
 import { CatalogStack } from './CatalogStack';
-import { SettingsNavigator } from './SettingsNavigator';
 import HomeStack from './HomeStack';
+import { SettingsNavigator } from './SettingsNavigator';
+import { useTranslation } from 'react-i18next';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
-const Drawer = createDrawerNavigator<DrawerParamList>();
 
 type CustomTabBarButtonProps = {
   children: React.ReactNode;
@@ -52,6 +51,7 @@ const CustomTabBarButton: React.FC<CustomTabBarButtonProps> = ({ children, onPre
 );
 
 export const MainTabNavigator = () => {
+  const { t } = useTranslation();
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -113,14 +113,14 @@ export const MainTabNavigator = () => {
         name="Home"
         component={HomeStack}
         options={{
-          tabBarLabel: 'Bosh sahifa',
+          tabBarLabel: t('navigation.homeLable'),
         }}
       />
       <Tab.Screen
         name="Catalog"
         component={CatalogStack}
         options={{
-          tabBarLabel: 'Katalog',
+          tabBarLabel: t('navigation.catalogLable'),
         }}
       />
       <Tab.Screen
@@ -135,14 +135,14 @@ export const MainTabNavigator = () => {
         name="Operations"
         component={OperationsScreen}
         options={{
-          tabBarLabel: 'Amaliyotlar',
+          tabBarLabel: t('navigation.operationsLable'),
         }}
       />
       <Tab.Screen
         name="Profile"
         component={SettingsNavigator}
         options={{
-          tabBarLabel: 'Profile',
+          tabBarLabel: t('navigation.profileLable'),
         }}
       />
     </Tab.Navigator>

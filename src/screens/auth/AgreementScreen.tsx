@@ -1,3 +1,5 @@
+import { useAppDispatch } from '@/store/hooks';
+import { setAgreementChecked } from '@/store/slices/authSlice';
 import { AuthStackParamList } from '@/types/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -6,15 +8,11 @@ import { Pressable, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'rea
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'Agreement'>;
 
-export const AgreementScreen = ({ navigation, route }: Props) => {
-  const { isRegistration } = route.params || { isRegistration: false };
-
+export const AgreementScreen = ({ navigation }: Props) => {
+  const dispatch = useAppDispatch();
   const handleAccept = () => {
-    // dispatch(acceptAgreement());
-    // if (isRegistration) {
-    // navigation.navigate('Registration');
-    // }
-    // If not registration, acceptAgreement will trigger MainApp navigation through RootNavigator
+    dispatch(setAgreementChecked(true));
+    navigation.goBack();
   };
 
   return (

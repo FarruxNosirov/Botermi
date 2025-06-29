@@ -17,9 +17,11 @@ import {
 } from 'react-native';
 import type { CatalogStackParamList } from '../../navigation/CatalogStack';
 import LottieView from 'lottie-react-native';
+import { useTranslation } from 'react-i18next';
 
 export const EpaScreen = () => {
   const route = useRoute<RouteProp<CatalogStackParamList, 'EPA'>>();
+  const { t } = useTranslation();
   const categoryId = route?.params?.categoryId;
   const { data, isLoading } = useGetSubCategories(categoryId);
   const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
@@ -41,16 +43,17 @@ export const EpaScreen = () => {
           }}
           source={require('../../../assets/Animation - 1748335411299.json')}
         />
-        <Text style={styles.emptyText}>Sizda so'rovlar topilmadi.</Text>
+        <Text style={styles.emptyText}>{t('youHaveNoQueriesFound')}</Text>
       </View>
     );
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
-          <Text style={styles.headerTitle}>Back</Text>
+          <Text style={styles.headerTitle}>{t('back')}</Text>
         </TouchableOpacity>
       </View>
       <>
@@ -58,48 +61,46 @@ export const EpaScreen = () => {
           <IsLoading />
         ) : (
           <>
+            <View style={styles.searchContainer}>
+              <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+              <TextInput
+                style={styles.searchInput}
+                placeholder={t('searchProducts')}
+                placeholderTextColor="#666"
+                value={searchText}
+                onChangeText={setSearchText}
+              />
+            </View>
             {filteredCategories && filteredCategories.length > 0 ? (
-              <>
-                <View style={styles.searchContainer}>
-                  <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Mahsulotlarni qidirish"
-                    placeholderTextColor="#666"
-                    value={searchText}
-                    onChangeText={setSearchText}
-                  />
-                </View>
-                <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                  {filteredCategories?.map((category: CatalogItemType, index: number) => (
-                    <View key={index} style={styles.categoryContainer}>
-                      <TouchableOpacity
-                        style={styles.categoryHeader}
-                        onPress={() =>
-                          navigation.navigate('CatalogPraductScreen', {
-                            subCatalogId: category?.category_id,
-                            categoryId: categoryId,
-                          })
-                        }
-                      >
-                        <View style={styles.categoryTitleContainer}>
-                          <View style={styles.iconContainer}>
-                            <Image
-                              source={{ uri: category?.image }}
-                              resizeMode="contain"
-                              style={{ width: 40, height: 40 }}
-                            />
-                          </View>
-                          <View style={{ flex: 1 }}>
-                            <Text style={styles.categoryText}>{category?.name}</Text>
-                          </View>
+              <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+                {filteredCategories?.map((category: CatalogItemType, index: number) => (
+                  <View key={index} style={styles.categoryContainer}>
+                    <TouchableOpacity
+                      style={styles.categoryHeader}
+                      onPress={() =>
+                        navigation.navigate('CatalogPraductScreen', {
+                          subCatalogId: category?.category_id,
+                          categoryId: category?.id,
+                        })
+                      }
+                    >
+                      <View style={styles.categoryTitleContainer}>
+                        <View style={styles.iconContainer}>
+                          <Image
+                            source={{ uri: category?.image }}
+                            resizeMode="contain"
+                            style={{ width: 40, height: 40 }}
+                          />
                         </View>
-                      </TouchableOpacity>
-                    </View>
-                  ))}
-                  <View style={{ height: 100 }} />
-                </ScrollView>
-              </>
+                        <View style={{ flex: 1 }}>
+                          <Text style={styles.categoryText}>{category?.name}</Text>
+                        </View>
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                ))}
+                <View style={{ height: 100 }} />
+              </ScrollView>
             ) : (
               <>{renderTabContent()}</>
             )}
@@ -118,7 +119,7 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+
     paddingVertical: 12,
     backgroundColor: '#fff',
   },
@@ -129,7 +130,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    marginLeft: 8,
   },
   searchContainer: {
     flexDirection: 'row',

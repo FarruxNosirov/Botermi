@@ -15,9 +15,4 @@ export const languages: Language[] = [
     name: 'Русский',
     flag: '🇷🇺',
   },
-  {
-    code: 'en',
-    name: 'English',
-    flag: '🇬🇧',
-  },
 ];

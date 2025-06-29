@@ -13,6 +13,7 @@ import {
 import LottieView from 'lottie-react-native';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 
 type OperationsScreenProps = MainTabScreenProps<'Operations'>;
 
@@ -20,6 +21,7 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
   const animation = useRef<LottieView>(null);
   const searchInputRef = useRef<TextInput>(null);
   const navigation = useNavigation();
+  const { t } = useTranslation();
   const renderTabContent = () => {
     return (
       <View style={styles.emptyContainer}>
@@ -33,7 +35,7 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
           }}
           source={require('../../../assets/Animation - 1748335411299.json')}
         />
-        <Text style={styles.emptyText}>Sizda so'rovlar topilmadi.</Text>
+        <Text style={styles.emptyText}>{t('youHaveNoQueriesFound')}</Text>
       </View>
     );
   };
@@ -48,7 +50,7 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
                 <TouchableOpacity onPress={() => searchInputRef.current?.focus()}>
                   <AntDesign name="search1" size={20} color="black" style={{ marginRight: 6 }} />
                 </TouchableOpacity>
-                <TextInput ref={searchInputRef} placeholder="Qidirish..." style={{ flex: 1 }} />
+                <TextInput ref={searchInputRef} placeholder={t('search')} style={{ flex: 1 }} />
               </View>
 
               <TouchableOpacity

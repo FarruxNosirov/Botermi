@@ -1,14 +1,15 @@
+import IsLoading from '@/components/IsLoading';
+import ProductDetailItem from '@/components/ProductDetailItem';
 import { useSingleProduct } from '@/hooks/querys';
 import { CatalogStackParamList } from '@/types/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
   FlatList,
   Image,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -18,8 +19,6 @@ import {
   View,
 } from 'react-native';
 import RenderHTML from 'react-native-render-html';
-import IsLoading from '@/components/IsLoading';
-import ProductDetailItem from '@/components/ProductDetailItem';
 
 const { width } = Dimensions.get('window');
 
@@ -28,9 +27,8 @@ export const ProductDetailScreen = () => {
   const route = useRoute<RouteProp<CatalogStackParamList, 'ProductDetail'>>();
   const [isFavorite, setIsFavorite] = useState(false);
   const scrollViewRef = useRef<ScrollView>(null);
-  const productListRef = useRef<FlatList>(null);
+
   const { width: windowWidth } = useWindowDimensions();
-  const [activeIndex, setActiveIndex] = useState(0);
 
   const { id } = route?.params?.product;
   const { data: productAll, error, isLoading } = useSingleProduct(id);
@@ -61,6 +59,7 @@ export const ProductDetailScreen = () => {
   const renderProductTitle = (htmlString: string) => (
     <RenderHTML contentWidth={windowWidth} tagsStyles={tagsStyles} source={{ html: htmlString }} />
   );
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -112,7 +111,7 @@ export const ProductDetailScreen = () => {
 
             {product?.brands && product?.brands.length > 0 && (
               <View style={styles.compatibleBrandsContainer}>
-                <Text style={styles.compatibleBrandsTitle}>Mos keladi</Text>
+                <Text style={styles.compatibleBrandsTitle}>{t('fits')}</Text>
                 <FlatList
                   style={{ paddingVertical: 5, paddingLeft: 10 }}
                   horizontal
@@ -134,7 +133,7 @@ export const ProductDetailScreen = () => {
 
             {product?.category_products && (
               <View style={{ padding: 16 }}>
-                <Text style={styles.compatibleBrandsTitle}>O'xshash mahsulotlar</Text>
+                <Text style={styles.compatibleBrandsTitle}>{t('similarProducts')}</Text>
                 <FlatList
                   horizontal
                   data={product?.category_products}

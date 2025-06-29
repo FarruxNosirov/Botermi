@@ -10,6 +10,7 @@ interface AuthState {
   token: string | null;
   error: string | null;
   userExists: boolean | null;
+  isAgreementChecked: boolean;
 }
 
 const initialState: AuthState = {
@@ -20,6 +21,7 @@ const initialState: AuthState = {
   token: null,
   error: null,
   userExists: null,
+  isAgreementChecked: false,
 };
 
 // PHONE yuborish (login-sms)
@@ -41,8 +43,6 @@ export const verifyCode = createAsyncThunk(
   async ({ phone, code }: { phone: string; code: string }, { rejectWithValue }) => {
     try {
       const response = await authAPI.verifyCode(phone, code);
-      console.log('response', JSON.stringify(response, null, 2));
-
       if (response?.token && response?.user) {
         await AsyncStorage.setItem('@auth_token', response.token);
         return {
@@ -58,7 +58,6 @@ export const verifyCode = createAsyncThunk(
   },
 );
 
-// Ro'yxatdan o'tish
 export const register = createAsyncThunk(
   'auth/register',
   async ({ data, id }: { data: any; id: number }, { rejectWithValue }) => {
@@ -71,7 +70,6 @@ export const register = createAsyncThunk(
   },
 );
 
-// Me'ni olish (token bilan)
 export const getMe = createAsyncThunk('auth/getMe', async (_, { rejectWithValue }) => {
   try {
     const response = await getUserData();
@@ -82,38 +80,16 @@ export const getMe = createAsyncThunk('auth/getMe', async (_, { rejectWithValue 
 });
 
 const isUserFullyRegistered = (user: any): boolean => {
-  console.log('Checking user registration status:', JSON.stringify(user, null, 2));
-
-  // Agar user null yoki undefined bo'lsa
   if (!user) {
     console.log('User is null or undefined');
     return false;
   }
-
-  // API dan qaytayotgan ma'lumotlar data obyekti ichida bo'lishi mumkin
   const userData = user.data || user;
-
-  // Asosiy maydonlarni tekshirish
   const hasName = !!userData?.name && userData?.name !== 'Foydalanuvchi';
   const hasCity = !!userData?.city;
   const hasPhone = !!userData?.phone;
 
-  console.log('User fields check:', {
-    hasName,
-    hasCity,
-    hasPhone,
-    name: userData?.name,
-    city: userData?.city,
-    phone: userData?.phone,
-  });
-
-  // Foydalanuvchi to'liq ro'yxatdan o'tgan deb hisoblanishi uchun:
-  // 1. Telefon raqami bo'lishi kerak
-  // 2. Ism to'ldirilgan bo'lishi kerak (va 'Foydalanuvchi' bo'lmasligi kerak)
-  // 3. Shahar to'ldirilgan bo'lishi kerak
   const isFullyRegistered = hasPhone && hasName && hasCity;
-
-  console.log('Is user fully registered:', isFullyRegistered);
 
   return isFullyRegistered;
 };
@@ -131,6 +107,9 @@ const authSlice = createSlice({
     },
     clearError: (state) => {
       state.error = null;
+    },
+    setAgreementChecked: (state, action) => {
+      state.isAgreementChecked = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -217,5 +196,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout, clearError } = authSlice.actions;
+export const { logout, clearError, setAgreementChecked } = authSlice.actions;
 export default authSlice.reducer;

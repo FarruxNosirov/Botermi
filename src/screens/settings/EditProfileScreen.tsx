@@ -1,67 +1,65 @@
-import React, { useState, useEffect } from 'react';
+import GoBackHeader from '@/components/GoBackHeader';
+import { Text } from '@/components/ui/Text';
+import { colors } from '@/constants/colors';
+import { useCities } from '@/hooks/querys';
+import { SettingsStackParamList } from '@/navigation/SettingsNavigator';
+import { useAppDispatch } from '@/store/hooks';
+import { getMe } from '@/store/slices/authSlice';
+import { UserDataType } from '@/types/userType';
+import { Ionicons } from '@expo/vector-icons';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as ImagePicker from 'expo-image-picker';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
-  View,
-  StyleSheet,
+  Alert,
+  Image,
   SafeAreaView,
+  ScrollView,
+  StyleSheet,
   TextInput,
   TouchableOpacity,
-  Image,
-  Alert,
-  Modal,
-  FlatList,
+  View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { Text } from '@/components/ui/Text';
-import GoBackHeader from '@/components/GoBackHeader';
-import { colors } from '@/constants/colors';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { SettingsStackParamList } from '@/navigation/SettingsNavigator';
-import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import * as ImagePicker from 'expo-image-picker';
 import { Dropdown } from 'react-native-element-dropdown';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useForm, Controller } from 'react-hook-form';
+import { useTranslation } from 'react-i18next';
 
 type NavigationProp = NativeStackNavigationProp<SettingsStackParamList>;
 
+type FormValues = {
+  fullName: string;
+  phone: string;
+  profession: string;
+  region: string;
+  birthDate: string;
+};
+
 export const EditProfileScreen = () => {
   const navigation = useNavigation<NavigationProp>();
-  const [region, setRegion] = useState('Samarqand vil.');
-  const regions = [
-    { label: 'Toshkent vil.', value: 'Toshkent vil.' },
-    { label: 'Samarqand vil.', value: 'Samarqand vil.' },
-    { label: 'Buxoro vil.', value: 'Buxoro vil.' },
-    { label: 'Farg‘ona vil.', value: 'Farg‘ona vil.' },
-    { label: 'Andijon vil.', value: 'Andijon vil.' },
-    { label: 'Namangan vil.', value: 'Namangan vil.' },
-    { label: 'Qashqadaryo vil.', value: 'Qashqadaryo vil.' },
-    { label: 'Surxondaryo vil.', value: 'Surxondaryo vil.' },
-    { label: 'Jizzax vil.', value: 'Jizzax vil.' },
-    { label: 'Sirdaryo vil.', value: 'Sirdaryo vil.' },
-    { label: 'Navoiy vil.', value: 'Navoiy vil.' },
-    { label: 'Xorazm vil.', value: 'Xorazm vil.' },
-    { label: 'Qoraqalpog‘iston R.', value: 'Qoraqalpog‘iston R.' },
-  ];
-  const districtMap: Record<string, { label: string; value: string }[]> = {
-    'Toshkent vil.': [{ label: 'Chirchiq tumani', value: 'Chirchiq tumani' }],
-    'Samarqand vil.': [{ label: 'Pastdarg‘om tumani', value: 'Pastdarg‘om tumani' }],
-    'Buxoro vil.': [{ label: 'Vobkent tumani', value: 'Vobkent tumani' }],
-    'Farg‘ona vil.': [{ label: 'Qo‘qon tumani', value: 'Qo‘qon tumani' }],
-    'Andijon vil.': [{ label: 'Asaka tumani', value: 'Asaka tumani' }],
-    'Namangan vil.': [{ label: 'Chust tumani', value: 'Chust tumani' }],
-    'Qashqadaryo vil.': [{ label: 'Qarshi tumani', value: 'Qarshi tumani' }],
-    'Surxondaryo vil.': [{ label: 'Termiz tumani', value: 'Termiz tumani' }],
-    'Jizzax vil.': [{ label: 'Zomin tumani', value: 'Zomin tumani' }],
-    'Sirdaryo vil.': [{ label: 'Guliston tumani', value: 'Guliston tumani' }],
-    'Navoiy vil.': [{ label: 'Karmana tumani', value: 'Karmana tumani' }],
-    'Xorazm vil.': [{ label: 'Urganch tumani', value: 'Urganch tumani' }],
-    'Qoraqalpog‘iston R.': [{ label: 'Nukus tumani', value: 'Nukus tumani' }],
-  };
-  const [district, setDistrict] = useState('Pastdarg‘om tumani');
-  const [fullName, setFullName] = useState('Nosirov Farrux');
-  const [invitePhone, setInvitePhone] = useState('');
+  const dispatch = useAppDispatch();
+  const bottom = useSafeAreaInsets().bottom;
+  const { t } = useTranslation();
+
   const [avatarUri, setAvatarUri] = useState<string | undefined>(undefined);
-  const [regionModalVisible, setRegionModalVisible] = useState(false);
-  const [open, setOpen] = useState(false);
+  const [userData, setUserData] = useState<UserDataType | null>(null);
+  console.log('userData', JSON.stringify(userData, null, 2));
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<FormValues>({
+    defaultValues: {
+      fullName: '',
+      phone: '',
+      profession: '',
+      region: '',
+      birthDate: '',
+    },
+  });
 
   useEffect(() => {
     (async () => {
@@ -93,159 +91,149 @@ export const EditProfileScreen = () => {
     }
   };
 
-  const handleSave = () => {
-    navigation.goBack();
-  };
-  const bottom = useSafeAreaInsets().bottom;
-
   const handleImagePick = () => {
     Alert.alert(
-      'Rasm tanlash',
-      'Rasmni qayerdan tanlaysiz?',
+      t('imageSelection'),
+      t('whereDoYouChoosePicture'),
       [
-        { text: 'Galereyadan', onPress: pickImage },
-        { text: 'Kameradan', onPress: takePhoto },
-        { text: 'Bekor qilish', style: 'cancel' },
+        { text: t('fromgGallery'), onPress: pickImage },
+        { text: t('fromCamera'), onPress: takePhoto },
+        { text: t('cancel'), style: 'cancel' },
       ],
       { cancelable: true },
     );
   };
+
+  const { data } = useCities();
+  const regions = data?.data?.data;
+  const regionDropdownData = useMemo(() => {
+    if (!regions) return [];
+    return regions.map((region: { id: any; name: any }) => ({
+      label: region.name,
+      value: region.name,
+    }));
+  }, [regions]);
+
+  const handleGetMe = async () => {
+    const resultAction = await dispatch(getMe());
+    if (getMe.fulfilled.match(resultAction)) {
+      const user = resultAction?.payload?.data;
+      setUserData(user);
+      setValue('fullName', `${user?.surname || ''} ${user?.name || ''}`);
+      setValue('phone', user?.phone || '');
+      setValue('profession', user?.positions?.[0]?.name || '');
+      setValue('region', user?.city || '');
+      setValue('birthDate', user?.birth_date || '');
+    } else {
+      console.log('Xatolik:', resultAction.payload);
+    }
+  };
+
+  useEffect(() => {
+    handleGetMe();
+  }, []);
+
+  const onSubmit = (data: FormValues) => {
+    console.log('Form data:', data);
+    navigation.goBack();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <View
-        style={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          paddingHorizontal: 8,
-          paddingTop: 8,
-          paddingBottom: 12,
-        }}
-      >
+      <View style={styles.header}>
         <GoBackHeader title="" style={{ borderBottomColor: '#fff', flex: 1 }} />
-        <Text
-          style={{ flex: 2, textAlign: 'center', fontSize: 20, fontWeight: '600', color: '#222' }}
-        >
-          Mening profilim
-        </Text>
+        <Text style={styles.headerTitle}>{t('profilePage.myProfile')}</Text>
         <View style={{ flex: 1 }} />
       </View>
-      <View style={{ alignItems: 'center', marginTop: 12, marginBottom: 24 }}>
-        <View
-          style={{
-            position: 'relative',
-            width: 80,
-            height: 80,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+
+      <View style={styles.avatarWrapper}>
+        <View style={styles.avatarContainer}>
           {avatarUri ? (
-            <Image
-              source={{ uri: avatarUri }}
-              style={{ width: 80, height: 80, borderRadius: 40 }}
-            />
+            <Image source={{ uri: avatarUri }} style={styles.avatarImage} />
           ) : (
             <Ionicons name="person-circle-outline" size={80} color={colors.gray[200]} />
           )}
-          <TouchableOpacity
-            style={{
-              position: 'absolute',
-              right: 6,
-              bottom: 6,
-              backgroundColor: '#222',
-              borderRadius: 16,
-              width: 28,
-              height: 28,
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderWidth: 2,
-              borderColor: '#fff',
-            }}
-            onPress={handleImagePick}
-          >
+          <TouchableOpacity style={styles.avatarEditButton} onPress={handleImagePick}>
             <Ionicons name="pencil" size={16} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
-      <View style={{ paddingHorizontal: 16 }}>
-        <Text style={styles.label}>Viloyat</Text>
-        <Dropdown
-          style={{
-            backgroundColor: colors.gray[100],
-            borderRadius: 12,
-            height: 48,
-            paddingHorizontal: 16,
-            borderWidth: 0,
-            marginBottom: 18,
-          }}
-          containerStyle={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            elevation: 4,
-            borderWidth: 0,
-          }}
-          data={regions}
-          labelField="label"
-          valueField="value"
-          placeholder="Viloyatni tanlang"
-          value={region}
-          onChange={(item) => {
-            setRegion(item.value);
-            setDistrict(districtMap[item.value][0].value);
-          }}
-          itemTextStyle={{ fontSize: 16, color: colors.gray[900] }}
-          selectedTextStyle={{ fontSize: 16, color: colors.primary, fontWeight: 'bold' }}
-          placeholderStyle={{ color: colors.gray[400], fontSize: 16 }}
-          activeColor={colors.gray[100]}
-          renderRightIcon={() => (
-            <Ionicons name="chevron-down-outline" size={20} color={colors.gray[400]} />
+
+      <ScrollView style={{ paddingHorizontal: 16 }} showsVerticalScrollIndicator={false}>
+        <Text style={styles.label}>{t('profilePage.lastNameAndFirstName')}</Text>
+        <Controller
+          control={control}
+          name="fullName"
+          render={({ field: { onChange, value } }) => (
+            <TextInput style={styles.input} value={value} onChangeText={onChange} />
           )}
         />
-        <Text style={[styles.label, { marginTop: 18 }]}>Tuman</Text>
-        <Dropdown
-          style={{
-            backgroundColor: colors.gray[100],
-            borderRadius: 12,
-            height: 48,
-            paddingHorizontal: 16,
-            borderWidth: 0,
-            marginBottom: 18,
-          }}
-          containerStyle={{
-            backgroundColor: '#fff',
-            borderRadius: 12,
-            elevation: 4,
-            borderWidth: 0,
-          }}
-          data={districtMap[region]}
-          labelField="label"
-          valueField="value"
-          placeholder="Tuman tanlang"
-          value={district}
-          onChange={(item) => setDistrict(item.value)}
-          itemTextStyle={{ fontSize: 16, color: colors.gray[900] }}
-          selectedTextStyle={{ fontSize: 16, color: colors.primary, fontWeight: 'bold' }}
-          placeholderStyle={{ color: colors.gray[400], fontSize: 16 }}
-          activeColor={colors.gray[100]}
-          renderRightIcon={() => (
-            <Ionicons name="chevron-down-outline" size={20} color={colors.gray[400]} />
+
+        <Text style={styles.label}>{t('profilePage.phoneNumber')}</Text>
+        <Controller
+          control={control}
+          name="phone"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              value={value}
+              onChangeText={onChange}
+              keyboardType="phone-pad"
+            />
           )}
         />
-        <Text style={[styles.label, { marginTop: 18 }]}>Familiya va Ism</Text>
-        <TextInput
-          style={styles.input}
-          value={fullName}
-          onChangeText={setFullName}
-          placeholder="Familiya va ism"
-          placeholderTextColor={colors.gray[400]}
+
+        <Text style={styles.label}>{t('profilePage.profession')}</Text>
+        <Controller
+          control={control}
+          name="profession"
+          render={({ field: { onChange, value } }) => (
+            <TextInput style={styles.input} value={value} onChangeText={onChange} />
+          )}
         />
-      </View>
-      <View style={[styles.saveButtonContainer, { bottom: bottom + 60 }]}>
-        <TouchableOpacity onPress={handleSave} style={styles.saveButton}>
-          <Text style={styles.saveButtonText}>Saqlash</Text>
-        </TouchableOpacity>
-      </View>
+
+        <Text style={styles.label}>{t('profilePage.province')}</Text>
+        <Controller
+          control={control}
+          name="region"
+          render={({ field: { onChange, value } }) => (
+            <Dropdown
+              style={styles.input}
+              data={regionDropdownData}
+              labelField="label"
+              valueField="value"
+              value={value}
+              onChange={(item) => onChange(item.value)}
+              placeholder={t('profilePage.selectRegion')}
+              maxHeight={250}
+              renderRightIcon={() => (
+                <Ionicons name="chevron-down-outline" size={20} color={colors.gray[400]} />
+              )}
+            />
+          )}
+        />
+
+        <Text style={styles.label}>{t('birthDate')}</Text>
+        <Controller
+          control={control}
+          name="birthDate"
+          render={({ field: { onChange, value } }) => (
+            <TextInput
+              style={styles.input}
+              value={value}
+              onChangeText={onChange}
+              placeholder="YYYY-MM-DD"
+            />
+          )}
+        />
+
+        <View style={[styles.saveButtonContainer, { height: 140 }]}>
+          <TouchableOpacity onPress={handleSubmit(onSubmit)} style={styles.saveButton}>
+            <Text style={styles.saveButtonText}>{t('save')}</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={{ height: 50 }} />
+      </ScrollView>
     </SafeAreaView>
   );
 };
@@ -255,24 +243,56 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.white,
   },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 8,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+  headerTitle: {
+    flex: 2,
+    textAlign: 'center',
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#222',
+  },
+  avatarWrapper: {
+    alignItems: 'center',
+    marginTop: 12,
+    marginBottom: 24,
+  },
+  avatarContainer: {
+    position: 'relative',
+    width: 80,
+    height: 80,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  avatarEditButton: {
+    position: 'absolute',
+    right: 6,
+    bottom: 6,
+    backgroundColor: '#222',
+    borderRadius: 16,
+    width: 28,
+    height: 28,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+  },
   label: {
     fontSize: 15,
     color: colors.gray[900],
     marginBottom: 8,
     fontWeight: '400',
-  },
-  selectBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.gray[100],
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    height: 48,
-    justifyContent: 'space-between',
-  },
-  selectText: {
-    fontSize: 16,
-    color: colors.gray[900],
   },
   input: {
     height: 48,
@@ -282,24 +302,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     color: colors.gray[900],
-  },
-  inviteBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: colors.gray[100],
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    height: 48,
-    marginBottom: 12,
+    marginBottom: 18,
   },
   saveButtonContainer: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
     backgroundColor: colors.white,
-    padding: 16,
     borderTopWidth: 1,
     borderTopColor: colors.gray[100],
+    marginTop: 16,
   },
   saveButton: {
     backgroundColor: colors.primary,

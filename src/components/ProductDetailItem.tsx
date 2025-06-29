@@ -3,6 +3,7 @@ import { CatalogStackParamList } from '@/navigation/CatalogStack';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const ProductDetailItem = ({ item }: { item: any }) => {
@@ -15,11 +16,9 @@ const ProductDetailItem = ({ item }: { item: any }) => {
     if (isNaN(num) || num === 0) return '0';
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   };
-
-  // Price checks
   const priceNum = Number(String(item?.price).replace(/\s/g, ''));
   const customerPriceNum = Number(String(item?.customer_price).replace(/\s/g, ''));
-
+  const { t } = useTranslation();
   return (
     <TouchableOpacity
       style={[styles.productItem, { width: productCardWidth }]}
@@ -34,17 +33,25 @@ const ProductDetailItem = ({ item }: { item: any }) => {
         <View style={styles.productDetails}>
           <Text style={styles.productName}>{planNameLength}</Text>
           <Text style={styles.brandName}>{item.brand}</Text>
-          {item.bonus > 0 && <Text style={styles.bonusText}>{formatPrice(item.bonus)} so'm</Text>}
+          {item.bonus > 0 && (
+            <Text style={styles.bonusText}>
+              {formatPrice(item.bonus)} {t('homePage.currency')}
+            </Text>
+          )}
         </View>
       </View>
       <View style={styles.priceContainer}>
         {priceNum > 0 || customerPriceNum > 0 ? (
           <>
             <View>
-              <Text style={styles.priceText}>{formatPrice(item?.price)} so'm</Text>
+              <Text style={styles.priceText}>
+                {formatPrice(item?.price)} {t('homePage.currency')}
+              </Text>
             </View>
             <View style={styles.priceOld}>
-              <Text style={styles.priceOldText}>{formatPrice(item?.customer_price)} so'm</Text>
+              <Text style={styles.priceOldText}>
+                {formatPrice(item?.customer_price)} {t('homePage.currency')}
+              </Text>
             </View>
           </>
         ) : null}

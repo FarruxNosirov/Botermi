@@ -6,6 +6,7 @@ import { BlogsType } from '@/types/product';
 import { Ionicons } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Linking,
   SafeAreaView,
@@ -20,7 +21,7 @@ const Blogs = () => {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const { data, isLoading, isError } = useBlogs();
   const blogsData = data?.data?.data;
-
+  const { t } = useTranslation();
   if (isLoading) {
     return <IsLoading />;
   }
@@ -31,13 +32,11 @@ const Blogs = () => {
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#000" />
-            <Text style={styles.headerTitle}>Back</Text>
+            <Text style={styles.headerTitle}>{t('back')}</Text>
           </TouchableOpacity>
         </View>
         <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <Text style={{ fontSize: 16, color: '#666' }}>
-            Ma'lumotlarni yuklashda xatolik yuz berdi
-          </Text>
+          <Text style={{ fontSize: 16, color: '#666' }}>{t('homePage.loadingDataError')}</Text>
         </View>
       </SafeAreaView>
     );
@@ -48,7 +47,7 @@ const Blogs = () => {
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
-          <Text style={styles.headerTitle}>Back</Text>
+          <Text style={styles.headerTitle}>{t('back')}</Text>
         </TouchableOpacity>
       </View>
       <ScrollView

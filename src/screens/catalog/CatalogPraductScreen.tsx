@@ -1,28 +1,29 @@
-import { DEVICE_WIDTH } from '@/constants/constants';
 import React, { useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
   FlatList,
   Image,
+  Platform,
   SafeAreaView,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Platform,
 } from 'react-native';
 import type { CatalogStackParamList } from '../../navigation/CatalogStack';
 
 import IsLoading from '@/components/IsLoading';
+import ProductDetailItem from '@/components/ProductDetailItem';
 import { useBrands, useManufacturers, usePraducts } from '@/hooks/querys';
+import { CatalogPraductItemType, ManufacturerItemType } from '@/types/catalogItem';
 import { Product } from '@/types/product';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import { DrawerLayout } from 'react-native-gesture-handler';
-import { CatalogPraductItemType, ManufacturerItemType } from '@/types/catalogItem';
-import ProductDetailItem from '@/components/ProductDetailItem';
+import { DEVICE_HEIGHT } from '@/constants/constants';
 
 const { width } = Dimensions.get('window');
 
@@ -86,70 +87,21 @@ const ManufacturerItem = ({
 
 const CatalogPraductScreen = () => {
   const route = useRoute<RouteProp<CatalogStackParamList, 'CatalogPraductScreen'>>();
-  const categoryId = route?.params?.categoryId;
-  const { data, isLoading } = usePraducts(categoryId);
-  const { data: brandData } = useBrands();
-  const { data: manufacturersData } = useManufacturers();
-
+  const subCategoryId = route?.params?.categoryId;
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
+  const brandId = selectedBrands.length > 0 ? Number(selectedBrands[0]) : undefined;
+  const manufacturerId =
+    selectedManufacturers.length > 0 ? Number(selectedManufacturers[0]) : undefined;
+  const { data, isLoading } = usePraducts(subCategoryId, brandId, manufacturerId);
+  const { data: brandData } = useBrands();
+  const { data: manufacturersData } = useManufacturers();
+  const { t } = useTranslation();
+
   const drawerRef = useRef<DrawerLayout>(null);
 
   const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
-
-  const formatPrice = (price: number) => {
-    return price.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  };
-  const productCardWidth = DEVICE_WIDTH / 2 - 24;
-
-  const renderProduct = ({ item }: { item: Product }) => {
-    const planNameLength =
-      item.name?.length && item.name?.length > 34 ? item.name?.slice(0, 40) + '...' : item.name;
-
-    return (
-      <TouchableOpacity
-        style={[styles.productItem, { width: productCardWidth }]}
-        onPress={() => navigation.navigate('ProductDetail', { product: item })}
-      >
-        <View>
-          <Image
-            source={{ uri: item.image }}
-            style={[styles.productImage, { width: productCardWidth - 30 }]}
-            resizeMode="contain"
-          />
-          <View style={styles.productDetails}>
-            <Text style={styles.productName}>{planNameLength}</Text>
-            <Text style={styles.brandName}>{item.brand}</Text>
-            {item.bonus > 0 && <Text style={styles.bonusText}>{formatPrice(item.bonus)} so'm</Text>}
-          </View>
-        </View>
-        <View style={styles.priceContainer}>
-          <Text style={styles.priceText}>{formatPrice(item.price)} so'm</Text>
-          <TouchableOpacity style={styles.cartButton}>
-            <Ionicons name="cart-outline" size={20} color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </TouchableOpacity>
-    );
-  };
-
-  const filteredProducts = useMemo(() => {
-    if (!data?.products?.data) return [];
-    let products: Product[] = data.products.data;
-
-    if (selectedBrands.length > 0) {
-      products = products.filter((product: Product) =>
-        selectedBrands.includes(String(product.brand_id)),
-      );
-    }
-
-    if (selectedManufacturers.length > 0) {
-      products = products.filter((product: Product) =>
-        selectedManufacturers.includes(String(product.manufacturer_id)),
-      );
-    }
-    return products;
-  }, [data?.products?.data, selectedBrands, selectedManufacturers]);
+  const filteredProducts = data?.products?.data || [];
 
   const renderNavigationView = () => {
     const handleBrandSelect = (brandId: string) => {
@@ -175,7 +127,7 @@ const CatalogPraductScreen = () => {
     return (
       <View style={[styles.drawerContainer]}>
         <View style={styles.drawerHeader}>
-          <Text style={styles.drawerTitle}>Filtrlar</Text>
+          <Text style={styles.drawerTitle}>{t('filters')}</Text>
           <TouchableOpacity
             onPress={() => drawerRef.current?.closeDrawer()}
             style={styles.closeButton}
@@ -184,39 +136,42 @@ const CatalogPraductScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <ScrollView style={styles.filterSection}>
-          <Text style={styles.sectionTitle}>Brend</Text>
-          <FlatList
-            data={brandData?.data}
-            renderItem={({ item }) => (
-              <BrandItem
-                brand={item}
-                isSelected={selectedBrands.includes(String(item.id))}
-                onSelect={handleBrandSelect}
-              />
-            )}
-            keyExtractor={(item) => String(item.id)}
-            scrollEnabled={false}
-          />
-
-          <Text style={styles.sectionTitle}>Ishlab chiqaruvchi</Text>
-          <FlatList
-            data={manufacturersData?.data}
-            renderItem={({ item }) => (
-              <ManufacturerItem
-                manufacturer={item}
-                isSelected={selectedManufacturers.includes(String(item.id))}
-                onSelect={handleManufacturerSelect}
-              />
-            )}
-            keyExtractor={(item) => String(item.id)}
-            scrollEnabled={false}
-          />
-        </ScrollView>
+        <View style={styles.filterSection}>
+          <View style={{ height: DEVICE_HEIGHT / 3 }}>
+            <Text style={styles.sectionTitle}>{t('brand')}</Text>
+            <FlatList
+              data={brandData?.data}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <BrandItem
+                  brand={item}
+                  isSelected={selectedBrands.includes(String(item.id))}
+                  onSelect={handleBrandSelect}
+                />
+              )}
+              keyExtractor={(item) => String(item.id)}
+            />
+          </View>
+          <View style={{ height: DEVICE_HEIGHT / 3, marginTop: 10 }}>
+            <Text style={styles.sectionTitle}>{t('manufacturer')}</Text>
+            <FlatList
+              data={manufacturersData?.data}
+              showsVerticalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <ManufacturerItem
+                  manufacturer={item}
+                  isSelected={selectedManufacturers.includes(String(item.id))}
+                  onSelect={handleManufacturerSelect}
+                />
+              )}
+              keyExtractor={(item) => String(item.id)}
+            />
+          </View>
+        </View>
 
         <View style={styles.drawerFooter}>
           <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Text style={styles.resetButtonText}>Сбросить</Text>
+            <Text style={styles.resetButtonText}>{t('reset')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -234,8 +189,18 @@ const CatalogPraductScreen = () => {
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Ionicons name="chevron-back" size={24} color="#000" />
+            <Text style={{ fontSize: 20, fontWeight: '600' }}>{t('back')}</Text>
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Mahsulotlar</Text>
+          <View
+            style={{
+              flexDirection: 'row',
+              alignItems: 'center',
+              width: '40%',
+              justifyContent: 'flex-start',
+            }}
+          >
+            <Text style={styles.headerTitle}>{t('products')}</Text>
+          </View>
           <TouchableOpacity
             onPress={() => drawerRef.current?.openDrawer()}
             style={styles.filterButton}
@@ -274,18 +239,18 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 8,
     paddingVertical: 12,
     backgroundColor: '#fff',
+    justifyContent: 'space-between',
   },
   backButton: {
-    padding: 8,
+    flexDirection: 'row',
+    width: '30%',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    flex: 1,
-    textAlign: 'center',
   },
 
   contentContainerStyle: {
@@ -372,10 +337,9 @@ const styles = StyleSheet.create({
   },
   filterSection: {
     paddingHorizontal: 16,
-    paddingVertical: 10,
   },
   sectionTitle: {
-    fontSize: 16,
+    fontSize: 20,
     fontWeight: '600',
     color: '#333',
     marginTop: 15,
@@ -404,7 +368,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FF3B30',
   },
   logo: {
-    width: 30,
+    width: 100,
     height: 30,
     marginRight: 10,
   },
@@ -418,7 +382,6 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eee',
     paddingTop: 15,
-    paddingHorizontal: 20,
     paddingBottom: 20,
   },
   resetButton: {

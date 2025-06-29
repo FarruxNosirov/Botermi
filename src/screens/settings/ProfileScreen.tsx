@@ -8,7 +8,8 @@ import { getMe, logout } from '@/store/slices/authSlice';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, View, Alert, SafeAreaView } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Alert, Linking, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<SettingsStackParamList>;
@@ -46,45 +47,52 @@ export const ProfileScreen = () => {
     handleGetMe();
   }, []);
 
+  const { i18n, t } = useTranslation();
+
   const navData = [
     {
       id: 'profile',
-      title: 'Мой профиль',
+      title: t('profilePage.myProfile'),
       icon: 'person-outline' as const,
       onPress: () => navigation.navigate('EditProfile'),
     },
     {
       id: 'settings',
-      title: 'Настройки',
+      title: t('profilePage.settings'),
       icon: 'settings-outline' as const,
       onPress: () => navigation.navigate('SettingsMain'),
     },
     {
       id: 'language',
-      title: 'Язык',
+      title: t('profilePage.language'),
       icon: 'language-outline' as const,
-      value: 'Uzb',
+      value: i18n.language === 'uz' ? 'O‘zb' : 'Русский',
       valueColor: '#4CAF50',
       onPress: () => navigation.navigate('Language'),
     },
     {
       id: 'prizes',
-      title: 'Запросы на призы',
+      title: t('profilePage.prizes'),
       icon: 'pricetags-outline' as const,
       onPress: () => {},
     },
-    { id: 'faq', title: 'F.A.Q', icon: 'help-circle-outline' as const, onPress: () => {} },
+    {
+      id: 'faq',
+      title: t('profilePage.faq'),
+      icon: 'help-circle-outline' as const,
+      onPress: () => {},
+    },
     {
       id: 'logout',
-      title: 'Выйти',
+      title: t('profilePage.logout'),
       icon: 'log-out-outline' as const,
       onPress: () => {
         Alert.alert(
-          'Diqqat',
-          'Haqiqatdan ham chiqmoqchimisiz?',
+          t('attention'),
+          t('deleteAccountDescription'),
           [
-            { text: 'Yo‘q', style: 'cancel' },
-            { text: 'Ha', style: 'destructive', onPress: () => dispatch(logout()) },
+            { text: t('no'), style: 'cancel' },
+            { text: t('yes'), style: 'destructive', onPress: () => dispatch(logout()) },
           ],
           { cancelable: true },
         );
@@ -92,12 +100,22 @@ export const ProfileScreen = () => {
     },
     {
       id: 'about',
-      title: 'О приложении',
+      title: t('profilePage.about'),
       icon: 'information-circle-outline' as const,
       onPress: () => {},
     },
   ];
   const insets = useSafeAreaInsets();
+  const makeCall = async () => {
+    const phoneNumber = 'tel:+998951447575';
+    const supported = await Linking.canOpenURL(phoneNumber);
+
+    if (supported) {
+      Linking.openURL(phoneNumber);
+    } else {
+      Alert.alert(t('error'), t('errorDescription'));
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -110,12 +128,12 @@ export const ProfileScreen = () => {
             <Text style={styles.firstName}>
               {userData?.name || 'aziz'} {userData?.surname || 'rametov'}
             </Text>
-            <Text style={styles.date}>Зарегистрировано: 17.05.2025; 10:56</Text>
+            <Text style={styles.date}>{t('profilePage.registered')}: 17.05.2025; 10:56</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-              <Text style={styles.statusText}>Статус:</Text>
+              <Text style={styles.statusText}>{t('profilePage.status')}:</Text>
               <View style={styles.status}>
                 <Icon name="checkmark-circle" size={18} color={colors.successColor} />
-                <Text style={styles.statusTitle}>Активный</Text>
+                <Text style={styles.statusTitle}>{t('profilePage.active')}</Text>
               </View>
             </View>
           </View>
@@ -127,11 +145,7 @@ export const ProfileScreen = () => {
             <ProfileItem key={idx} item={item} arr={arr} idx={idx} />
           ))}
         </View>
-
-        <View style={styles.opirator}>
-          <Icon name="headset-outline" size={28} color={colors.primary} />
-          <Text style={styles.opiratorTitle}>Связаться с нами</Text>
-        </View>
+        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
   );

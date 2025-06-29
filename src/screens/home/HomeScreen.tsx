@@ -1,12 +1,15 @@
 import { Button } from '@/components/ui/Button';
 import { useAppDispatch } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
+import { HomeStackParamList } from '@/types/navigation';
+import { UserDataType } from '@/types/userType';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import React, { useEffect, useState } from 'react';
-import Feather from '@expo/vector-icons/Feather';
+import { useTranslation } from 'react-i18next';
 import {
   Image,
   Linking,
@@ -18,27 +21,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { HomeStackParamList, RootStackParamList } from '@/types/navigation';
-type UserPosition = {
-  id: number;
-  name: string;
-};
 
-type UserData = {
-  id: number;
-  name: string;
-  surname: string;
-  phone: string;
-  second_phone: string;
-  vip: number;
-  city: string;
-  positions: UserPosition[];
-};
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const dispatch = useAppDispatch();
-  const [userData, setUserData] = useState<UserData | null>(null);
-
+  const [userData, setUserData] = useState<UserDataType | null>(null);
+  const { t } = useTranslation();
   const handleGetMe = async () => {
     const resultAction = await dispatch(getMe());
 
@@ -59,15 +47,19 @@ const HomeScreen = () => {
           <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
             <Feather name="loader" size={24} color="#FFA500" />
             <View style={{ marginLeft: 10 }}>
-              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>0 ta</Text>
-              <Text style={{ color: '#000' }}>Ko'rilmoqda</Text>
+              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
+                0 {t('homePage.one')}
+              </Text>
+              <Text style={{ color: '#000' }}>{t('homePage.viewing')}</Text>
             </View>
           </View>
           <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
             <AntDesign name="checkcircle" size={24} color="#00C851" />
             <View style={{ marginLeft: 10 }}>
-              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>0 ta</Text>
-              <Text style={{ color: '#000' }}>Tasdiqlangan</Text>
+              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
+                0 {t('homePage.one')}
+              </Text>
+              <Text style={{ color: '#000' }}>{t('homePage.approved')}</Text>
             </View>
           </View>
         </View>
@@ -75,15 +67,19 @@ const HomeScreen = () => {
           <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
             <AntDesign name="closecircle" size={24} color="#FF4444" />
             <View style={{ marginLeft: 10 }}>
-              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>0 ta</Text>
-              <Text style={{ color: '#000' }}>Rad etilgan</Text>
+              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
+                0 {t('homePage.one')}
+              </Text>
+              <Text style={{ color: '#000' }}>{t('homePage.rejected')}</Text>
             </View>
           </View>
           <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
             <AntDesign name="frowno" size={24} color="#FFC107" />
             <View style={{ marginLeft: 10 }}>
-              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>0 ta</Text>
-              <Text style={{ color: '#000' }}>Ishlatilgan</Text>
+              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
+                0 {t('homePage.one')}
+              </Text>
+              <Text style={{ color: '#000' }}>{t('homePage.used')}</Text>
             </View>
           </View>
         </View>
@@ -110,11 +106,11 @@ const HomeScreen = () => {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.bonusCard}>
-          <Text style={styles.bonusTitle}>Mavjud bonus</Text>
+          <Text style={styles.bonusTitle}>{t('homePage.availableBonuss')}</Text>
           <View style={styles.bonusAmount}>
             <Ionicons name="card-outline" size={24} color="#00A86B" />
             <Text style={styles.bonusValue}>0</Text>
-            <Text style={styles.bonusUnit}>so'm</Text>
+            <Text style={styles.bonusUnit}>{t('homePage.currency')}</Text>
           </View>
         </View>
         <StatusGrid />
@@ -124,17 +120,14 @@ const HomeScreen = () => {
             <AntDesign name="youtube" size={24} color="#fff" />
           </View>
           <View style={styles.actionContent}>
-            <Text style={styles.actionTitle}>Izoh sizdan loyihasi</Text>
-            <Text style={styles.actionSubtitle}>
-              Loyiha doirasida milliy va xalqaro ekspertlar bilan suhbatlar, mutaxassislar
-              malakasini oshirishga qaratilgan o‘quv videoroliklari chop etiladi.
-            </Text>
+            <Text style={styles.actionTitle}>{t('homePage.noteProject')}</Text>
+            <Text style={styles.actionSubtitle}>{t('homePage.noteProjectDescription')}</Text>
           </View>
           <Ionicons name="chevron-forward" size={24} color="#fff" />
         </TouchableOpacity>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>E'lonlar</Text>
+          <Text style={styles.sectionTitle}>{t('homePage.announcements')}</Text>
           <TouchableOpacity
             style={[
               styles.promotionCard,
@@ -166,16 +159,18 @@ const HomeScreen = () => {
             <View style={styles.promotionContent}>
               <View style={{ justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                 <View style={[styles.promotionBadge, { backgroundColor: '#fff' }]}>
-                  <Text style={[styles.promotionBadgeText, { color: '#229ED9' }]}>Telegram</Text>
+                  <Text style={[styles.promotionBadgeText, { color: '#229ED9' }]}>
+                    {t('homePage.telegram')}
+                  </Text>
                 </View>
               </View>
               <View style={styles.promotionHeader}>
                 <Text style={[styles.promotionTitle, { color: '#fff' }]}>
-                  Telegram kanalimizga a'zo bo'ling
+                  {t('homePage.joinOurTelegramChannel')}
                 </Text>
               </View>
               <Text style={[styles.promotionDescription, { color: '#fff' }]}>
-                Yangiliklardan birinchi bo'lib xabardor bo'ling
+                {t('homePage.aboutNews')}
               </Text>
             </View>
           </TouchableOpacity>
@@ -196,12 +191,14 @@ const HomeScreen = () => {
           >
             <View style={styles.promotionContent2}>
               <View style={styles.promotionHeader}>
-                <Text style={[styles.promotionTitle, { color: '#000' }]}>Ball evaziga sovg'a!</Text>
+                <Text style={[styles.promotionTitle, { color: '#000' }]}>
+                  {t('homePage.giftInExchangeForPoints')}
+                </Text>
               </View>
               <Text style={[styles.promotionDescription, { color: '#666', marginBottom: 12 }]}>
-                Ilova orqali ballaringizni sovg'alarga almashtiring.
+                {t('homePage.exchangeYourPointsForGiftsThroughTheApp')}
               </Text>
-              <Button title={'Almashtirish'} onPress={() => {}} />
+              <Button title={t('homePage.exchange')} onPress={() => {}} />
             </View>
             <Image
               source={require('@assets/2025-06-10 10.50.38.jpg')}
