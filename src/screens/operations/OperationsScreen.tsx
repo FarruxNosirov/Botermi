@@ -1,69 +1,196 @@
+import IsLoading from '@/components/IsLoading';
+import { DEVICE_HEIGHT } from '@/constants/constants';
+import { useBarcodeAll } from '@/hooks/querys';
+import { useAppDispatch } from '@/store/hooks';
+import { getMe } from '@/store/slices/authSlice';
 import { MainTabScreenProps } from '@/types/navigation';
-import React, { useRef } from 'react';
+import { UserDataType } from '@/types/userType';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
+  FlatList,
+  RefreshControl,
   SafeAreaView,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  Keyboard,
-  TouchableWithoutFeedback,
 } from 'react-native';
-import LottieView from 'lottie-react-native';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import { useNavigation } from '@react-navigation/native';
-import { useTranslation } from 'react-i18next';
+import OperationItem from './components/OperationItem';
 
 type OperationsScreenProps = MainTabScreenProps<'Operations'>;
 
 export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
-  const animation = useRef<LottieView>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [refreshing, setRefreshing] = useState(false);
+  const [filterStatus, setFilterStatus] = useState<'all' | 'waiting' | 'approved' | 'rejected'>(
+    'all',
+  );
+  const searchQueryRef = useRef('');
   const searchInputRef = useRef<TextInput>(null);
-  const navigation = useNavigation();
+  const animation = useRef<LottieView>(null);
+  const [userData, setUserData] = useState<UserDataType | null>(null);
   const { t } = useTranslation();
-  const renderTabContent = () => {
+  const dispatch = useAppDispatch();
+  const navigation = useNavigation();
+
+  const { data, isLoading, refetch, isFetching } = useBarcodeAll(userData?.id || 117);
+
+  const handleGetMe = async () => {
+    const resultAction = await dispatch(getMe());
+    if (getMe.fulfilled.match(resultAction)) {
+      const user = resultAction?.payload?.data;
+      setUserData(user);
+    }
+  };
+
+  const handleSearchQueryChange = useCallback((text: string) => {
+    setSearchQuery(text);
+    searchQueryRef.current = text;
+  }, []);
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+
+    try {
+      await refetch();
+    } catch (error) {
+      console.log('Refresh error:', error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refetch]);
+
+  const handleFilterApply = useCallback((status: 'all' | 'waiting' | 'approved' | 'rejected') => {
+    setFilterStatus(status);
+  }, []);
+
+  useEffect(() => {
+    handleGetMe();
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (userData?.id) {
+        refetch();
+      }
+    }, [userData?.id, refetch]),
+  );
+
+  const filteredData = (data?.data?.data || []).filter(
+    (item: { barcode: string; status?: string }) => {
+      // Search bo'yicha filter
+      const matchesSearch = item.barcode.toLowerCase().includes(searchQuery.toLowerCase());
+
+      // Status bo'yicha filter
+      const matchesStatus = filterStatus === 'all' || item.status === filterStatus;
+
+      return matchesSearch && matchesStatus;
+    },
+  );
+
+  const renderTabContent = () => (
+    <View style={styles.emptyContainer}>
+      <LottieView
+        autoPlay
+        ref={animation}
+        style={{ width: 200, height: 200, backgroundColor: '#eee' }}
+        source={require('../../../assets/Animation - 1748335411299.json')}
+      />
+      <Text style={styles.emptyText}>{t('youHaveNoQueriesFound')}</Text>
+    </View>
+  );
+
+  if (isLoading || isFetching) {
     return (
-      <View style={styles.emptyContainer}>
-        <LottieView
-          autoPlay
-          ref={animation}
-          style={{
-            width: 200,
-            height: 200,
-            backgroundColor: '#eee',
-          }}
-          source={require('../../../assets/Animation - 1748335411299.json')}
-        />
-        <Text style={styles.emptyText}>{t('youHaveNoQueriesFound')}</Text>
+      <View style={styles.loadingContainer}>
+        <IsLoading />
       </View>
     );
-  };
+  }
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={{ flex: 1 }}>
-          <View style={{ paddingHorizontal: 16 }}>
-            <View style={styles.searchContainer}>
-              <View style={styles.searchInput}>
-                <TouchableOpacity onPress={() => searchInputRef.current?.focus()}>
-                  <AntDesign name="search1" size={20} color="black" style={{ marginRight: 6 }} />
-                </TouchableOpacity>
-                <TextInput ref={searchInputRef} placeholder={t('search')} style={{ flex: 1 }} />
-              </View>
-
-              <TouchableOpacity
-                style={styles.filterIcon}
-                onPress={() => navigation.navigate('OperationsFilter')}
-              >
-                <AntDesign name="filter" size={20} color="black" />
+      <View style={{ flex: 1, paddingHorizontal: 16, paddingTop: 10 }}>
+        <View style={{ paddingHorizontal: 2 }}>
+          <View style={styles.searchContainer}>
+            <View style={styles.searchInput}>
+              <TouchableOpacity onPress={() => searchInputRef.current?.focus()}>
+                <AntDesign name="search1" size={20} color="black" style={{ marginRight: 6 }} />
               </TouchableOpacity>
+              <TextInput
+                ref={searchInputRef}
+                placeholder={t('search')}
+                style={{ flex: 1 }}
+                value={searchQuery}
+                onChangeText={handleSearchQueryChange}
+              />
             </View>
+
+            <TouchableOpacity
+              style={[styles.filterIcon, filterStatus !== 'all' && styles.filterIconActive]}
+              onPress={() =>
+                (navigation as any).navigate('OperationsFilter', {
+                  selectedStatus: filterStatus,
+                  onApplyFilter: handleFilterApply,
+                })
+              }
+            >
+              <AntDesign
+                name="filter"
+                size={20}
+                color={filterStatus !== 'all' ? '#4CAF50' : 'black'}
+              />
+            </TouchableOpacity>
           </View>
-          {renderTabContent()}
         </View>
-      </TouchableWithoutFeedback>
+
+        {filterStatus !== 'all' && (
+          <View style={styles.filterIndicator}>
+            <Text style={styles.filterIndicatorText}>
+              Filter:{' '}
+              {filterStatus === 'waiting'
+                ? t('waiting')
+                : filterStatus === 'approved'
+                  ? t('approved')
+                  : filterStatus === 'rejected'
+                    ? t('rejected')
+                    : ''}
+            </Text>
+            <TouchableOpacity
+              onPress={() => setFilterStatus('all')}
+              style={styles.clearFilterButton}
+            >
+              <AntDesign name="close" size={16} color="#666" />
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {filteredData.length > 0 ? (
+          <View style={{ height: DEVICE_HEIGHT - 200 }}>
+            <FlatList
+              data={filteredData}
+              keyExtractor={(item) => item.id?.toString() || item.barcode}
+              contentContainerStyle={{ gap: 10, paddingBottom: 100, paddingHorizontal: 2 }}
+              renderItem={(item) => <OperationItem {...item} />}
+              refreshControl={
+                <RefreshControl
+                  refreshing={refreshing}
+                  onRefresh={onRefresh}
+                  colors={['#FF3B30']}
+                  tintColor="#FF3B30"
+                />
+              }
+            />
+          </View>
+        ) : (
+          renderTabContent()
+        )}
+      </View>
     </SafeAreaView>
   );
 };
@@ -72,35 +199,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginTop: 20,
-    marginBottom: 20,
-    marginLeft: 16,
-  },
-  tabContainer: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    marginBottom: 20,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 8,
-    backgroundColor: '#F5F5F5',
-  },
-  activeTab: {
-    backgroundColor: '#6B7280',
-  },
-  tabText: {
-    fontSize: 16,
-    color: '#6B7280',
-  },
-  activeTabText: {
-    color: '#FFFFFF',
   },
   emptyContainer: {
     flex: 1,
@@ -132,16 +230,40 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     marginRight: 10,
   },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   filterIcon: {
     padding: 8,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    marginLeft: 10,
   },
-  illustrationPlaceholder: {
-    width: 150,
-    height: 150,
-    backgroundColor: '#E0E0E0',
-    justifyContent: 'center',
+  filterIconActive: {
+    backgroundColor: '#E8F5E8',
+    borderWidth: 1,
+    borderColor: '#4CAF50',
+  },
+  filterIndicator: {
+    flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 10,
+    backgroundColor: '#E3F2FD',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginHorizontal: 16,
+    marginBottom: 8,
+    borderRadius: 8,
+    justifyContent: 'space-between',
+  },
+  filterIndicatorText: {
+    fontSize: 14,
+    color: '#1976D2',
+    flex: 1,
+  },
+  clearFilterButton: {
+    padding: 4,
   },
 });
 

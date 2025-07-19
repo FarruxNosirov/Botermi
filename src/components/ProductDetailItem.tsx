@@ -2,15 +2,17 @@ import { DEVICE_WIDTH } from '@/constants/constants';
 import { CatalogStackParamList } from '@/navigation/CatalogStack';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
+import Carousel from 'react-native-reanimated-carousel';
 
 const ProductDetailItem = ({ item }: { item: any }) => {
   const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
   const productCardWidth = DEVICE_WIDTH / 2 - 24;
   const planNameLength =
-    item.name?.length && item.name?.length > 34 ? item.name?.slice(0, 40) + '...' : item.name;
+    item?.name?.length && item?.name?.length > 30 ? item?.name?.slice(0, 30) + '...' : item?.name;
   const formatPrice = (price: number | string) => {
     const num = Number(String(price).replace(/\s/g, ''));
     if (isNaN(num) || num === 0) return '0';
@@ -18,24 +20,63 @@ const ProductDetailItem = ({ item }: { item: any }) => {
   };
   const priceNum = Number(String(item?.price).replace(/\s/g, ''));
   const customerPriceNum = Number(String(item?.customer_price).replace(/\s/g, ''));
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+
+  const clearText = item?.slug.replace(/-/g, ' ');
+  const praductSlug =
+    clearText?.length && clearText?.length > 30 ? clearText?.slice(0, 30) + '...' : clearText;
+  const [activeIndex, setActiveIndex] = useState(0);
+  const progressValue = useSharedValue(0);
+
+  // Barcha rasmlarni birlashtirish - birinchi asosiy rasm, keyin gallereya
+  const allImages = [item?.image, ...(item?.foto_gallary || [])].filter(Boolean);
+  const autoPlayCarusel = allImages.length > 1 ? true : false;
+
   return (
     <TouchableOpacity
       style={[styles.productItem, { width: productCardWidth }]}
       onPress={() => navigation.navigate('ProductDetail', { product: item })}
     >
       <View>
-        <Image
-          source={{ uri: item.image }}
-          style={[styles.productImage, { width: productCardWidth - 30 }]}
-          resizeMode="contain"
-        />
+        {allImages.length > 1 ? (
+          <Carousel
+            loop
+            width={productCardWidth - 30}
+            height={150}
+            autoPlay={autoPlayCarusel}
+            data={allImages}
+            scrollAnimationDuration={1500}
+            onProgressChange={(offsetProgress) => {
+              progressValue.value = offsetProgress;
+            }}
+            onSnapToItem={(index) => setActiveIndex(index)}
+            renderItem={({ item: imageUrl }: any) => (
+              <Image source={{ uri: imageUrl }} style={styles.productImage} resizeMode="contain" />
+            )}
+          />
+        ) : (
+          <Image
+            source={{ uri: allImages[0] || item?.image }}
+            style={[styles.productImage, { width: productCardWidth - 30 }]}
+            resizeMode="contain"
+          />
+        )}
+        {allImages.length > 1 ? (
+          <View style={styles.dotsContainer}>
+            {allImages?.map((_: any, index: React.Key | null | undefined) => (
+              <View key={index} style={[styles.dot, activeIndex === index && styles.activeDot]} />
+            ))}
+          </View>
+        ) : null}
+
         <View style={styles.productDetails}>
-          <Text style={styles.productName}>{planNameLength}</Text>
-          <Text style={styles.brandName}>{item.brand}</Text>
-          {item.bonus > 0 && (
+          <Text style={styles.productName}>
+            {i18n.language === 'uz' ? praductSlug : planNameLength}
+          </Text>
+          <Text style={styles.brandName}>{item?.brand}</Text>
+          {item?.bonus > 0 && (
             <Text style={styles.bonusText}>
-              {formatPrice(item.bonus)} {t('homePage.currency')}
+              {formatPrice(item?.bonus)} {t('homePage.currency')}
             </Text>
           )}
         </View>
@@ -85,9 +126,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   productName: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
     color: '#333',
+    textTransform: 'uppercase',
   },
   brandName: {
     fontSize: 14,
@@ -121,5 +163,22 @@ const styles = StyleSheet.create({
     textDecorationLine: 'line-through',
     color: '#434242',
     textDecorationColor: 'red',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  dot: {
+    width: 10,
+    height: 5,
+    borderRadius: 5,
+    backgroundColor: '#ccc',
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: '#ff4d4d',
+    width: 11,
+    height: 6,
   },
 });

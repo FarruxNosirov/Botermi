@@ -6,21 +6,24 @@ import { AgreementScreen } from '@screens/auth/AgreementScreen';
 import { RegistrationScreen } from '@screens/auth/RegistrationScreen';
 import { OTPScreen } from '@screens/auth/OTPScreen';
 import WelcomeScreen from '@/screens/auth/WelcomeScreen';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export const AuthNavigator = () => {
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerShown: false,
-      }}
-    >
-      <Stack.Screen name="Welcome" component={WelcomeScreen} />
-      <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="OTP" component={OTPScreen} />
-      <Stack.Screen name="Registration" component={RegistrationScreen} />
-      <Stack.Screen name="Agreement" component={AgreementScreen} />
-    </Stack.Navigator>
+    <ErrorBoundary>
+      <Stack.Navigator
+        screenOptions={{
+          headerShown: false,
+        }}
+      >
+        <Stack.Screen name="Welcome" component={WelcomeScreen} />
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="OTP" component={OTPScreen} />
+        <Stack.Screen name="Registration" component={RegistrationScreen} />
+        <Stack.Screen name="Agreement" component={AgreementScreen} />
+      </Stack.Navigator>
+    </ErrorBoundary>
   );
 };

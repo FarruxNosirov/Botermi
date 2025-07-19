@@ -4,7 +4,7 @@ import { useSingleProduct } from '@/hooks/querys';
 import { CatalogStackParamList } from '@/types/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
@@ -18,6 +18,8 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
+import { useSharedValue } from 'react-native-reanimated';
+import Carousel from 'react-native-reanimated-carousel';
 import RenderHTML from 'react-native-render-html';
 
 const { width } = Dimensions.get('window');
@@ -26,7 +28,6 @@ export const ProductDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<CatalogStackParamList, 'ProductDetail'>>();
   const [isFavorite, setIsFavorite] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
 
   const { width: windowWidth } = useWindowDimensions();
 
@@ -56,11 +57,15 @@ export const ProductDetailScreen = () => {
     },
   } as any;
 
-  const renderProductTitle = (htmlString: string) => (
+  const renderProductDescription = (htmlString: string) => (
     <RenderHTML contentWidth={windowWidth} tagsStyles={tagsStyles} source={{ html: htmlString }} />
   );
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
+  const [activeIndex, setActiveIndex] = useState(0);
+  const progressValue = useSharedValue(0);
+
+  const clearText = product?.slug.replace(/-/g, ' ');
   return (
     <SafeAreaView style={styles.container}>
       {isLoading ? (
@@ -80,33 +85,58 @@ export const ProductDetailScreen = () => {
           </View>
 
           <View style={styles.carouselContainer}>
-            <ScrollView
-              ref={scrollViewRef}
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              scrollEventThrottle={16}
-              style={styles.imageSlider}
-            >
-              <View style={styles.slideContainer}>
+            <View style={styles.slideContainer}>
+              {product?.foto_gallary.length > 1 ? (
+                <Carousel
+                  loop
+                  width={width}
+                  height={200}
+                  autoPlay={true}
+                  data={product?.foto_gallary}
+                  scrollAnimationDuration={1500}
+                  onProgressChange={(offsetProgress) => {
+                    progressValue.value = offsetProgress;
+                  }}
+                  onSnapToItem={(index) => setActiveIndex(index)}
+                  renderItem={({ item }: any) => (
+                    <Image
+                      source={{ uri: item }}
+                      style={styles.productImage}
+                      resizeMode="contain"
+                    />
+                  )}
+                />
+              ) : (
                 <Image
                   source={{ uri: product?.image }}
                   style={styles.productImage}
                   resizeMode="contain"
                 />
-              </View>
-            </ScrollView>
+              )}
+              {product?.foto_gallary.length > 1 ? (
+                <View style={styles.dotsContainer}>
+                  {product?.foto_gallary?.map((_: any, index: React.Key | null | undefined) => (
+                    <View
+                      key={index}
+                      style={[styles.dot, activeIndex === index && styles.activeDot]}
+                    />
+                  ))}
+                </View>
+              ) : null}
+            </View>
           </View>
 
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
             {product?.name && (
               <View style={styles.productInfo}>
-                <Text style={styles.productName}>{product?.name}</Text>
+                <Text style={styles.productName}>
+                  {i18n.language === 'uz' ? clearText : product?.name}
+                </Text>
               </View>
             )}
 
             <View style={{ paddingHorizontal: 16 }}>
-              {renderProductTitle(product?.description || '')}
+              {renderProductDescription(product?.description || '')}
             </View>
 
             {product?.brands && product?.brands.length > 0 && (
@@ -171,23 +201,22 @@ const styles = StyleSheet.create({
   backButton: { padding: 8 },
   favoriteButton: { padding: 8 },
   carouselContainer: { backgroundColor: '#fff' },
-  imageSlider: { height: 200, backgroundColor: '#fff' },
   slideContainer: {
     width: width,
-    height: 200,
-    justifyContent: 'center',
-    alignItems: 'center',
+    height: 230,
   },
   productImage: { width: '100%', height: '100%' },
   content: { flex: 1 },
   productInfo: {
     padding: 16,
-    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#fff',
   },
   productName: {
     fontSize: 20,
     fontWeight: '500',
     color: '#333',
+    textTransform: 'uppercase',
   },
   compatibleBrandsContainer: {
     padding: 16,
@@ -211,4 +240,21 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
   },
   brandImage: { width: '90%', height: '90%' },
+  dotsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 10,
+  },
+  dot: {
+    width: 10,
+    height: 5,
+    borderRadius: 5,
+    backgroundColor: '#ccc',
+    marginHorizontal: 4,
+  },
+  activeDot: {
+    backgroundColor: '#ff4d4d',
+    width: 11,
+    height: 6,
+  },
 });

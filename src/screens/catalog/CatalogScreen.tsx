@@ -1,11 +1,11 @@
 import CatalogCard from '@/components/CatalogItem';
 import { useGetFirstCategories } from '@/hooks/querys';
 import { CatalogStackParamList } from '@/navigation/CatalogStack';
-import { Ionicons } from '@expo/vector-icons';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   FlatList,
   Linking,
@@ -23,8 +23,14 @@ export const CatalogScreen = () => {
     Linking.openURL('https://botermi.uz/');
   };
   const { data, isLoading } = useGetFirstCategories();
+
   const animation = useRef<LottieView>(null);
   const { t } = useTranslation();
+
+  const sortedData = data?.data?.sort((a: { id: number }, b: { id: number }) => a.id - b.id);
+  const filterData = sortedData?.filter(
+    (filter: { id: number }) => ![3, 4, 5].includes(filter?.id),
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -47,7 +53,7 @@ export const CatalogScreen = () => {
           <Text style={styles.header}>{t('katalog.title')}</Text>
           <FlatList
             contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 10 }}
-            data={data?.data || []}
+            data={filterData || []}
             renderItem={(item) => (
               <CatalogCard
                 {...item}
@@ -56,13 +62,30 @@ export const CatalogScreen = () => {
             )}
             showsVerticalScrollIndicator={false}
             ListFooterComponent={
-              <View style={styles.epamarketSection}>
-                <Text style={styles.epamarketLabel}>{t('katalog.description')}</Text>
-                <TouchableOpacity style={styles.epamarketButton} onPress={handleEpamarketPress}>
-                  <Text style={styles.epamarketButtonText}>botermi.uz</Text>
-                  <Ionicons name="cart-outline" size={28} color="#fff" style={{ marginLeft: 8 }} />
+              <>
+                <TouchableOpacity
+                  style={styles.menuItem}
+                  onPress={() => navigation.navigate('PrizesScreen')}
+                >
+                  <View style={styles.menuItemContent}>
+                    <Text style={styles.menuItemText}>{t('katalog.householdAppliances')}</Text>
+
+                    <Ionicons name="tv-outline" size={28} color="#4B5563" />
+                  </View>
                 </TouchableOpacity>
-              </View>
+                <View style={styles.epamarketSection}>
+                  <Text style={styles.epamarketLabel}>{t('katalog.description')}</Text>
+                  <TouchableOpacity style={styles.epamarketButton} onPress={handleEpamarketPress}>
+                    <Text style={styles.epamarketButtonText}>botermi.uz</Text>
+                    <Ionicons
+                      name="cart-outline"
+                      size={28}
+                      color="#fff"
+                      style={{ marginLeft: 8 }}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </>
             }
           />
         </>
@@ -92,7 +115,7 @@ export const CatalogScreen = () => {
 
         <View style={styles.epamarketSection}>
           <Text style={styles.epamarketLabel}>Перейти в интернет магазин</Text>
-          <TouchableOpacity style={styles.epamarketButton} onPress={handleEpamarketPress}>
+          <TouchableOpacity style={styles.epamarketButton} onPress={phandleEpamarketPress}>
             <Text style={styles.epamarketButtonText}>epamarket.uz</Text>
             <Ionicons name="cart-outline" size={28} color="#fff" style={{ marginLeft: 8 }} />
           </TouchableOpacity>
@@ -122,8 +145,6 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     paddingVertical: 12,
     paddingHorizontal: 16,
-    marginHorizontal: 16,
-    marginBottom: 16,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.04,

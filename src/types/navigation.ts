@@ -4,6 +4,7 @@ import { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import { DrawerScreenProps } from '@react-navigation/drawer';
 import { Product } from './product';
 import { CompositeScreenProps } from '@react-navigation/native';
+import { UserDataType } from './userType';
 
 // Auth stack parameter list
 export type AuthStackParamList = {
@@ -29,7 +30,7 @@ export type MainTabParamList = {
   Home: undefined;
   Catalog: undefined;
   Actions: undefined;
-  Operations: undefined;
+  Operations: UserDataType;
   Cart: undefined;
   EPA: undefined;
   EPAMerch: undefined;
@@ -48,18 +49,11 @@ export type DrawerParamList = {
 
 // Root stack parameter list
 export type RootStackParamList = {
-  Auth: NavigatorScreenParams<AuthStackParamList>;
-  MainApp: NavigatorScreenParams<DrawerParamList>;
-  Branches: {
-    onSelect?: (location: string) => void;
-  };
+  Auth: { screen: keyof AuthStackParamList; params?: any };
+  MainApp: undefined;
+  Branches: undefined;
   Notifications: undefined;
-  NotificationDetail: {
-    title: string;
-    message: string;
-    date: string;
-    time: string;
-  };
+  NotificationDetail: undefined;
   OperationsFilter: undefined;
 };
 

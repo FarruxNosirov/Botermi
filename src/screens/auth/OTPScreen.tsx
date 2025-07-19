@@ -1,7 +1,6 @@
 import GoBackHeader from '@/components/GoBackHeader';
 import { colors } from '@/constants/colors';
 import Box from '@/shared/ui/Box';
-import { Text } from '@/shared/ui/Text';
 import { AppDispatch } from '@/store';
 import { loginWithSms, verifyCode } from '@/store/slices/authSlice';
 import { AuthStackParamList, RootStackParamList } from '@/types/navigation';
@@ -18,6 +17,7 @@ import {
   Pressable,
   ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
   View,
@@ -41,7 +41,8 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(RESEND_TIMEOUT);
-  const inputRefs = useRef<Array<TextInput | null>>([]);
+  const inputRef = useRef<TextInput>(null);
+  const [otpValue, setOtpValue] = useState('');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -51,38 +52,22 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleOtpChange = (text: string, index: number) => {
-    let newOtp = [...otp];
+  const handleOtpChange = (text: string) => {
+    // Remove any non-numeric characters
+    const numericText = text.replace(/[^0-9]/g, '');
 
-    // Agar bir nechta raqam kiritilsa (paste yoki autofill)
-    if (text.length > 1) {
-      // Har bir raqamni inputlarga joylashtiramiz
-      for (let i = 0; i < OTP_LENGTH - index && i < text.length; i++) {
-        newOtp[index + i] = text[i];
-      }
-      setOtp(newOtp);
+    // Update the hidden input value
+    setOtpValue(numericText);
 
-      // Oxirgi to‘ldirilgan inputga fokus beramiz
-      const nextIndex = Math.min(index + text.length, OTP_LENGTH - 1);
-      inputRefs.current[nextIndex]?.focus();
-    } else {
-      newOtp[index] = text;
-      setOtp(newOtp);
-
-      if (text && index < OTP_LENGTH - 1) {
-        inputRefs.current[index + 1]?.focus();
-      }
+    // Update the visual OTP array
+    const newOtp = numericText.split('').slice(0, OTP_LENGTH);
+    while (newOtp.length < OTP_LENGTH) {
+      newOtp.push('');
     }
+    setOtp(newOtp);
   };
 
-  const handleKeyPress = (e: any, index: number) => {
-    if (e.nativeEvent.key === 'Backspace' && !otp[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleSubmit = async () => {
-    const otpString = otp.join('');
+  const handleSubmit = async (otpString = otp.join('')) => {
     if (otpString.length !== OTP_LENGTH) {
       setError(t('smsError'));
       return;
@@ -115,6 +100,7 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
       setIsLoading(false);
     }
   };
+
   const handleSubmitResend = async () => {
     if (!phone || phone.length < 9) {
       setError(t('enterPhoneNumber'));
@@ -135,6 +121,7 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
 
   const top = useSafeAreaInsets().top;
   const rotateAnim = useRef(new Animated.Value(0)).current;
+
   useEffect(() => {
     let animation: Animated.CompositeAnimation;
 
@@ -161,6 +148,7 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
     inputRange: [0, 1],
     outputRange: ['0deg', '360deg'],
   });
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -193,21 +181,58 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
                 paddingBottom: 40,
               }}
             >
-              <Text variant="title">{t('enterTheCode')}</Text>
-              <Text variant="languageTitle">
+              <Text
+                style={{
+                  fontSize: 24,
+                  fontWeight: '600',
+                  marginBottom: 16,
+                  color: '#000',
+                }}
+              >
+                {t('enterTheCode')}
+              </Text>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: '#666',
+                  marginBottom: 8,
+                }}
+              >
                 {t('confirmationCodeSentToNumber')}
                 {'\n'}
-                <Text variant="phone">{phone}</Text>
+                <Text
+                  style={{
+                    color: '#000',
+                    fontWeight: '600',
+                  }}
+                >
+                  {phone}
+                </Text>
               </Text>
-              <View
+
+              {/* Hidden input for actual OTP entry */}
+              <TextInput
+                ref={inputRef}
+                value={otpValue}
+                onChangeText={handleOtpChange}
+                style={styles.hiddenInput}
+                keyboardType="number-pad"
+                maxLength={OTP_LENGTH}
+                textContentType="oneTimeCode"
+                autoFocus
+              />
+
+              {/* Visual OTP display */}
+              <TouchableOpacity
                 style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32 }}
+                onPress={() => {
+                  inputRef.current?.focus();
+                }}
+                activeOpacity={0.8}
               >
                 {otp.map((digit, index) => (
-                  <TextInput
+                  <View
                     key={index}
-                    ref={(ref) => {
-                      inputRefs.current[index] = ref;
-                    }}
                     style={{
                       width: 58,
                       height: 48,
@@ -215,34 +240,60 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
                       borderWidth: 1,
                       borderColor: digit ? '#b60017' : '#E8E8E8',
                       backgroundColor: digit ? '#FFF5F6' : '#F5F5F5',
-                      fontSize: 24,
-                      fontWeight: '600',
-                      textAlign: 'center',
-                      color: '#b60017',
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}
-                    value={digit}
-                    onChangeText={(text) => handleOtpChange(text, index)}
-                    onKeyPress={(e) => handleKeyPress(e, index)}
-                    keyboardType="number-pad"
-                    maxLength={1}
-                  />
+                  >
+                    <Text
+                      style={{
+                        fontSize: 24,
+                        fontWeight: '600',
+                        color: '#b60017',
+                      }}
+                    >
+                      {digit}
+                    </Text>
+                  </View>
                 ))}
-              </View>
+              </TouchableOpacity>
+
               {timeLeft > 0 ? (
-                <Text variant="timeLeft" style={{ marginVertical: 5 }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: '#666',
+                    textAlign: 'center',
+                    marginVertical: 5,
+                  }}
+                >
                   {t('resetCodeSms')} {timeLeft} {t('seconds')}
                 </Text>
               ) : (
-                <Text variant="error" style={{ marginVertical: 5, textAlign: 'center' }}>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    color: '#b60017',
+                    textAlign: 'center',
+                    marginVertical: 5,
+                  }}
+                >
                   {t('outdatedOrIncorrect')}
                 </Text>
               )}
 
               {error && (
                 <Box p="s" borderRadius="s" mb="s">
-                  <Text variant="error">{error}</Text>
+                  <Text
+                    style={{
+                      fontSize: 14,
+                      color: '#b60017',
+                    }}
+                  >
+                    {error}
+                  </Text>
                 </Box>
               )}
+
               {timeLeft > 0 ? (
                 <Pressable
                   style={[
@@ -250,13 +301,21 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
                     (otp.some((d) => !d) || isLoading) && styles.disabledButton,
                     { marginTop: 10 },
                   ]}
-                  onPress={handleSubmit}
+                  onPress={() => handleSubmit()}
                   disabled={otp.some((d) => !d) || isLoading}
                 >
                   {isLoading ? (
                     <ActivityIndicator color="#fff" />
                   ) : (
-                    <Text variant="buttonText">{t('confirm')}</Text>
+                    <Text
+                      style={{
+                        fontSize: 16,
+                        fontWeight: '600',
+                        color: '#fff',
+                      }}
+                    >
+                      {t('confirm')}
+                    </Text>
                   )}
                 </Pressable>
               ) : (
@@ -268,8 +327,13 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
                     style={[styles.logo, { transform: [{ rotate: spin }] }]}
                     source={require(`../../../assets/resend.png`)}
                   />
-
-                  <Text variant="buttonText" style={{ color: 'red' }}>
+                  <Text
+                    style={{
+                      fontSize: 16,
+                      fontWeight: '600',
+                      color: 'red',
+                    }}
+                  >
                     {t('resendCode')}
                   </Text>
                 </TouchableOpacity>
@@ -397,5 +461,12 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginRight: 10,
+  },
+  hiddenInput: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    opacity: 0,
+    left: -9999,
   },
 });

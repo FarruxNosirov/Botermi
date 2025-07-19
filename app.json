@@ -67,8 +67,8 @@
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
-        "RECEIVE_SMS",
-        "READ_SMS"
+        "android.permission.RECEIVE_SMS",
+        "android.permission.READ_SMS"
       ]
     },
     "web": {

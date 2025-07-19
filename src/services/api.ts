@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
 
-const BASE_URL = 'https://administration.wottex.uz/api/';
+const BASE_URL = 'https://administration.wottex.uz/api';
 
 export const api = axios.create({
   baseURL: BASE_URL,
@@ -88,8 +88,10 @@ export const catalogAPI = {
     subCategoryId: number,
     brandId?: number,
     manufacturerId?: number,
+    page?: number,
+    perPage?: number,
   ) => {
-    const params: any = { sub_category_id: subCategoryId };
+    const params: any = { sub_category_id: subCategoryId, page: page, perPage: perPage };
     if (brandId) params.brand_id = brandId;
     if (manufacturerId) params.manufacturer_id = manufacturerId;
     const response = await api.get(`/filterProducts`, { params });
@@ -111,7 +113,51 @@ export const catalogAPI = {
 };
 export const homeApi = {
   getBlogs: async () => {
-    const response = await api.get('getBlogs');
+    const response = await api.get('/getBlogs');
     return response;
+  },
+};
+export const actionsApi = {
+  scanBarcode: async (data: any) => {
+    try {
+      const response = await api.post('/scanBarcode', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return response;
+    } catch (error: any) {
+      throw error;
+    }
+  },
+  getBarCode: async (userId: number) => {
+    try {
+      const response = await api.get(`/users/${userId}/barcodes`);
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
+};
+export const prizesApi = {
+  getPrizes: async () => {
+    try {
+      const response = await api.get('/prizes');
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
+  prizesExchange: async (prizeId: number) => {
+    try {
+      const response = await api.post(`/prizes/${prizeId}/exchange`);
+      return response?.data?.data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   },
 };
