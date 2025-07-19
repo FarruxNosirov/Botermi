@@ -12,4 +12,5 @@ export interface UserDataType {
   vip: number;
   city: string;
   positions: UserPosition[];
+  balance: number;
 }

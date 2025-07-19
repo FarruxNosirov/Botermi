@@ -21,7 +21,7 @@ import { useTranslation } from 'react-i18next';
 
 export const EpaScreen = () => {
   const route = useRoute<RouteProp<CatalogStackParamList, 'EPA'>>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const categoryId = route?.params?.categoryId;
   const { data, isLoading } = useGetSubCategories(categoryId);
   const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
@@ -30,6 +30,7 @@ export const EpaScreen = () => {
     category?.name?.toLowerCase().includes(searchText.toLowerCase()),
   );
   const animation = useRef<LottieView>(null);
+
   const renderTabContent = () => {
     return (
       <View style={styles.emptyContainer}>
@@ -73,32 +74,37 @@ export const EpaScreen = () => {
             </View>
             {filteredCategories && filteredCategories.length > 0 ? (
               <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-                {filteredCategories?.map((category: CatalogItemType, index: number) => (
-                  <View key={index} style={styles.categoryContainer}>
-                    <TouchableOpacity
-                      style={styles.categoryHeader}
-                      onPress={() =>
-                        navigation.navigate('CatalogPraductScreen', {
-                          subCatalogId: category?.category_id,
-                          categoryId: category?.id,
-                        })
-                      }
-                    >
-                      <View style={styles.categoryTitleContainer}>
-                        <View style={styles.iconContainer}>
-                          <Image
-                            source={{ uri: category?.image }}
-                            resizeMode="contain"
-                            style={{ width: 40, height: 40 }}
-                          />
+                {filteredCategories?.map((category: CatalogItemType, index: number) => {
+                  const clearText = category.slug.replace(/-/g, ' ');
+                  return (
+                    <View key={index} style={styles.categoryContainer}>
+                      <TouchableOpacity
+                        style={styles.categoryHeader}
+                        onPress={() =>
+                          navigation.navigate('CatalogPraductScreen', {
+                            subCatalogId: category?.category_id,
+                            categoryId: category?.id,
+                          })
+                        }
+                      >
+                        <View style={styles.categoryTitleContainer}>
+                          <View style={styles.iconContainer}>
+                            <Image
+                              source={{ uri: category?.image }}
+                              resizeMode="contain"
+                              style={{ width: 40, height: 40 }}
+                            />
+                          </View>
+                          <View style={{ flex: 1 }}>
+                            <Text style={styles.categoryText}>
+                              {i18n.language === 'uz' ? clearText : category?.name}
+                            </Text>
+                          </View>
                         </View>
-                        <View style={{ flex: 1 }}>
-                          <Text style={styles.categoryText}>{category?.name}</Text>
-                        </View>
-                      </View>
-                    </TouchableOpacity>
-                  </View>
-                ))}
+                      </TouchableOpacity>
+                    </View>
+                  );
+                })}
                 <View style={{ height: 100 }} />
               </ScrollView>
             ) : (
@@ -185,6 +191,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
     fontWeight: '500',
+    textTransform: 'uppercase',
   },
   subcategoriesList: {
     borderTopWidth: 1,

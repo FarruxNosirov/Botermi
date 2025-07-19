@@ -9,7 +9,15 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, Linking, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  ImageBackground,
+  Linking,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<SettingsStackParamList>;
@@ -26,6 +34,7 @@ type UserData = {
   second_phone: string;
   vip: number;
   city: string;
+  created_at: string;
   positions: UserPosition[];
 };
 
@@ -116,37 +125,63 @@ export const ProfileScreen = () => {
       Alert.alert(t('error'), t('errorDescription'));
     }
   };
+  console.log('userData2', JSON.stringify(userData, null, 2));
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      const day = date.getDate().toString().padStart(2, '0');
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = date.getHours().toString().padStart(2, '0');
+      const minutes = date.getMinutes().toString().padStart(2, '0');
+
+      return `${day}.${month}.${year}; ${hours}:${minutes}`;
+    } catch (error) {
+      return '17.05.2025; 10:56'; // fallback
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
-        <View style={styles.headerBox}>
-          <View style={styles.personBox}>
-            <Icon name="person-outline" size={36} color={colors.white} />
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.firstName}>
-              {userData?.name || 'aziz'} {userData?.surname || 'rametov'}
-            </Text>
-            <Text style={styles.date}>{t('profilePage.registered')}: 17.05.2025; 10:56</Text>
-            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-              <Text style={styles.statusText}>{t('profilePage.status')}:</Text>
-              <View style={styles.status}>
-                <Icon name="checkmark-circle" size={18} color={colors.successColor} />
-                <Text style={styles.statusTitle}>{t('profilePage.active')}</Text>
+      <ImageBackground
+        source={require('../../../assets/Apk1.png')}
+        resizeMode="cover"
+        style={{ flex: 1 }}
+      >
+        <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
+          <View style={styles.headerBox}>
+            <View style={styles.personBox}>
+              <Icon name="person-outline" size={36} color={colors.white} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.firstName}>
+                {userData?.name || 'aziz'} {userData?.surname || 'rametov'}
+              </Text>
+              <Text style={styles.date}>
+                {t('profilePage.registered')}:{' '}
+                {userData?.created_at ? formatDate(userData?.created_at) : '17.05.2025; 10:56'}
+              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                <Text style={styles.statusText}>{t('profilePage.status')}:</Text>
+                <View style={styles.status}>
+                  <Icon name="checkmark-circle" size={18} color={colors.successColor} />
+                  <Text style={styles.statusTitle}>{t('profilePage.active')}</Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.contentContainerStyle}>
-        <View style={styles.renderBox}>
-          {navData.map((item, idx, arr) => (
-            <ProfileItem key={idx} item={item} arr={arr} idx={idx} />
-          ))}
-        </View>
-        <View style={{ height: 100 }} />
-      </ScrollView>
+
+        <ScrollView showsVerticalScrollIndicator={false} style={styles.contentContainerStyle}>
+          <View style={styles.renderBox}>
+            {navData.map((item, idx, arr) => (
+              <ProfileItem key={idx} item={item} arr={arr} idx={idx} />
+            ))}
+          </View>
+          <View style={{ height: 100 }} />
+        </ScrollView>
+      </ImageBackground>
     </SafeAreaView>
   );
 };
@@ -157,7 +192,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.white,
     paddingBottom: 80,
   },
-  contentContainerStyle: { flex: 1 },
+  contentContainerStyle: { flex: 1, backgroundColor: '#fff' },
   headerContainer: {
     paddingBottom: 30,
     backgroundColor: colors.overlayDark,

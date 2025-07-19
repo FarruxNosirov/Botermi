@@ -12,6 +12,8 @@ import './src/i18n';
 import RootNavigator from './src/navigation/RootNavigator';
 import theme from './src/shared/theme/theme';
 import { persistor, store } from './src/store';
+import Toast from 'react-native-toast-message';
+
 export default function App() {
   return (
     <ThemeProvider theme={theme}>
@@ -22,6 +24,7 @@ export default function App() {
               <SafeAreaProvider>
                 <StatusBar backgroundColor="#fff" barStyle="dark-content" />
                 <RootNavigator />
+                <Toast />
               </SafeAreaProvider>
             </GestureHandlerRootView>
           </PersistGate>

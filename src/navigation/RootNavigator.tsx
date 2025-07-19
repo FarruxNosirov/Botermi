@@ -23,6 +23,7 @@ const RootNavigator = () => {
   useEffect(() => {
     (async () => {
       const token = await AsyncStorage.getItem('@auth_token');
+      console.log('token', token);
       if (token) {
         dispatch(getMe());
       }

@@ -2,13 +2,12 @@ import { Button } from '@/components/ui/Button';
 import { useAppDispatch } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
 import { HomeStackParamList } from '@/types/navigation';
-import { UserDataType } from '@/types/userType';
 import { Ionicons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { NavigationProp, useNavigation } from '@react-navigation/native';
-import React, { useEffect, useState } from 'react';
+import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
@@ -25,8 +24,14 @@ import {
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const dispatch = useAppDispatch();
-  const [userData, setUserData] = useState<UserDataType | null>(null);
+  const [userData, setUserData] = useState<any>(null);
+
   const { t } = useTranslation();
+
+  const formatBalance = (balance: number | undefined | null): string => {
+    if (!balance) return '0';
+    return balance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  };
   const handleGetMe = async () => {
     const resultAction = await dispatch(getMe());
 
@@ -39,6 +44,12 @@ const HomeScreen = () => {
   useEffect(() => {
     handleGetMe();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      handleGetMe();
+    }, []),
+  );
 
   const StatusGrid = () => {
     return (
@@ -109,7 +120,7 @@ const HomeScreen = () => {
           <Text style={styles.bonusTitle}>{t('homePage.availableBonuss')}</Text>
           <View style={styles.bonusAmount}>
             <Ionicons name="card-outline" size={24} color="#00A86B" />
-            <Text style={styles.bonusValue}>0</Text>
+            <Text style={styles.bonusValue}>{formatBalance(userData?.balance)}</Text>
             <Text style={styles.bonusUnit}>{t('homePage.currency')}</Text>
           </View>
         </View>
@@ -276,7 +287,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   bonusValue: {
-    fontSize: 32,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
     marginLeft: 8,
@@ -286,7 +297,6 @@ const styles = StyleSheet.create({
     color: '#666',
     marginLeft: 4,
     alignSelf: 'flex-end',
-    marginBottom: 4,
   },
   actionCard: {
     margin: 16,
@@ -370,5 +380,4 @@ const styles = StyleSheet.create({
     lineHeight: 20,
   },
 });
-
 export default HomeScreen;

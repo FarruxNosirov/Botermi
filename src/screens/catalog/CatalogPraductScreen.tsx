@@ -1,5 +1,6 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
+  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -15,15 +16,14 @@ import type { CatalogStackParamList } from '../../navigation/CatalogStack';
 
 import IsLoading from '@/components/IsLoading';
 import ProductDetailItem from '@/components/ProductDetailItem';
+import { DEVICE_HEIGHT } from '@/constants/constants';
 import { useBrands, useManufacturers, usePraducts } from '@/hooks/querys';
 import { CatalogPraductItemType, ManufacturerItemType } from '@/types/catalogItem';
-import { Product } from '@/types/product';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 import { DrawerLayout } from 'react-native-gesture-handler';
-import { DEVICE_HEIGHT } from '@/constants/constants';
 
 const { width } = Dimensions.get('window');
 
@@ -86,6 +86,11 @@ const ManufacturerItem = ({
 );
 
 const CatalogPraductScreen = () => {
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(16);
+  const [allProducts, setAllProducts] = useState<CatalogPraductItemType[]>([]);
+  const [isEndReached, setIsEndReached] = useState(false);
+  const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
   const route = useRoute<RouteProp<CatalogStackParamList, 'CatalogPraductScreen'>>();
   const subCategoryId = route?.params?.categoryId;
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
@@ -93,16 +98,15 @@ const CatalogPraductScreen = () => {
   const brandId = selectedBrands.length > 0 ? Number(selectedBrands[0]) : undefined;
   const manufacturerId =
     selectedManufacturers.length > 0 ? Number(selectedManufacturers[0]) : undefined;
-  const { data, isLoading } = usePraducts(subCategoryId, brandId, manufacturerId);
+  const { data, isLoading } = usePraducts(subCategoryId, brandId, manufacturerId, page, perPage);
   const { data: brandData } = useBrands();
   const { data: manufacturersData } = useManufacturers();
   const { t } = useTranslation();
+  console.log('data', JSON.stringify(data?.products?.meta, null, 2));
 
   const drawerRef = useRef<DrawerLayout>(null);
 
-  const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
-  const filteredProducts = data?.products?.data || [];
-
+  const isFetchingMore = useRef(false);
   const renderNavigationView = () => {
     const handleBrandSelect = (brandId: string) => {
       setSelectedBrands((prev) =>
@@ -177,6 +181,28 @@ const CatalogPraductScreen = () => {
       </View>
     );
   };
+  useEffect(() => {
+    if (data?.products?.data) {
+      setAllProducts((prev) => {
+        if (page === 1) return data.products.data;
+        return [...prev, ...data.products.data];
+      });
+
+      const lastPage = data?.products?.meta?.last_page || 1;
+      if (page >= lastPage) {
+        setIsEndReached(true);
+      } else {
+        setIsEndReached(false);
+      }
+    }
+    isFetchingMore.current = false;
+  }, [data]);
+
+  useEffect(() => {
+    setPage(1);
+    setAllProducts([]);
+    setIsEndReached(false);
+  }, [brandId, manufacturerId, subCategoryId]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -208,22 +234,36 @@ const CatalogPraductScreen = () => {
             <AntDesign name="filter" size={20} color="black" />
           </TouchableOpacity>
         </View>
-        <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          <>
-            {isLoading ? (
-              <IsLoading />
-            ) : (
-              <FlatList
-                data={filteredProducts || []}
-                renderItem={(item) => <ProductDetailItem {...item} />}
-                keyExtractor={(item) => item.id.toString()}
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.contentContainerStyle}
-              />
-            )}
-          </>
-          <View style={{ height: 100 }} />
-        </ScrollView>
+
+        <FlatList
+          data={allProducts}
+          renderItem={({ item }) => <ProductDetailItem item={item} />}
+          keyExtractor={(item) => item.id.toString()}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.contentContainerStyle}
+          onEndReached={() => {
+            if (!isLoading && !isEndReached && !isFetchingMore.current) {
+              isFetchingMore.current = true;
+              setPage((prev) => prev + 1);
+            }
+          }}
+          onEndReachedThreshold={0.5}
+        />
+        {isLoading && page > 1 ? (
+          <View
+            style={{
+              paddingVertical: 20,
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+              flexDirection: 'row',
+            }}
+          >
+            <ActivityIndicator size="large" color="#000" />
+          </View>
+        ) : null}
+
+        <View style={{ height: 100 }} />
       </DrawerLayout>
     </SafeAreaView>
   );
