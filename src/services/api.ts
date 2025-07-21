@@ -1,6 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
+import i18n from '@/i18n';
 
 const BASE_URL = 'https://administration.wottex.uz/api';
 
@@ -88,13 +89,20 @@ export const catalogAPI = {
     subCategoryId: number,
     brandId?: number,
     manufacturerId?: number,
+    selectedFilters?: number,
     page?: number,
     perPage?: number,
   ) => {
     const params: any = { sub_category_id: subCategoryId, page: page, perPage: perPage };
     if (brandId) params.brand_id = brandId;
     if (manufacturerId) params.manufacturer_id = manufacturerId;
-    const response = await api.get(`/filterProducts`, { params });
+    if (selectedFilters) params.filter_id = selectedFilters;
+    const response = await api.get(`/filterProducts`, {
+      params,
+      headers: {
+        'Accept-Language': i18n.language,
+      },
+    });
     return response.data;
   },
 
@@ -107,7 +115,11 @@ export const catalogAPI = {
     return response.data;
   },
   getSingleProduct: async (praductId: number) => {
-    const response = await api.get(`/getSingleProduct/${praductId}`);
+    const response = await api.get(`/getSingleProduct/${praductId}`, {
+      headers: {
+        'Accept-Language': i18n.language,
+      },
+    });
     return response;
   },
 };
@@ -160,4 +172,13 @@ export const prizesApi = {
       throw error;
     }
   },
+};
+export const getCities = async () => {
+  try {
+    const response = await api.get('/getCities');
+    return response?.data?.data;
+  } catch (error) {
+    console.log(error);
+    throw error;
+  }
 };

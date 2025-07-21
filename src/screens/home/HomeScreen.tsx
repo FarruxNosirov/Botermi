@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/Button';
+import { formatBalance } from '@/constants/constants';
 import { useAppDispatch } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
 import { HomeStackParamList } from '@/types/navigation';
@@ -28,10 +29,6 @@ const HomeScreen = () => {
 
   const { t } = useTranslation();
 
-  const formatBalance = (balance: number | undefined | null): string => {
-    if (!balance) return '0';
-    return balance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  };
   const handleGetMe = async () => {
     const resultAction = await dispatch(getMe());
 

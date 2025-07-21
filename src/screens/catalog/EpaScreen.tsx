@@ -1,10 +1,13 @@
+import EmptyState from '@/components/EmptyState';
 import IsLoading from '@/components/IsLoading';
 import { useGetSubCategories } from '@/hooks/querys';
 import { CatalogItemType } from '@/types/catalogItem';
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import LottieView from 'lottie-react-native';
 import React, { useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Image,
   SafeAreaView,
@@ -16,8 +19,6 @@ import {
   View,
 } from 'react-native';
 import type { CatalogStackParamList } from '../../navigation/CatalogStack';
-import LottieView from 'lottie-react-native';
-import { useTranslation } from 'react-i18next';
 
 export const EpaScreen = () => {
   const route = useRoute<RouteProp<CatalogStackParamList, 'EPA'>>();
@@ -30,24 +31,6 @@ export const EpaScreen = () => {
     category?.name?.toLowerCase().includes(searchText.toLowerCase()),
   );
   const animation = useRef<LottieView>(null);
-
-  const renderTabContent = () => {
-    return (
-      <View style={styles.emptyContainer}>
-        <LottieView
-          autoPlay
-          ref={animation}
-          style={{
-            width: 200,
-            height: 200,
-            backgroundColor: '#eee',
-          }}
-          source={require('../../../assets/Animation - 1748335411299.json')}
-        />
-        <Text style={styles.emptyText}>{t('youHaveNoQueriesFound')}</Text>
-      </View>
-    );
-  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -108,7 +91,7 @@ export const EpaScreen = () => {
                 <View style={{ height: 100 }} />
               </ScrollView>
             ) : (
-              <>{renderTabContent()}</>
+              <EmptyState />
             )}
           </>
         )}

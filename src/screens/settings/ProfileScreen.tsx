@@ -80,6 +80,12 @@ export const ProfileScreen = () => {
       onPress: () => navigation.navigate('Language'),
     },
     {
+      id: 'city',
+      title: t('profilePage.city'),
+      icon: 'location-outline' as const,
+      onPress: () => navigation.navigate('CityScreen'),
+    },
+    {
       id: 'prizes',
       title: t('profilePage.prizes'),
       icon: 'pricetags-outline' as const,

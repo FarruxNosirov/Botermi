@@ -1,208 +1,47 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React from 'react';
 import {
   ActivityIndicator,
   Dimensions,
   FlatList,
-  Image,
   Platform,
   SafeAreaView,
-  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import type { CatalogStackParamList } from '../../navigation/CatalogStack';
 
-import IsLoading from '@/components/IsLoading';
-import ProductDetailItem from '@/components/ProductDetailItem';
-import { DEVICE_HEIGHT } from '@/constants/constants';
-import { useBrands, useManufacturers, usePraducts } from '@/hooks/querys';
-import { CatalogPraductItemType, ManufacturerItemType } from '@/types/catalogItem';
 import { AntDesign, Ionicons } from '@expo/vector-icons';
-import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTranslation } from 'react-i18next';
 import { DrawerLayout } from 'react-native-gesture-handler';
+import RenderNavigationView from './components/RenderNavigationView';
+import CatalogPraductScreenHook from './model/CatalogPraductScreenHook';
 
 const { width } = Dimensions.get('window');
 
-const BrandItem = ({
-  brand,
-  isSelected,
-  onSelect,
-}: {
-  brand: CatalogPraductItemType;
-  isSelected: boolean;
-  onSelect: (id: string) => void;
-}) => (
-  <TouchableOpacity style={styles.optionItem} onPress={() => onSelect(String(brand.id))}>
-    <View style={styles.radioCircle}>
-      {isSelected && <View style={styles.selectedRadioFill} />}
-    </View>
-    <View
-      style={{
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        width: '95%',
-      }}
-    >
-      <Text style={styles.optionText}>{brand.name}</Text>
-      <Image source={{ uri: brand.image }} style={styles.logo} resizeMode="contain" />
-    </View>
-  </TouchableOpacity>
-);
-
-const ManufacturerItem = ({
-  manufacturer,
-  isSelected,
-  onSelect,
-}: {
-  manufacturer: ManufacturerItemType;
-  isSelected: boolean;
-  onSelect: (id: string) => void;
-}) => (
-  <TouchableOpacity style={styles.optionItem} onPress={() => onSelect(String(manufacturer.id))}>
-    <View style={styles.radioCircle}>
-      {isSelected && <View style={styles.selectedRadioFill} />}
-    </View>
-    <View
-      style={{
-        width: '90%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-      }}
-    >
-      <Text style={styles.optionText}>{manufacturer.name}</Text>
-      <Image
-        source={{ uri: manufacturer.image }}
-        style={{ width: 100, height: 25 }}
-        resizeMode="contain"
-      />
-    </View>
-  </TouchableOpacity>
-);
-
 const CatalogPraductScreen = () => {
-  const [page, setPage] = useState(1);
-  const [perPage, setPerPage] = useState(16);
-  const [allProducts, setAllProducts] = useState<CatalogPraductItemType[]>([]);
-  const [isEndReached, setIsEndReached] = useState(false);
-  const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
-  const route = useRoute<RouteProp<CatalogStackParamList, 'CatalogPraductScreen'>>();
-  const subCategoryId = route?.params?.categoryId;
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [selectedManufacturers, setSelectedManufacturers] = useState<string[]>([]);
-  const brandId = selectedBrands.length > 0 ? Number(selectedBrands[0]) : undefined;
-  const manufacturerId =
-    selectedManufacturers.length > 0 ? Number(selectedManufacturers[0]) : undefined;
-  const { data, isLoading } = usePraducts(subCategoryId, brandId, manufacturerId, page, perPage);
-  const { data: brandData } = useBrands();
-  const { data: manufacturersData } = useManufacturers();
-  const { t } = useTranslation();
-  console.log('data', JSON.stringify(data?.products?.meta, null, 2));
-
-  const drawerRef = useRef<DrawerLayout>(null);
-
-  const isFetchingMore = useRef(false);
-  const renderNavigationView = () => {
-    const handleBrandSelect = (brandId: string) => {
-      setSelectedBrands((prev) =>
-        prev.includes(brandId) ? prev.filter((id) => id !== brandId) : [...prev, brandId],
-      );
-    };
-
-    const handleManufacturerSelect = (manufacturerId: string) => {
-      setSelectedManufacturers((prev) =>
-        prev.includes(manufacturerId)
-          ? prev.filter((id) => id !== manufacturerId)
-          : [...prev, manufacturerId],
-      );
-    };
-
-    const handleReset = () => {
-      setSelectedBrands([]);
-      setSelectedManufacturers([]);
-      drawerRef.current?.closeDrawer();
-    };
-
-    return (
-      <View style={[styles.drawerContainer]}>
-        <View style={styles.drawerHeader}>
-          <Text style={styles.drawerTitle}>{t('filters')}</Text>
-          <TouchableOpacity
-            onPress={() => drawerRef.current?.closeDrawer()}
-            style={styles.closeButton}
-          >
-            <Ionicons name="close" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.filterSection}>
-          <View style={{ height: DEVICE_HEIGHT / 3 }}>
-            <Text style={styles.sectionTitle}>{t('brand')}</Text>
-            <FlatList
-              data={brandData?.data}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <BrandItem
-                  brand={item}
-                  isSelected={selectedBrands.includes(String(item.id))}
-                  onSelect={handleBrandSelect}
-                />
-              )}
-              keyExtractor={(item) => String(item.id)}
-            />
-          </View>
-          <View style={{ height: DEVICE_HEIGHT / 3, marginTop: 10 }}>
-            <Text style={styles.sectionTitle}>{t('manufacturer')}</Text>
-            <FlatList
-              data={manufacturersData?.data}
-              showsVerticalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <ManufacturerItem
-                  manufacturer={item}
-                  isSelected={selectedManufacturers.includes(String(item.id))}
-                  onSelect={handleManufacturerSelect}
-                />
-              )}
-              keyExtractor={(item) => String(item.id)}
-            />
-          </View>
-        </View>
-
-        <View style={styles.drawerFooter}>
-          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
-            <Text style={styles.resetButtonText}>{t('reset')}</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    );
-  };
-  useEffect(() => {
-    if (data?.products?.data) {
-      setAllProducts((prev) => {
-        if (page === 1) return data.products.data;
-        return [...prev, ...data.products.data];
-      });
-
-      const lastPage = data?.products?.meta?.last_page || 1;
-      if (page >= lastPage) {
-        setIsEndReached(true);
-      } else {
-        setIsEndReached(false);
-      }
-    }
-    isFetchingMore.current = false;
-  }, [data]);
-
-  useEffect(() => {
-    setPage(1);
-    setAllProducts([]);
-    setIsEndReached(false);
-  }, [brandId, manufacturerId, subCategoryId]);
+  const {
+    renderBrandItem,
+    renderManufacturerItem,
+    renderProductItem,
+    brandKeyExtractor,
+    manufacturerKeyExtractor,
+    productKeyExtractor,
+    handleEndReached,
+    handleReset,
+    brandsFromFilters,
+    manufacturersFromFilters,
+    isLoading,
+    allProducts,
+    drawerRef,
+    navigation,
+    route,
+    t,
+    transformedFilters,
+    renderFilterItem,
+    isFetchingNextPage,
+    hasNextPage,
+    error,
+  } = CatalogPraductScreenHook();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -210,7 +49,21 @@ const CatalogPraductScreen = () => {
         ref={drawerRef}
         drawerWidth={width}
         drawerPosition={'right'}
-        renderNavigationView={renderNavigationView}
+        renderNavigationView={() => (
+          <RenderNavigationView
+            t={t}
+            drawerRef={drawerRef}
+            brandsFromFilters={brandsFromFilters}
+            manufacturersFromFilters={manufacturersFromFilters}
+            renderBrandItem={renderBrandItem}
+            renderManufacturerItem={renderManufacturerItem}
+            brandKeyExtractor={brandKeyExtractor}
+            manufacturerKeyExtractor={manufacturerKeyExtractor}
+            handleReset={handleReset}
+            transformedFilters={transformedFilters}
+            renderFilterItem={renderFilterItem}
+          />
+        )}
       >
         <View style={styles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -237,33 +90,79 @@ const CatalogPraductScreen = () => {
 
         <FlatList
           data={allProducts}
-          renderItem={({ item }) => <ProductDetailItem item={item} />}
-          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderProductItem}
+          keyExtractor={productKeyExtractor}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.contentContainerStyle}
-          onEndReached={() => {
-            if (!isLoading && !isEndReached && !isFetchingMore.current) {
-              isFetchingMore.current = true;
-              setPage((prev) => prev + 1);
-            }
-          }}
+          onEndReached={handleEndReached}
           onEndReachedThreshold={0.5}
-        />
-        {isLoading && page > 1 ? (
-          <View
-            style={{
-              paddingVertical: 20,
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '100%',
-              flexDirection: 'row',
-            }}
-          >
-            <ActivityIndicator size="large" color="#000" />
-          </View>
-        ) : null}
+          ListFooterComponent={() => {
+            if (error && allProducts.length === 0) {
+              return (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                  <Text style={{ color: '#FF3B30', fontSize: 16, textAlign: 'center' }}>
+                    {t('error.loadingFailed') || "Ma'lumotlarni yuklashda xatolik"}
+                  </Text>
+                  <TouchableOpacity
+                    style={{
+                      marginTop: 10,
+                      padding: 10,
+                      backgroundColor: '#FF3B30',
+                      borderRadius: 8,
+                    }}
+                    onPress={() => {
+                      navigation.goBack();
+                    }}
+                  >
+                    <Text style={{ color: 'white' }}>{t('retry') || 'Qayta urinish'}</Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            }
 
-        <View style={{ height: 100 }} />
+            if (isLoading && allProducts.length === 0) {
+              return (
+                <View style={styles.loading}>
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="large" color="#FF3B30" />
+                  </View>
+                </View>
+              );
+            }
+
+            if (isFetchingNextPage) {
+              return (
+                <View style={styles.loading}>
+                  <View style={styles.loadingContainer}>
+                    <ActivityIndicator size="small" color="#FF3B30" />
+                  </View>
+                </View>
+              );
+            }
+
+            if (!hasNextPage && allProducts.length > 0) {
+              return (
+                <View style={{ padding: 20, alignItems: 'center' }}>
+                  <Text style={{ color: '#666', fontSize: 14 }}></Text>
+                </View>
+              );
+            }
+
+            if (allProducts.length === 0 && !isLoading) {
+              // Ma'lumot topilmadi
+              return (
+                <View style={{ padding: 40, alignItems: 'center' }}>
+                  <Text style={{ color: '#666', fontSize: 16, textAlign: 'center' }}>
+                    {t('katalog.noProducts') || 'Hech qanday mahsulot topilmadi'}
+                  </Text>
+                </View>
+              );
+            }
+
+            return null;
+          }}
+          ListFooterComponentStyle={{ paddingBottom: 100 }}
+        />
       </DrawerLayout>
     </SafeAreaView>
   );
@@ -449,5 +348,19 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  loading: {
+    paddingVertical: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    paddingHorizontal: 16,
+  },
+  loadingContainer: {
+    width: '100%',
+    height: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

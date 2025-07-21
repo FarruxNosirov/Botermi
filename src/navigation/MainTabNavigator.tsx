@@ -115,6 +115,22 @@ export const MainTabNavigator = () => {
         options={{
           tabBarLabel: t('navigation.homeLable'),
         }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            const tabIndex = state.routes.findIndex((r) => r.key === route.key);
+            const tabState = state.routes[tabIndex].state;
+
+            // Agar tab allaqachon active va stack-da birdan ko'p screen bo'lsa
+            if (tabState && tabState.index !== undefined && tabState.index > 0) {
+              e.preventDefault();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Home' }],
+              });
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="Catalog"
@@ -122,6 +138,22 @@ export const MainTabNavigator = () => {
         options={{
           tabBarLabel: t('navigation.catalogLable'),
         }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            const tabIndex = state.routes.findIndex((r) => r.key === route.key);
+            const tabState = state.routes[tabIndex].state;
+
+            // Agar tab allaqachon active va stack-da birdan ko'p screen bo'lsa
+            if (tabState && tabState.index !== undefined && tabState.index > 0) {
+              e.preventDefault();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Catalog' }],
+              });
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="Actions"
@@ -130,6 +162,22 @@ export const MainTabNavigator = () => {
           tabBarLabel: '',
           tabBarButton: (props) => <CustomTabBarButton {...props} />,
         }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            const tabIndex = state.routes.findIndex((r) => r.key === route.key);
+            const tabState = state.routes[tabIndex].state;
+
+            // Agar tab allaqachon active va stack-da birdan ko'p screen bo'lsa
+            if (tabState && tabState.index !== undefined && tabState.index > 0) {
+              e.preventDefault();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Actions' }],
+              });
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="Operations"
@@ -137,6 +185,22 @@ export const MainTabNavigator = () => {
         options={{
           tabBarLabel: t('navigation.operationsLable'),
         }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            const tabIndex = state.routes.findIndex((r) => r.key === route.key);
+            const tabState = state.routes[tabIndex].state;
+
+            // Agar tab allaqachon active va stack-da birdan ko'p screen bo'lsa
+            if (tabState && tabState.index !== undefined && tabState.index > 0) {
+              e.preventDefault();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Operations' }],
+              });
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="Profile"
@@ -144,6 +208,22 @@ export const MainTabNavigator = () => {
         options={{
           tabBarLabel: t('navigation.profileLable'),
         }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            const tabIndex = state.routes.findIndex((r) => r.key === route.key);
+            const tabState = state.routes[tabIndex].state;
+
+            // Agar tab allaqachon active va stack-da birdan ko'p screen bo'lsa
+            if (tabState && tabState.index !== undefined && tabState.index > 0) {
+              e.preventDefault();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Profile' }],
+              });
+            }
+          },
+        })}
       />
     </Tab.Navigator>
   );

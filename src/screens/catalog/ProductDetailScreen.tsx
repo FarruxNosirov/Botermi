@@ -4,7 +4,7 @@ import { useSingleProduct } from '@/hooks/querys';
 import { CatalogStackParamList } from '@/types/navigation';
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Dimensions,
@@ -24,6 +24,86 @@ import RenderHTML from 'react-native-render-html';
 
 const { width } = Dimensions.get('window');
 
+// tagsStyles'ni component tashqarisiga chiqardik - performance uchun
+const tagsStyles = {
+  p: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#555',
+    marginBottom: 10,
+  },
+  h1: {
+    fontSize: 16,
+    fontWeight: '400',
+    color: '#333',
+    marginTop: 10,
+    marginBottom: 5,
+  },
+  table: {
+    width: '100%',
+    marginVertical: 15,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#bdc3c7',
+  },
+  th: {
+    backgroundColor: '#3498db',
+    padding: 12,
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#fff',
+    textAlign: 'center',
+    borderBottomWidth: 2,
+    borderBottomColor: '#2980b9',
+    width: '100%',
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  td: {
+    padding: 12,
+    fontSize: 14,
+    lineHeight: 20,
+    color: '#333',
+    borderRightWidth: 1,
+    borderRightColor: '#bdc3c7',
+    borderBottomWidth: 1,
+    borderBottomColor: '#bdc3c7',
+    backgroundColor: '#fff',
+    flex: 1,
+    textAlign: 'left',
+  },
+  tr: {
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    width: '100%',
+    borderBottomWidth: 0,
+  },
+  tbody: {
+    backgroundColor: '#fff',
+    width: '100%',
+  },
+  colgroup: {
+    display: 'none',
+  },
+  col: {
+    display: 'none',
+  },
+  strong: {
+    fontWeight: 'bold',
+    color: '#2c3e50',
+  },
+  span: {
+    fontSize: 14,
+  },
+  img: {
+    width: '100%',
+    height: 450,
+    resizeMode: 'contain',
+    marginVertical: 15,
+  },
+} as any;
+
 export const ProductDetailScreen = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<CatalogStackParamList, 'ProductDetail'>>();
@@ -35,37 +115,57 @@ export const ProductDetailScreen = () => {
   const { data: productAll, error, isLoading } = useSingleProduct(id);
   const product = productAll?.data?.data;
 
-  const getItemLayout = (_: any, index: number) => ({
-    length: 160, // approximate width + margin
-    offset: 160 * index,
-    index,
-  });
-
-  const tagsStyles = {
-    p: {
-      fontSize: 16,
-      lineHeight: 24,
-      color: '#555',
-      marginBottom: 10,
-    },
-    h1: {
-      fontSize: 16,
-      fontWeight: '400',
-      color: '#333',
-      marginTop: 10,
-      marginBottom: 5,
-    },
-  } as any;
-
-  const renderProductDescription = (htmlString: string) => (
-    <RenderHTML contentWidth={windowWidth} tagsStyles={tagsStyles} source={{ html: htmlString }} />
+  // getItemLayout'ni useCallback bilan optimize qildik
+  const getItemLayout = useCallback(
+    (_: any, index: number) => ({
+      length: 160,
+      offset: 160 * index,
+      index,
+    }),
+    [],
   );
+
+  // renderProductDescription'ni useCallback bilan optimize qildik
+  const renderProductDescription = useCallback(
+    (htmlString: string) => (
+      <RenderHTML
+        contentWidth={windowWidth}
+        tagsStyles={tagsStyles}
+        source={{ html: htmlString }}
+      />
+    ),
+    [windowWidth],
+  );
+
   const { t, i18n } = useTranslation();
 
   const [activeIndex, setActiveIndex] = useState(0);
   const progressValue = useSharedValue(0);
 
-  const clearText = product?.slug.replace(/-/g, ' ');
+  // clearText'ni useMemo bilan optimize qildik
+  const clearText = useMemo(() => product?.slug?.replace(/-/g, ' '), [product?.slug]);
+
+  // Carousel funksiyalarini optimize qildik
+  const handleProgressChange = useCallback(
+    (offsetProgress: number) => {
+      progressValue.value = offsetProgress;
+    },
+    [progressValue],
+  );
+
+  const handleSnapToItem = useCallback((index: number) => {
+    setActiveIndex(index);
+  }, []);
+
+  // Carousel renderItem'ni optimize qildik
+  const renderCarouselItem = useCallback(
+    ({ item }: any) => (
+      <Image source={{ uri: item }} style={styles.productImage} resizeMode="contain" />
+    ),
+    [],
+  );
+  const allImages = [product?.image, ...(product?.foto_gallary || [])].filter(Boolean);
+
   return (
     <SafeAreaView style={styles.container}>
       {isLoading ? (
@@ -92,30 +192,22 @@ export const ProductDetailScreen = () => {
                   width={width}
                   height={200}
                   autoPlay={true}
-                  data={product?.foto_gallary}
+                  data={allImages}
                   scrollAnimationDuration={1500}
-                  onProgressChange={(offsetProgress) => {
-                    progressValue.value = offsetProgress;
-                  }}
-                  onSnapToItem={(index) => setActiveIndex(index)}
-                  renderItem={({ item }: any) => (
-                    <Image
-                      source={{ uri: item }}
-                      style={styles.productImage}
-                      resizeMode="contain"
-                    />
-                  )}
+                  onProgressChange={handleProgressChange}
+                  onSnapToItem={handleSnapToItem}
+                  renderItem={renderCarouselItem}
                 />
               ) : (
                 <Image
-                  source={{ uri: product?.image }}
+                  source={{ uri: allImages[0] }}
                   style={styles.productImage}
                   resizeMode="contain"
                 />
               )}
-              {product?.foto_gallary.length > 1 ? (
+              {allImages.length > 1 ? (
                 <View style={styles.dotsContainer}>
-                  {product?.foto_gallary?.map((_: any, index: React.Key | null | undefined) => (
+                  {allImages?.map((_: any, index: React.Key | null | undefined) => (
                     <View
                       key={index}
                       style={[styles.dot, activeIndex === index && styles.activeDot]}
@@ -134,8 +226,22 @@ export const ProductDetailScreen = () => {
                 </Text>
               </View>
             )}
+            <View style={styles.productInfo}>
+              <Text style={styles.vendor_code}>
+                <Text style={{ fontWeight: 'bold' }}>Sotuv kodi:</Text> {product?.vendor_code}
+              </Text>
+            </View>
 
-            <View style={{ paddingHorizontal: 16 }}>
+            <View style={styles.productInfo}>
+              <Text style={styles.vendor_code}>
+                <Text style={{ fontWeight: 'bold' }}>Ishlab chiqaruvchi:</Text> {product?.country}
+              </Text>
+            </View>
+
+            <View style={styles.productInfo}>
+              <Text style={styles.vendor_code}>
+                <Text style={{ fontWeight: 'bold' }}>Mahsulot haqida qisqacha:</Text>
+              </Text>
               {renderProductDescription(product?.description || '')}
             </View>
 
@@ -200,7 +306,15 @@ const styles = StyleSheet.create({
   },
   backButton: { padding: 8 },
   favoriteButton: { padding: 8 },
-  carouselContainer: { backgroundColor: '#fff' },
+  carouselContainer: {
+    backgroundColor: '#fff',
+    shadowColor: '#cacaca',
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+    marginBottom: 10,
+  },
   slideContainer: {
     width: width,
     height: 230,
@@ -208,13 +322,13 @@ const styles = StyleSheet.create({
   productImage: { width: '100%', height: '100%' },
   content: { flex: 1 },
   productInfo: {
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#fff',
+    paddingHorizontal: 16,
+
+    paddingVertical: 8,
   },
   productName: {
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: 'bold',
     color: '#333',
     textTransform: 'uppercase',
   },
@@ -256,5 +370,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff4d4d',
     width: 11,
     height: 6,
+  },
+  vendor_code: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
   },
 });

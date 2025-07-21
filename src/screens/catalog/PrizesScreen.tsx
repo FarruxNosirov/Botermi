@@ -12,11 +12,13 @@ import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 import { usePrizes, usePrizesExchange } from '@/hooks/querys';
-import { DEVICE_WIDTH } from '@/constants/constants';
+import { DEVICE_WIDTH, formatBalance } from '@/constants/constants';
 import { showToast } from '@/utils/toastHelper';
 import { UserDataType } from '@/types/userType';
 import { getMe } from '@/store/slices/authSlice';
 import { useAppDispatch } from '@/store/hooks';
+import IsLoading from '@/components/IsLoading';
+import EmptyState from '@/components/EmptyState';
 
 const PrizesScreen = () => {
   const navigation = useNavigation();
@@ -49,11 +51,17 @@ const PrizesScreen = () => {
       exchangePrize(item?.id, {
         onSuccess: async (data) => {
           await handleGetMe();
-          showToast('success', t('success'), t('actions.scanSuccess'));
+          showToast('success', t('commond.success'), t('actions.scanSuccess'));
           setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
         },
         onError: (error: any) => {
-          showToast('error', t('error'), error?.response?.data?.message);
+          console.log('error?.response?.data?.message', error?.response?.data?.message);
+
+          showToast(
+            'error',
+            t('commond.error'),
+            error?.response?.data?.message || t('commond.notEnoughBalance'),
+          );
           setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
         },
       });
@@ -64,44 +72,53 @@ const PrizesScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="#000" />
-          <Text style={styles.headerTitle}>{t('back')}</Text>
-        </TouchableOpacity>
-      </View>
-      <FlatList
-        keyExtractor={(item) => item.id.toString()}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.contentContainerStyle}
-        data={data?.data.data || []}
-        renderItem={({ item }) => {
-          const isItemLoading = loadingItems[item.id] || false;
+      {isLoading ? (
+        <IsLoading />
+      ) : (
+        <>
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Ionicons name="chevron-back" size={24} color="#000" />
+              <Text style={styles.headerTitle}>{t('back')}</Text>
+            </TouchableOpacity>
+          </View>
 
-          return (
-            <View style={[styles.productItem, { width: productCardWidth }]}>
-              <Image
-                source={{ uri: item?.image }}
-                style={[styles.productImage, { width: productCardWidth - 30, borderWidth: 1 }]}
-                resizeMode="contain"
-              />
-              <View>
-                <Text style={styles.price}>{item?.price}</Text>
-                <Text>{item?.name}</Text>
-              </View>
-              <TouchableOpacity
-                style={[styles.cartButton, isItemLoading && styles.cartButtonLoading]}
-                onPress={() => handleExchangePrize(item)}
-                disabled={isItemLoading}
-              >
-                <Text style={styles.buttonText}>
-                  {isItemLoading ? t('loading') : t('exchange')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          );
-        }}
-      />
+          <FlatList
+            keyExtractor={(item) => item.id.toString()}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.contentContainerStyle}
+            data={data?.data.data || []}
+            renderItem={({ item }) => {
+              const isItemLoading = loadingItems[item.id] || false;
+
+              return (
+                <View style={[styles.productItem, { width: productCardWidth }]}>
+                  <Image
+                    source={{ uri: item?.image }}
+                    style={[styles.productImage, { width: productCardWidth - 30, borderWidth: 1 }]}
+                    resizeMode="contain"
+                  />
+                  <View>
+                    <Text style={styles.price}>{formatBalance(item?.price)}</Text>
+                    <Text>{item?.name}</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.cartButton, isItemLoading && styles.cartButtonLoading]}
+                    onPress={() => handleExchangePrize(item)}
+                    disabled={isItemLoading}
+                  >
+                    <Text style={styles.buttonText}>
+                      {isItemLoading ? t('commond.loading') : t('katalog.exchange')}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+              );
+            }}
+            ListEmptyComponent={<EmptyState />}
+          />
+        </>
+      )}
+
       <View style={{ height: 50 }} />
     </SafeAreaView>
   );

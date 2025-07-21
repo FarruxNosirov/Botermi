@@ -38,6 +38,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 10,
     justifyContent: 'space-between',
+    marginLeft: 10,
   },
   radioCircle: {
     height: 20,
