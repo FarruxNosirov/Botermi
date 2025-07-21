@@ -9,6 +9,7 @@ import { AddPhoneScreen } from '../screens/settings/AddPhoneScreen';
 import { EditBirthdayScreen } from '../screens/settings/EditBirthdayScreen';
 import { EditOccupationScreen } from '@/screens/settings/EditOccupationScreen';
 import { EditAddressScreen } from '@/screens/settings/EditAddressScreen';
+import { CityScreen } from '@/screens/settings/CityScreen';
 
 export type SettingsStackParamList = {
   SettingsMain: undefined;
@@ -20,6 +21,7 @@ export type SettingsStackParamList = {
   EditBirthday: undefined;
   EditOccupation: undefined;
   EditAddressScreen: undefined;
+  CityScreen: undefined;
 };
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
@@ -36,6 +38,7 @@ export const SettingsNavigator = () => {
       <Stack.Screen name="EditBirthday" component={EditBirthdayScreen} />
       <Stack.Screen name="EditOccupation" component={EditOccupationScreen} />
       <Stack.Screen name="EditAddressScreen" component={EditAddressScreen} />
+      <Stack.Screen name="CityScreen" component={CityScreen} />
     </Stack.Navigator>
   );
 };

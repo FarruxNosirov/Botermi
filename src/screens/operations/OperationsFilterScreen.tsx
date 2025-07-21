@@ -29,7 +29,7 @@ const OperationsFilterScreen = () => {
   const getStatusLabel = (status: StatusType) => {
     switch (status) {
       case 'all':
-        return 'Hammasi';
+        return t('all');
       case 'waiting':
         return t('waiting');
       case 'approved':
@@ -37,7 +37,7 @@ const OperationsFilterScreen = () => {
       case 'rejected':
         return t('rejected');
       default:
-        return 'Hammasi';
+        return t('all');
     }
   };
 

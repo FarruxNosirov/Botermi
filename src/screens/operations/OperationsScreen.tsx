@@ -1,4 +1,5 @@
 import IsLoading from '@/components/IsLoading';
+import EmptyState from '@/components/EmptyState';
 import { DEVICE_HEIGHT } from '@/constants/constants';
 import { useBarcodeAll } from '@/hooks/querys';
 import { useAppDispatch } from '@/store/hooks';
@@ -7,7 +8,6 @@ import { MainTabScreenProps } from '@/types/navigation';
 import { UserDataType } from '@/types/userType';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
@@ -32,7 +32,6 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
   );
   const searchQueryRef = useRef('');
   const searchInputRef = useRef<TextInput>(null);
-  const animation = useRef<LottieView>(null);
   const [userData, setUserData] = useState<UserDataType | null>(null);
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
@@ -91,18 +90,6 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
 
       return matchesSearch && matchesStatus;
     },
-  );
-
-  const renderTabContent = () => (
-    <View style={styles.emptyContainer}>
-      <LottieView
-        autoPlay
-        ref={animation}
-        style={{ width: 200, height: 200, backgroundColor: '#eee' }}
-        source={require('../../../assets/Animation - 1748335411299.json')}
-      />
-      <Text style={styles.emptyText}>{t('youHaveNoQueriesFound')}</Text>
-    </View>
   );
 
   if (isLoading || isFetching) {
@@ -188,7 +175,7 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
             />
           </View>
         ) : (
-          renderTabContent()
+          <EmptyState />
         )}
       </View>
     </SafeAreaView>
@@ -199,18 +186,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-  },
-  emptyContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#6B7280',
-    marginTop: 20,
-    textAlign: 'center',
   },
   searchContainer: {
     flexDirection: 'row',

@@ -1,6 +1,6 @@
 // useCatalog.ts
-import { actionsApi, authAPI, catalogAPI, homeApi, prizesApi } from '@/services/api';
-import { useMutation, useQuery } from './useQuery';
+import { actionsApi, authAPI, catalogAPI, getCities, homeApi, prizesApi } from '@/services/api';
+import { useMutation, useQuery, useInfiniteQuery } from './useQuery';
 
 export const useGetFirstCategories = () => {
   return useQuery({
@@ -18,13 +18,33 @@ export const usePraducts = (
   subCategoryId: number,
   brandId?: number,
   manufacturerId?: number,
-  page?: number,
-  perPage?: number,
+  selectedFilters?: number,
+  perPage: number = 16,
 ) => {
-  return useQuery({
-    queryKey: ['getPraductsSubCategoriesId', subCategoryId, brandId, manufacturerId, page, perPage],
-    queryFn: () =>
-      catalogAPI.getPraductsSubCategoriesId(subCategoryId, brandId, manufacturerId, page, perPage),
+  return useInfiniteQuery({
+    queryKey: [
+      'getPraductsSubCategoriesId',
+      subCategoryId,
+      brandId,
+      manufacturerId,
+      selectedFilters,
+      perPage,
+    ],
+    queryFn: ({ pageParam = 1 }) =>
+      catalogAPI.getPraductsSubCategoriesId(
+        subCategoryId,
+        brandId,
+        manufacturerId,
+        selectedFilters,
+        pageParam,
+        perPage,
+      ),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage.products?.meta?.current_page || 1;
+      const lastPageNum = lastPage.products?.meta?.last_page || 1;
+      return currentPage < lastPageNum ? currentPage + 1 : undefined;
+    },
+    initialPageParam: 1,
   });
 };
 export const useBrands = () => {
@@ -79,5 +99,11 @@ export const usePrizes = () => {
 export const usePrizesExchange = () => {
   return useMutation({
     mutationFn: (prizeId: number) => prizesApi.prizesExchange(prizeId),
+  });
+};
+export const useGetCities = () => {
+  return useQuery({
+    queryKey: ['getCities'],
+    queryFn: () => getCities(),
   });
 };

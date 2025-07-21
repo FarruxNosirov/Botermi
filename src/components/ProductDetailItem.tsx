@@ -20,15 +20,11 @@ const ProductDetailItem = ({ item }: { item: any }) => {
   };
   const priceNum = Number(String(item?.price).replace(/\s/g, ''));
   const customerPriceNum = Number(String(item?.customer_price).replace(/\s/g, ''));
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
-  const clearText = item?.slug.replace(/-/g, ' ');
-  const praductSlug =
-    clearText?.length && clearText?.length > 30 ? clearText?.slice(0, 30) + '...' : clearText;
   const [activeIndex, setActiveIndex] = useState(0);
   const progressValue = useSharedValue(0);
 
-  // Barcha rasmlarni birlashtirish - birinchi asosiy rasm, keyin gallereya
   const allImages = [item?.image, ...(item?.foto_gallary || [])].filter(Boolean);
   const autoPlayCarusel = allImages.length > 1 ? true : false;
 
@@ -70,9 +66,7 @@ const ProductDetailItem = ({ item }: { item: any }) => {
         ) : null}
 
         <View style={styles.productDetails}>
-          <Text style={styles.productName}>
-            {i18n.language === 'uz' ? praductSlug : planNameLength}
-          </Text>
+          <Text style={styles.productName}>{planNameLength}</Text>
           <Text style={styles.brandName}>{item?.brand}</Text>
           {item?.bonus > 0 && (
             <Text style={styles.bonusText}>

@@ -1,37 +1,32 @@
-import { StyleSheet, Text, TouchableOpacity, View, Image } from 'react-native';
-import React from 'react';
-import { CatalogPraductItemType } from '@/types/catalogItem';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-const BrandItem = ({
-  brand,
+const FilterItem = ({
+  filter,
   isSelected,
   onSelect,
 }: {
-  brand: CatalogPraductItemType;
+  filter: any;
   isSelected: boolean;
   onSelect: (id: string) => void;
 }) => (
-  <TouchableOpacity style={styles.optionItem} onPress={() => onSelect(String(brand.id))}>
+  <TouchableOpacity style={styles.optionItem} onPress={() => onSelect(String(filter.id))}>
     <View style={styles.radioCircle}>
       {isSelected && <View style={styles.selectedRadioFill} />}
     </View>
     <View
       style={{
+        width: '90%',
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        width: '95%',
       }}
     >
-      <Text style={styles.optionText}>{brand.name}</Text>
-      <Image source={{ uri: brand.image }} style={styles.logo} resizeMode="contain" />
+      <Text style={styles.optionText}>{filter.title}</Text>
     </View>
   </TouchableOpacity>
 );
-
-export default BrandItem;
-
-const styles = StyleSheet.create({
+export default FilterItem;
+export const styles = StyleSheet.create({
   optionItem: {
     flexDirection: 'row',
     alignItems: 'center',
