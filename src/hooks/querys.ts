@@ -1,17 +1,30 @@
 // useCatalog.ts
-import { actionsApi, authAPI, catalogAPI, getCities, homeApi, prizesApi } from '@/services/api';
+import {
+  actionsApi,
+  authAPI,
+  catalogAPI,
+  getCities,
+  homeApi,
+  prizesApi,
+  profileApi,
+} from '@/services/api';
 import { useMutation, useQuery, useInfiniteQuery } from './useQuery';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { logout } from '@/store/slices/authSlice';
+import { useDispatch } from 'react-redux';
 
-export const useGetFirstCategories = () => {
+export const useGetFirstCategories = (language: string) => {
   return useQuery({
-    queryKey: ['getFirstCategories'],
-    queryFn: catalogAPI.getCatalog,
+    queryKey: ['getFirstCategories', language],
+    queryFn: () => catalogAPI.getCatalog(language),
+    enabled: !!language && language.length > 0,
   });
 };
-export const useGetSubCategories = (categoryId: number) => {
+export const useGetSubCategories = (categoryId: number, language: string) => {
   return useQuery({
-    queryKey: ['getSubCategories', categoryId],
-    queryFn: () => catalogAPI.getSubCategories(categoryId),
+    queryKey: ['getSubCategories', categoryId, language],
+    queryFn: () => catalogAPI.getSubCategories(categoryId, language),
+    enabled: !!categoryId && !!language && categoryId > 0,
   });
 };
 export const usePraducts = (
@@ -20,6 +33,7 @@ export const usePraducts = (
   manufacturerId?: number,
   selectedFilters?: number,
   perPage: number = 16,
+  language?: string,
 ) => {
   return useInfiniteQuery({
     queryKey: [
@@ -29,6 +43,7 @@ export const usePraducts = (
       manufacturerId,
       selectedFilters,
       perPage,
+      language,
     ],
     queryFn: ({ pageParam = 1 }) =>
       catalogAPI.getPraductsSubCategoriesId(
@@ -38,6 +53,7 @@ export const usePraducts = (
         selectedFilters,
         pageParam,
         perPage,
+        language,
       ),
     getNextPageParam: (lastPage) => {
       const currentPage = lastPage.products?.meta?.current_page || 1;
@@ -65,10 +81,11 @@ export const useManufacturers = () => {
     queryFn: catalogAPI.getManufacturers,
   });
 };
-export const useSingleProduct = (praductId: any) => {
+export const useSingleProduct = (praductId: any, language?: string) => {
   return useQuery({
-    queryKey: ['getSingleProduct', praductId],
-    queryFn: () => catalogAPI.getSingleProduct(praductId),
+    queryKey: ['getSingleProduct', praductId, language],
+    queryFn: () => catalogAPI.getSingleProduct(praductId, language),
+    enabled: !!praductId && !!language && praductId > 0,
   });
 };
 export const useBlogs = () => {
@@ -90,6 +107,13 @@ export const useBarcodeAll = (userId: number) => {
     enabled: !!userId,
   });
 };
+export const useBarcodeByBarcode = (userId: number) => {
+  return useQuery({
+    queryKey: ['getBarCodeByBarcode'],
+    queryFn: () => actionsApi.getBarCodeByBarcode(userId),
+    enabled: !!userId,
+  });
+};
 export const usePrizes = () => {
   return useQuery({
     queryKey: ['getPrizes'],
@@ -98,12 +122,36 @@ export const usePrizes = () => {
 };
 export const usePrizesExchange = () => {
   return useMutation({
-    mutationFn: (prizeId: number) => prizesApi.prizesExchange(prizeId),
+    mutationFn: (data: { product_id?: number; type?: string; prize_id?: number }) => {
+      console.log('data', JSON.stringify(data, null, 2));
+      return prizesApi.prizesExchange(data.product_id, data.prize_id, data.type);
+    },
   });
 };
-export const useGetCities = () => {
+export const useGetCities = (language?: string) => {
   return useQuery({
-    queryKey: ['getCities'],
-    queryFn: () => getCities(),
+    queryKey: ['getCities', language],
+    queryFn: () => getCities(language),
+    enabled: !!language,
+  });
+};
+export const useGetStatuses = (userId: number) => {
+  return useQuery({
+    queryKey: ['getStatuses', userId],
+    queryFn: () => homeApi.getStatuses(userId),
+    enabled: !!userId,
+  });
+};
+export const useDeleteProfile = () => {
+  const dispatch = useDispatch();
+  return useMutation({
+    mutationFn: (userId: number | string) => profileApi.deleteProfile(userId),
+    onSuccess: (data) => {
+      AsyncStorage.removeItem('@auth_token');
+      dispatch(logout());
+    },
+    onError: (error) => {
+      console.log(error);
+    },
   });
 };

@@ -48,7 +48,7 @@ const RenderNavigationView = ({
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.filterSection}>
+      <View style={styles.filterSection}>
         {brandsFromFilters.length > 0 ? (
           <View style={{ maxHeight: DEVICE_HEIGHT / 3 }}>
             <Text style={styles.sectionTitle}>{t('brand')}</Text>
@@ -57,6 +57,8 @@ const RenderNavigationView = ({
               showsVerticalScrollIndicator={false}
               renderItem={renderBrandItem}
               keyExtractor={brandKeyExtractor}
+              nestedScrollEnabled={true}
+              scrollEnabled={false}
             />
           </View>
         ) : null}
@@ -68,22 +70,26 @@ const RenderNavigationView = ({
               showsVerticalScrollIndicator={false}
               renderItem={renderManufacturerItem}
               keyExtractor={manufacturerKeyExtractor}
+              nestedScrollEnabled={true}
+              scrollEnabled={false}
             />
           </View>
         ) : null}
         {transformedFilters?.length > 0
           ? transformedFilters?.map((filter: any) => (
-              <View style={{ marginTop: 10 }}>
+              <View key={filter?.filter_name} style={{ marginTop: 10 }}>
                 <Text style={styles.sectionTitle}>{filter?.filter_name}</Text>
                 <FlatList
                   data={filter.data}
                   renderItem={renderFilterItem}
                   keyExtractor={(item) => item.id.toString()}
+                  nestedScrollEnabled={true}
+                  scrollEnabled={false}
                 />
               </View>
             ))
           : null}
-      </ScrollView>
+      </View>
 
       <View style={styles.drawerFooter}>
         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>

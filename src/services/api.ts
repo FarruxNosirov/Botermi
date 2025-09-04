@@ -1,7 +1,6 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-import i18n from '@/i18n';
 
 const BASE_URL = 'https://administration.wottex.uz/api';
 
@@ -75,14 +74,28 @@ export const getUserData = async () => {
   const response = await api.get('/getMe');
   return response.data;
 };
-
-export const catalogAPI = {
-  getCatalog: async () => {
-    const response = await api.get('/getFirstCategories');
+export const profileApi = {
+  deleteProfile: async (userId: number | string) => {
+    const response = await api.delete(`/users/${userId}`);
     return response.data;
   },
-  getSubCategories: async (categoryId: number) => {
-    const response = await api.get(`/filterSubCategory?category_id=${categoryId}`);
+};
+
+export const catalogAPI = {
+  getCatalog: async (language: string) => {
+    const response = await api.get('/getFirstCategories', {
+      headers: {
+        'Accept-Language': language,
+      },
+    });
+    return response.data;
+  },
+  getSubCategories: async (categoryId: number, language: string) => {
+    const response = await api.get(`/filterSubCategory?category_id=${categoryId}`, {
+      headers: {
+        'Accept-Language': language,
+      },
+    });
     return response.data;
   },
   getPraductsSubCategoriesId: async (
@@ -92,18 +105,24 @@ export const catalogAPI = {
     selectedFilters?: number,
     page?: number,
     perPage?: number,
+    language?: string,
   ) => {
-    const params: any = { sub_category_id: subCategoryId, page: page, perPage: perPage };
-    if (brandId) params.brand_id = brandId;
-    if (manufacturerId) params.manufacturer_id = manufacturerId;
-    if (selectedFilters) params.filter_id = selectedFilters;
-    const response = await api.get(`/filterProducts`, {
-      params,
-      headers: {
-        'Accept-Language': i18n.language,
-      },
-    });
-    return response.data;
+    try {
+      const params: any = { sub_category_id: subCategoryId, page: page, perPage: perPage };
+      if (brandId) params.brand_id = brandId;
+      if (manufacturerId) params.manufacturer_id = manufacturerId;
+      if (selectedFilters) params.filter_id = selectedFilters;
+      const response = await api.get(`/filterProducts`, {
+        params,
+        headers: {
+          'Accept-Language': language,
+        },
+      });
+      return response.data;
+    } catch (error) {
+      console.log('getPraductsSubCategoriesId error', error);
+      throw error;
+    }
   },
 
   getBrands: async () => {
@@ -114,10 +133,10 @@ export const catalogAPI = {
     const response = await api.get('/getManufacturers');
     return response.data;
   },
-  getSingleProduct: async (praductId: number) => {
+  getSingleProduct: async (praductId: number, language?: string) => {
     const response = await api.get(`/getSingleProduct/${praductId}`, {
       headers: {
-        'Accept-Language': i18n.language,
+        'Accept-Language': language,
       },
     });
     return response;
@@ -127,6 +146,10 @@ export const homeApi = {
   getBlogs: async () => {
     const response = await api.get('/getBlogs');
     return response;
+  },
+  getStatuses: async (userId: number) => {
+    const response = await api.get(`/users/${userId}/stats`);
+    return response?.data?.data;
   },
 };
 export const actionsApi = {
@@ -152,6 +175,15 @@ export const actionsApi = {
       throw error;
     }
   },
+  getBarCodeByBarcode: async (userId: number) => {
+    try {
+      const response = await api.get(`/users/${userId}/exchanges`);
+      return response;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
 };
 export const prizesApi = {
   getPrizes: async () => {
@@ -163,9 +195,9 @@ export const prizesApi = {
       throw error;
     }
   },
-  prizesExchange: async (prizeId: number) => {
+  prizesExchange: async (product_id?: number, prize_id?: number, type?: string) => {
     try {
-      const response = await api.post(`/prizes/${prizeId}/exchange`);
+      const response = await api.post(`/prizes/exchange`, { product_id, prize_id, type });
       return response?.data?.data;
     } catch (error) {
       console.log(error);
@@ -173,9 +205,13 @@ export const prizesApi = {
     }
   },
 };
-export const getCities = async () => {
+export const getCities = async (language?: string) => {
   try {
-    const response = await api.get('/getCities');
+    const response = await api.get('/getCities', {
+      headers: {
+        'Accept-Language': language,
+      },
+    });
     return response?.data?.data;
   } catch (error) {
     console.log(error);

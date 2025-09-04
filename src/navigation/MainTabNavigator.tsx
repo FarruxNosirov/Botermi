@@ -10,7 +10,7 @@ import { CatalogStack } from './CatalogStack';
 import HomeStack from './HomeStack';
 import { SettingsNavigator } from './SettingsNavigator';
 import { useTranslation } from 'react-i18next';
-
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 type CustomTabBarButtonProps = {
@@ -21,28 +21,21 @@ type CustomTabBarButtonProps = {
 const CustomTabBarButton: React.FC<CustomTabBarButtonProps> = ({ children, onPress }) => (
   <TouchableOpacity
     style={{
-      top: -30,
       width: 70,
       height: 70,
+      alignItems: 'center',
     }}
     onPress={onPress}
   >
     <View
       style={{
-        width: 70,
-        height: 70,
+        width: 55,
+        height: 53,
         borderRadius: 35,
-        backgroundColor: colors.primary,
+        backgroundColor: '#b41818',
         justifyContent: 'center',
         alignItems: 'center',
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: {
-          width: 0,
-          height: 2,
-        },
-        shadowOpacity: 0.25,
-        shadowRadius: 3.5,
+        top: 2,
       }}
     >
       {children}
@@ -65,7 +58,7 @@ export const MainTabNavigator = () => {
             iconName = focused ? 'grid' : 'grid-outline';
           } else if (route.name === 'Actions') {
             iconName = 'qr-code-outline';
-            color = focused ? '#fff' : colors.gray[400];
+            color = focused ? '#fff' : '#062B4C';
           } else if (route.name === 'Operations') {
             iconName = focused ? 'time' : 'time-outline';
           } else if (route.name === 'Profile') {
@@ -73,21 +66,26 @@ export const MainTabNavigator = () => {
           }
 
           return (
-            <Ionicons
-              name={iconName}
-              size={route.name === 'Actions' ? 30 : size}
-              color={color}
-              style={{
-                marginTop: route.name === 'Actions' ? 10 : 0,
-                width: route.name === 'Actions' ? 34 : null,
-                height: route.name === 'Actions' ? 34 : null,
-                marginLeft: route.name === 'Actions' ? 5 : null,
-              }}
-            />
+            <>
+              {route.name === 'Actions' ? (
+                <MaterialCommunityIcons
+                  name="barcode-scan"
+                  size={30}
+                  color={color}
+                  style={{
+                    width: 30,
+                    height: 30,
+                    top: 5,
+                  }}
+                />
+              ) : (
+                <Ionicons name={iconName} size={size} color={color} />
+              )}
+            </>
           );
         },
-        tabBarActiveTintColor: '#E32F45',
-        tabBarInactiveTintColor: 'gray',
+        tabBarActiveTintColor: '#b41818',
+        tabBarInactiveTintColor: '#062B4C',
         tabBarStyle: {
           height: 70,
           position: 'absolute',
@@ -115,22 +113,6 @@ export const MainTabNavigator = () => {
         options={{
           tabBarLabel: t('navigation.homeLable'),
         }}
-        listeners={({ navigation, route }) => ({
-          tabPress: (e) => {
-            const state = navigation.getState();
-            const tabIndex = state.routes.findIndex((r) => r.key === route.key);
-            const tabState = state.routes[tabIndex].state;
-
-            // Agar tab allaqachon active va stack-da birdan ko'p screen bo'lsa
-            if (tabState && tabState.index !== undefined && tabState.index > 0) {
-              e.preventDefault();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Home' }],
-              });
-            }
-          },
-        })}
       />
       <Tab.Screen
         name="Catalog"
@@ -138,22 +120,6 @@ export const MainTabNavigator = () => {
         options={{
           tabBarLabel: t('navigation.catalogLable'),
         }}
-        listeners={({ navigation, route }) => ({
-          tabPress: (e) => {
-            const state = navigation.getState();
-            const tabIndex = state.routes.findIndex((r) => r.key === route.key);
-            const tabState = state.routes[tabIndex].state;
-
-            // Agar tab allaqachon active va stack-da birdan ko'p screen bo'lsa
-            if (tabState && tabState.index !== undefined && tabState.index > 0) {
-              e.preventDefault();
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Catalog' }],
-              });
-            }
-          },
-        })}
       />
       <Tab.Screen
         name="Actions"

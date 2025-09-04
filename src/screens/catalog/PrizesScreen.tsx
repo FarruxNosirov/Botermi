@@ -32,7 +32,7 @@ const PrizesScreen = () => {
     if (getMe.fulfilled.match(resultAction)) {
       setUserData(resultAction?.payload?.data);
     } else {
-      console.log('Xatolik:', resultAction.payload);
+      console.log('error:', resultAction.payload);
     }
   };
 
@@ -48,25 +48,28 @@ const PrizesScreen = () => {
     if (userData?.balance && userData?.balance >= item?.price) {
       setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
 
-      exchangePrize(item?.id, {
-        onSuccess: async (data) => {
-          await handleGetMe();
-          showToast('success', t('commond.success'), t('actions.scanSuccess'));
-          setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
-        },
-        onError: (error: any) => {
-          console.log('error?.response?.data?.message', error?.response?.data?.message);
+      exchangePrize(
+        { prize_id: item?.id, type: 'prize' },
+        {
+          onSuccess: async (data) => {
+            await handleGetMe();
+            showToast('success', t('commond.success'), t('actions.scanSuccess'));
+            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+          },
+          onError: (error: any) => {
+            console.log('error?.response?.data?.message', error?.response?.data?.message);
 
-          showToast(
-            'error',
-            t('commond.error'),
-            error?.response?.data?.message || t('commond.notEnoughBalance'),
-          );
-          setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+            showToast(
+              'error',
+              t('commond.error'),
+              error?.response?.data?.message || t('commond.notEnoughBalance'),
+            );
+            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+          },
         },
-      });
+      );
     } else {
-      showToast('error', t('error'), t('actions.notEnoughBalance'));
+      showToast('error', t('error'), t('commond.notEnoughBalance'));
     }
   };
 
@@ -77,7 +80,16 @@ const PrizesScreen = () => {
       ) : (
         <>
           <View style={styles.header}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <TouchableOpacity
+              onPress={() => {
+                const parent = navigation.getParent();
+
+                if (parent) {
+                  parent.navigate('Catalog', { screen: 'CatalogMain' });
+                }
+              }}
+              style={styles.backButton}
+            >
               <Ionicons name="chevron-back" size={24} color="#000" />
               <Text style={styles.headerTitle}>{t('back')}</Text>
             </TouchableOpacity>

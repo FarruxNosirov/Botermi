@@ -13,4 +13,5 @@ export interface UserDataType {
   city: string;
   positions: UserPosition[];
   balance: number;
+  date_of_birth: string;
 }

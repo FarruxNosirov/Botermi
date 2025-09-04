@@ -59,16 +59,17 @@ const CatalogPraductScreenHook = () => {
   const [selectedFilters, setSelectedFilters] = useState<number | undefined>(undefined);
   const brandId = selectedBrand;
   const manufacturerId = selectedManufacturer;
+  const { t, i18n } = useTranslation();
 
   const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error } = usePraducts(
-    subCategoryId,
+    subCategoryId || 0,
     brandId,
     manufacturerId,
     selectedFilters,
     16,
+    i18n.language,
   );
 
-  const { t } = useTranslation();
   const drawerRef = useRef<DrawerLayout>(null);
 
   // Ma'lumotlarni birlashtiramiz

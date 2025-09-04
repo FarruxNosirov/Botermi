@@ -13,7 +13,7 @@
       "backgroundColor": "#b60017"
     },
     "androidStatusBar": {
-      "backgroundColor": "#000000"
+      "backgroundColor": "#b60017"
     },
     "plugins": [
       [
@@ -34,9 +34,12 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Allow Botermi to use your location."
         }
-      ]
+      ],
+      "expo-font"
     ],
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.botermi.app",

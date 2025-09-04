@@ -14,7 +14,7 @@ const IsLoading = () => {
         alignItems: 'center',
         justifyContent: 'center',
       }}
-      source={require('@assets/loader.json')}
+      source={require('@assets/Loading animation.json')}
     />
   );
 };

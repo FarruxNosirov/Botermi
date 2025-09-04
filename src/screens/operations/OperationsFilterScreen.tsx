@@ -4,7 +4,7 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
-type StatusType = 'all' | 'waiting' | 'approved' | 'rejected';
+type StatusType = 'all' | 'waiting' | 'approved' | 'rejected' | 'new';
 
 interface StatusOption {
   id: StatusType;
@@ -24,6 +24,7 @@ const OperationsFilterScreen = () => {
     { id: 'waiting', labelKey: 'waiting' },
     { id: 'approved', labelKey: 'approved' },
     { id: 'rejected', labelKey: 'rejected' },
+    { id: 'new', labelKey: 'new' },
   ];
 
   const getStatusLabel = (status: StatusType) => {
@@ -36,6 +37,8 @@ const OperationsFilterScreen = () => {
         return t('approved');
       case 'rejected':
         return t('rejected');
+      case 'new':
+        return t('homePage.new');
       default:
         return t('all');
     }

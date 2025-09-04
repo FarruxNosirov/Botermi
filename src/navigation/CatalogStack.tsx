@@ -22,8 +22,9 @@ export type CatalogStackParamList = {
   };
   PrizesScreen: undefined;
   CatalogPraductScreen: {
-    subCatalogId: number;
-    categoryId: number;
+    subCatalogId?: number;
+    categoryId?: number;
+    firstCategoryId?: number;
   };
 };
 
@@ -32,7 +33,7 @@ const Stack = createNativeStackNavigator<CatalogStackParamList>();
 export const CatalogStack = () => {
   return (
     <ErrorBoundary>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="CatalogMain">
         <Stack.Screen name="CatalogMain" component={CatalogScreen} />
         <Stack.Screen name="EPA" component={EpaScreen} />
         <Stack.Screen name="Search" component={SearchScreen} />

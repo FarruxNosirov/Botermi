@@ -91,12 +91,7 @@ export const ProfileScreen = () => {
       icon: 'pricetags-outline' as const,
       onPress: () => {},
     },
-    {
-      id: 'faq',
-      title: t('profilePage.faq'),
-      icon: 'help-circle-outline' as const,
-      onPress: () => {},
-    },
+
     {
       id: 'logout',
       title: t('profilePage.logout'),
@@ -131,7 +126,6 @@ export const ProfileScreen = () => {
       Alert.alert(t('error'), t('errorDescription'));
     }
   };
-  console.log('userData2', JSON.stringify(userData, null, 2));
 
   const formatDate = (dateString: string) => {
     try {

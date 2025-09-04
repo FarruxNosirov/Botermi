@@ -178,16 +178,10 @@ export const ActionsScreen = () => {
                   alignItems: 'center',
                 }}
               >
-                <View style={{ height: 150, width: '48%' }}>
+                <View style={{ height: 150, width: '100%', borderRadius: 10 }}>
                   <Image
-                    style={{ width: '100%', height: 150 }}
-                    source={require('../../../assets/1.jpg')}
-                  />
-                </View>
-                <View style={{ height: 150, width: '48%' }}>
-                  <Image
-                    style={{ width: '100%', height: 150 }}
-                    source={require('../../../assets/2.webp')}
+                    style={{ width: '100%', height: 150, borderRadius: 10 }}
+                    source={require('../../../assets/Namuna.jpg')}
                   />
                 </View>
               </View>

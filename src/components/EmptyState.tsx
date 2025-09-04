@@ -13,7 +13,7 @@ interface EmptyStateProps {
 
 const EmptyState: React.FC<EmptyStateProps> = ({
   message,
-  animationSource = require('../../assets/Animation - 1748335411299.json'),
+  animationSource = require('../../assets/No Item Found.json'),
   style,
   showAnimation = true,
   icon,
@@ -36,14 +36,14 @@ const EmptyState: React.FC<EmptyStateProps> = ({
 const styles = StyleSheet.create({
   emptyContainer: {
     flex: 1,
-    justifyContent: 'center',
+
     alignItems: 'center',
-    paddingHorizontal: 20,
+
   },
   animation: {
     width: 200,
     height: 200,
-    backgroundColor: '#eee',
+
   },
   emptyText: {
     fontSize: 16,

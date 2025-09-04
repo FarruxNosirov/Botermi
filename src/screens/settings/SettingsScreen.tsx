@@ -1,13 +1,16 @@
 import GoBackHeader from '@/components/GoBackHeader';
 import { Text } from '@/components/ui/Text';
 import { colors } from '@/constants/colors';
+import { useDeleteProfile } from '@/hooks/querys';
 import { SettingsStackParamList } from '@/navigation/SettingsNavigator';
+import { RootState } from '@/store';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { SafeAreaView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, Switch, TouchableOpacity, View } from 'react-native';
+import { useSelector } from 'react-redux';
 
 type SettingsScreenNavigationProp = NativeStackNavigationProp<
   SettingsStackParamList,
@@ -22,24 +25,17 @@ type SettingsItem = {
 };
 
 export const SettingsScreen = () => {
-  const navigation = useNavigation<SettingsScreenNavigationProp>();
   const [notifications, setNotifications] = useState(true);
   const { t } = useTranslation();
-
-  const settingsItems: SettingsItem[] = [
-    {
-      id: '1',
-      title: 'Profile',
-      icon: 'person-outline',
-      onPress: () => navigation.navigate('Profile'),
-    },
-    {
-      id: '2',
-      title: 'Language',
-      icon: 'language-outline',
-      onPress: () => navigation.navigate('Language'),
-    },
-  ];
+  const { mutate: deleteProfile } = useDeleteProfile();
+  const { user } = useSelector((state: RootState) => state.auth);
+  console.log(JSON.stringify(user?.data?.id, null, 2));
+  const onDeleteProfile = () => {
+    Alert.alert(t('profilePage.deleteAccountTitle'), t('profilePage.deleteAccountDescription'), [
+      { text: t('cancel'), style: 'cancel' },
+      { text: t('profilePage.delete'), onPress: () => deleteProfile(user?.data?.id) },
+    ]);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -65,7 +61,7 @@ export const SettingsScreen = () => {
           <Ionicons name="chevron-forward" size={20} color="#bbb" />
         </TouchableOpacity>
         <View style={styles.divider} />
-        <TouchableOpacity style={styles.item} onPress={() => {}}>
+        <TouchableOpacity style={styles.item} onPress={onDeleteProfile}>
           <Text style={[styles.text, { color: '#E32F45' }]}>{t('profilePage.deleteAccount')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#E32F45" />
         </TouchableOpacity>

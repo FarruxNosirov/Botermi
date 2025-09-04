@@ -1,7 +1,7 @@
 import IsLoading from '@/components/IsLoading';
 import EmptyState from '@/components/EmptyState';
 import { DEVICE_HEIGHT } from '@/constants/constants';
-import { useBarcodeAll } from '@/hooks/querys';
+import { useBarcodeAll, useBarcodeByBarcode } from '@/hooks/querys';
 import { useAppDispatch } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
 import { MainTabScreenProps } from '@/types/navigation';
@@ -27,9 +27,9 @@ type OperationsScreenProps = MainTabScreenProps<'Operations'>;
 export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
-  const [filterStatus, setFilterStatus] = useState<'all' | 'waiting' | 'approved' | 'rejected'>(
-    'all',
-  );
+  const [filterStatus, setFilterStatus] = useState<
+    'all' | 'waiting' | 'approved' | 'rejected' | 'new'
+  >('all');
   const searchQueryRef = useRef('');
   const searchInputRef = useRef<TextInput>(null);
   const [userData, setUserData] = useState<UserDataType | null>(null);
@@ -39,6 +39,13 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
 
   const { data, isLoading, refetch, isFetching } = useBarcodeAll(userData?.id || 117);
 
+  const {
+    data: barcodeByBarcode,
+    isLoading: isLoadingBarcodeByBarcode,
+    refetch: refetchBarcodeByBarcode,
+    isFetching: isFetchingBarcodeByBarcode,
+  } = useBarcodeByBarcode(userData?.id || 117);
+  console.log('barcodeByBarcode', JSON.stringify(barcodeByBarcode, null, 2));
   const handleGetMe = async () => {
     const resultAction = await dispatch(getMe());
     if (getMe.fulfilled.match(resultAction)) {
@@ -57,16 +64,20 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
 
     try {
       await refetch();
+      await refetchBarcodeByBarcode();
     } catch (error) {
       console.log('Refresh error:', error);
     } finally {
       setRefreshing(false);
     }
-  }, [refetch]);
+  }, [refetch, refetchBarcodeByBarcode]);
 
-  const handleFilterApply = useCallback((status: 'all' | 'waiting' | 'approved' | 'rejected') => {
-    setFilterStatus(status);
-  }, []);
+  const handleFilterApply = useCallback(
+    (status: 'all' | 'waiting' | 'approved' | 'rejected' | 'new') => {
+      setFilterStatus(status);
+    },
+    [],
+  );
 
   useEffect(() => {
     handleGetMe();
@@ -76,23 +87,23 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
     useCallback(() => {
       if (userData?.id) {
         refetch();
+        refetchBarcodeByBarcode();
       }
     }, [userData?.id, refetch]),
   );
+  const dataAll = barcodeByBarcode?.data?.data.concat(data?.data?.data || []);
 
-  const filteredData = (data?.data?.data || []).filter(
-    (item: { barcode: string; status?: string }) => {
-      // Search bo'yicha filter
-      const matchesSearch = item.barcode.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredData = dataAll?.filter((item: { barcode: string; status?: string }) => {
+    const matchesSearch = item?.barcode
+      ? item?.barcode?.toLowerCase().includes(searchQuery.toLowerCase())
+      : item.status?.toLowerCase().includes(searchQuery.toLowerCase());
 
-      // Status bo'yicha filter
-      const matchesStatus = filterStatus === 'all' || item.status === filterStatus;
+    const matchesStatus = filterStatus === 'all' || item?.status === filterStatus;
 
-      return matchesSearch && matchesStatus;
-    },
-  );
+    return matchesSearch && matchesStatus;
+  });
 
-  if (isLoading || isFetching) {
+  if (isLoading || isFetching || isLoadingBarcodeByBarcode || isFetchingBarcodeByBarcode) {
     return (
       <View style={styles.loadingContainer}>
         <IsLoading />
@@ -146,7 +157,9 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
                   ? t('approved')
                   : filterStatus === 'rejected'
                     ? t('rejected')
-                    : ''}
+                    : filterStatus === 'new'
+                      ? t('new')
+                      : ''}
             </Text>
             <TouchableOpacity
               onPress={() => setFilterStatus('all')}
@@ -157,10 +170,10 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
           </View>
         )}
 
-        {filteredData.length > 0 ? (
+        {filteredData?.length > 0 ? (
           <View style={{ height: DEVICE_HEIGHT - 200 }}>
             <FlatList
-              data={filteredData}
+              data={filteredData || []}
               keyExtractor={(item) => item.id?.toString() || item.barcode}
               contentContainerStyle={{ gap: 10, paddingBottom: 100, paddingHorizontal: 2 }}
               renderItem={(item) => <OperationItem {...item} />}
