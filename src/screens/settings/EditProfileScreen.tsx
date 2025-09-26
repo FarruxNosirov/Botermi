@@ -3,17 +3,14 @@ import { Text } from '@/components/ui/Text';
 import { colors } from '@/constants/colors';
 import { useCities } from '@/hooks/querys';
 import { SettingsStackParamList } from '@/navigation/SettingsNavigator';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getMe, register } from '@/store/slices/authSlice';
 import { UserDataType } from '@/types/userType';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import * as ImagePicker from 'expo-image-picker';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
-  Image,
   Modal,
   Platform,
   SafeAreaView,
@@ -26,7 +23,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Dropdown } from 'react-native-element-dropdown';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { showToast } from '@/utils/toastHelper';
@@ -44,13 +41,26 @@ type FormValues = {
 export const EditProfileScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const dispatch = useAppDispatch();
-  const bottom = useSafeAreaInsets().bottom;
+
   const { t } = useTranslation();
 
-  const [avatarUri, setAvatarUri] = useState<string | undefined>(undefined);
   const [userData, setUserData] = useState<UserDataType | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
+
+  const handleGetMe = async () => {
+    setUserData(authUser);
+    setValue('name', authUser?.name || '');
+    setValue('surname', authUser?.surname || '');
+    setValue('phone', authUser?.phone || '');
+    setValue('region', authUser?.city || '');
+    setValue('date_of_birth', authUser?.date_of_birth || '');
+    await dispatch(getMe());
+  };
+  useEffect(() => {
+    handleGetMe();
+  }, []);
 
   const {
     control,
@@ -67,13 +77,6 @@ export const EditProfileScreen = () => {
     },
     mode: 'onChange',
   });
-
-  useEffect(() => {
-    (async () => {
-      await ImagePicker.requestMediaLibraryPermissionsAsync();
-      await ImagePicker.requestCameraPermissionsAsync();
-    })();
-  }, []);
 
   const formatDate = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
@@ -92,22 +95,6 @@ export const EditProfileScreen = () => {
     }));
   }, [regions]);
 
-  const handleGetMe = async () => {
-    const resultAction = await dispatch(getMe());
-    if (getMe.fulfilled.match(resultAction)) {
-      const user = resultAction?.payload?.data;
-      setUserData(user);
-      setValue('name', user?.name || '');
-      setValue('surname', user?.surname || '');
-      setValue('phone', user?.phone || '');
-      setValue('region', user?.city || '');
-      setValue('date_of_birth', user?.date_of_birth || '');
-    }
-  };
-
-  useEffect(() => {
-    handleGetMe();
-  }, []);
   useEffect(() => {
     //@ts-ignore
     if (userData?.date_of_birth) {
@@ -335,7 +322,7 @@ export const EditProfileScreen = () => {
             <Text style={styles.saveButtonText}>{t('save')}</Text>
           </TouchableOpacity>
         </View>
-        <View style={{ height: 50 }} />
+        <View style={{ height: 100 }} />
       </ScrollView>
     </SafeAreaView>
   );

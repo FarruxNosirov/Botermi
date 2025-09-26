@@ -17,13 +17,6 @@ type SettingsScreenNavigationProp = NativeStackNavigationProp<
   'SettingsMain'
 >;
 
-type SettingsItem = {
-  id: string;
-  title: string;
-  icon: keyof typeof Ionicons.glyphMap;
-  onPress: () => void;
-};
-
 export const SettingsScreen = () => {
   const [notifications, setNotifications] = useState(true);
   const { t } = useTranslation();
@@ -36,6 +29,7 @@ export const SettingsScreen = () => {
       { text: t('profilePage.delete'), onPress: () => deleteProfile(user?.data?.id) },
     ]);
   };
+  const navigation = useNavigation<SettingsScreenNavigationProp>();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -51,12 +45,12 @@ export const SettingsScreen = () => {
           />
         </View>
         <View style={styles.divider} />
-        <TouchableOpacity style={styles.item} onPress={() => {}}>
+        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('TermsOfUse')}>
           <Text style={styles.text}>{t('profilePage.termsOfUse')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#bbb" />
         </TouchableOpacity>
         <View style={styles.divider} />
-        <TouchableOpacity style={styles.item} onPress={() => {}}>
+        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('PrivacyPolicy')}>
           <Text style={styles.text}>{t('profilePage.privacyPolicy')}</Text>
           <Ionicons name="chevron-forward" size={20} color="#bbb" />
         </TouchableOpacity>

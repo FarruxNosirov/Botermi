@@ -4,6 +4,8 @@ import {
   authAPI,
   catalogAPI,
   getCities,
+  getReviews,
+  getUserData,
   homeApi,
   prizesApi,
   profileApi,
@@ -32,7 +34,7 @@ export const usePraducts = (
   brandId?: number,
   manufacturerId?: number,
   selectedFilters?: number,
-  perPage: number = 16,
+  perPage?: number,
   language?: string,
 ) => {
   return useInfiniteQuery({
@@ -63,6 +65,43 @@ export const usePraducts = (
     initialPageParam: 1,
   });
 };
+export const usePraductsFirstCategoriesId = (
+  firstCategoryId: number,
+  brandId?: number,
+  manufacturerId?: number,
+  selectedFilters?: number,
+  perPage?: number,
+  language?: string,
+) => {
+  return useInfiniteQuery({
+    queryKey: [
+      'getPraductsFirstCategoriesId',
+      firstCategoryId,
+      brandId,
+      manufacturerId,
+      selectedFilters,
+      perPage,
+      language,
+    ],
+    queryFn: ({ pageParam = 1 }) =>
+      catalogAPI.getPraductsFirstCategoriesId(
+        firstCategoryId,
+        brandId,
+        manufacturerId,
+        selectedFilters,
+        pageParam,
+        perPage,
+        language,
+      ),
+    getNextPageParam: (lastPage) => {
+      const currentPage = lastPage.products?.meta?.current_page || 1;
+      const lastPageNum = lastPage.products?.meta?.last_page || 1;
+      return currentPage < lastPageNum ? currentPage + 1 : undefined;
+    },
+    initialPageParam: 1,
+  });
+};
+
 export const useBrands = () => {
   return useQuery({
     queryKey: ['getFirstBrands'],
@@ -153,5 +192,19 @@ export const useDeleteProfile = () => {
     onError: (error) => {
       console.log(error);
     },
+  });
+};
+export const useGetMe = () => {
+  return useQuery({
+    queryKey: ['getMe'],
+    queryFn: () => getUserData(),
+  });
+};
+
+export const useGetReviews = (language?: string) => {
+  return useQuery({
+    queryKey: ['getReviews', language],
+    queryFn: () => getReviews(language),
+    enabled: !!language,
   });
 };

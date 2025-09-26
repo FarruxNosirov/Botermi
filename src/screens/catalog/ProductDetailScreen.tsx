@@ -1,13 +1,18 @@
 import IsLoading from '@/components/IsLoading';
 import ProductDetailItem from '@/components/ProductDetailItem';
 import { formatPrice } from '@/constants/constants';
-import { useSingleProduct } from '@/hooks/querys';
+import { usePrizesExchange, useSingleProduct } from '@/hooks/querys';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { getMe } from '@/store/slices/authSlice';
 import { CatalogStackParamList } from '@/types/navigation';
+import { UserDataType } from '@/types/userType';
+import { showToast } from '@/utils/toastHelper';
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -182,6 +187,41 @@ export const ProductDetailScreen = () => {
 
   const percentage_of_bonus =
     product?.percentage_of_bonus > 0 ? (customerPriceNum / 100) * product?.percentage_of_bonus : 0;
+  const { mutate: exchangePrize } = usePrizesExchange();
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
+  const [loadingItems, setLoadingItems] = useState<{ [key: number]: boolean }>({});
+  const dispatch = useAppDispatch();
+
+  const userBalance = authUser?.balance;
+
+  const handleExchangePrize = (item: any) => {
+    if (userBalance && userBalance) {
+      setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
+
+      exchangePrize(
+        { product_id: item?.id, type: 'product' },
+        {
+          onSuccess: async (data) => {
+            await dispatch(getMe());
+            showToast('success', t('commond.success'), t('actions.scanSuccess'));
+            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+          },
+          onError: (error: any) => {
+            console.log('error?.response?.data?.message', error?.response?.data?.message);
+
+            showToast(
+              'error',
+              t('commond.error'),
+              error?.response?.data?.message || t('commond.notEnoughBalance'),
+            );
+            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+          },
+        },
+      );
+    } else {
+      showToast('error', t('error'), t('commond.notEnoughBalance'));
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -322,8 +362,18 @@ export const ProductDetailScreen = () => {
                 marginVertical: 10,
               }}
             >
-              <TouchableOpacity style={styles.cartButton}>
-                <Text style={styles.cartButtonText}>{t('homePage.exchange')}</Text>
+              <TouchableOpacity
+                style={styles.cartButton}
+                onPress={() => handleExchangePrize(product)}
+                disabled={loadingItems[product?.id]}
+              >
+                <Text style={styles.cartButtonText}>
+                  {loadingItems[product?.id] ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    t('homePage.exchange')
+                  )}
+                </Text>
               </TouchableOpacity>
             </View>
 
@@ -519,6 +569,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 20,
+    minWidth: 135,
   },
   cartButtonText: {
     color: '#fff',

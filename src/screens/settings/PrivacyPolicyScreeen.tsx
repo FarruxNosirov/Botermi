@@ -1,23 +1,9 @@
-import { useGetReviews } from '@/hooks/querys';
-import { useAppDispatch } from '@/store/hooks';
-import { setAgreementChecked } from '@/store/slices/authSlice';
-import { AuthStackParamList } from '@/types/navigation';
-import { Ionicons } from '@expo/vector-icons';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Dimensions, SafeAreaView, ScrollView, StyleSheet, Text, View } from 'react-native';
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Dimensions,
-  Pressable,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import GoBackHeader from '@/components/GoBackHeader';
+import { useGetReviews } from '@/hooks/querys';
 import RenderHtml from 'react-native-render-html';
-
-type Props = NativeStackScreenProps<AuthStackParamList, 'Agreement'>;
 
 const htmlStyles = {
   p: {
@@ -62,12 +48,7 @@ const htmlStyles = {
   },
 };
 
-export const AgreementScreen = ({ navigation }: Props) => {
-  const dispatch = useAppDispatch();
-  const handleAccept = () => {
-    dispatch(setAgreementChecked(true));
-    navigation.goBack();
-  };
+const PrivacyPolicyScreeen = () => {
   const { t, i18n } = useTranslation();
   const { data, isLoading, error } = useGetReviews(i18n.language);
   const filterData = data?.find((item: any) => item.id === 31);
@@ -76,12 +57,7 @@ export const AgreementScreen = ({ navigation }: Props) => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Ionicons name="chevron-back" size={24} color="black" />
-        </Pressable>
-      </View>
-
+      <GoBackHeader title={t('back')} />
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {isLoading ? (
           <View style={styles.loadingContainer}>
@@ -92,94 +68,41 @@ export const AgreementScreen = ({ navigation }: Props) => {
             <Text style={styles.errorText}>{t('anErrorOccurred')}</Text>
           </View>
         ) : filterData ? (
-          <>
+          <View style={{ paddingBottom: 100 }}>
             <Text style={styles.title}>{filterData.title}</Text>
             <RenderHtml
               contentWidth={contentWidth}
               source={{ html: filterData.text }}
               tagsStyles={htmlStyles}
             />
-          </>
+          </View>
         ) : (
           <View style={styles.errorContainer}>
             <Text style={styles.errorText}>{t('noData')}</Text>
           </View>
         )}
       </ScrollView>
-
-      <View style={styles.footer}>
-        <Pressable style={styles.button} onPress={handleAccept}>
-          <Text style={styles.buttonText}>{t('agree')}</Text>
-        </Pressable>
-      </View>
     </SafeAreaView>
   );
 };
+
+export default PrivacyPolicyScreeen;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
   },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-  },
-  backButton: {
-    padding: 4,
-  },
   content: {
     flex: 1,
     padding: 16,
+    paddingBottom: 100,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     color: '#1F2937',
     marginBottom: 24,
-  },
-  subtitle: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1F2937',
-    marginBottom: 16,
-  },
-  termContainer: {
-    flexDirection: 'row',
-    marginBottom: 16,
-    flexWrap: 'wrap',
-  },
-  term: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1F2937',
-  },
-  dash: {
-    fontSize: 16,
-    color: '#1F2937',
-  },
-  definition: {
-    flex: 1,
-    fontSize: 16,
-    color: '#4B5563',
-  },
-  footer: {
-    padding: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-  },
-  button: {
-    backgroundColor: '#E32F45',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
   },
   loadingContainer: {
     flex: 1,

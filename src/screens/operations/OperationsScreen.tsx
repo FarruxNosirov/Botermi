@@ -2,7 +2,7 @@ import IsLoading from '@/components/IsLoading';
 import EmptyState from '@/components/EmptyState';
 import { DEVICE_HEIGHT } from '@/constants/constants';
 import { useBarcodeAll, useBarcodeByBarcode } from '@/hooks/querys';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
 import { MainTabScreenProps } from '@/types/navigation';
 import { UserDataType } from '@/types/userType';
@@ -32,7 +32,8 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
   >('all');
   const searchQueryRef = useRef('');
   const searchInputRef = useRef<TextInput>(null);
-  const [userData, setUserData] = useState<UserDataType | null>(null);
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
+  const [userData, setUserData] = useState<UserDataType | null>(authUser || null);
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const navigation = useNavigation();
@@ -45,11 +46,11 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
     refetch: refetchBarcodeByBarcode,
     isFetching: isFetchingBarcodeByBarcode,
   } = useBarcodeByBarcode(userData?.id || 117);
-  console.log('barcodeByBarcode', JSON.stringify(barcodeByBarcode, null, 2));
+
   const handleGetMe = async () => {
     const resultAction = await dispatch(getMe());
     if (getMe.fulfilled.match(resultAction)) {
-      const user = resultAction?.payload?.data;
+      const user = (resultAction?.payload as any)?.data || resultAction?.payload;
       setUserData(user);
     }
   };
@@ -80,7 +81,9 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
   );
 
   useEffect(() => {
-    handleGetMe();
+    if (!authUser) {
+      handleGetMe();
+    }
   }, []);
 
   useFocusEffect(

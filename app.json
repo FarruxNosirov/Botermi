@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "cover",
@@ -43,11 +43,10 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.botermi.app",
+      "buildNumber": "1",
       "infoPlist": {
-        "NSCameraUsageDescription": "This app uses the camera to scan QR codes."
-      },
-      "config": {
-        "googleMapsApiKey": "YOUR_IOS_API_KEY"
+        "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
+        "ITSAppUsesNonExemptEncryption": false
       },
       "icon": {
         "dark": "./assets/ios-dark.png",
@@ -62,11 +61,7 @@
         "backgroundColor": "#B3071A"
       },
       "package": "com.botermi.app",
-      "config": {
-        "googleMaps": {
-          "apiKey": "YOUR_ANDROID_API_KEY"
-        }
-      },
+      "versionCode": 1,
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",

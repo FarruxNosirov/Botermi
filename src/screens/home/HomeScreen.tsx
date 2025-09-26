@@ -1,11 +1,9 @@
-import { Button } from '@/components/ui/Button';
 import { formatBalance } from '@/constants/constants';
 import { useGetStatuses } from '@/hooks/querys';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
 import { HomeStackParamList } from '@/types/navigation';
 import { Ionicons } from '@expo/vector-icons';
-import Entypo from '@expo/vector-icons/Entypo';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
@@ -14,7 +12,6 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 import {
-  Image,
   Linking,
   Pressable,
   SafeAreaView,
@@ -29,30 +26,27 @@ import StatusCard from '@/components/StatusCard';
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const dispatch = useAppDispatch();
-  const [userData, setUserData] = useState<any>(null);
-  const { data: statuses, refetch } = useGetStatuses(userData?.id);
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
+
+  const { data: statuses, refetch } = useGetStatuses((authUser as any)?.id);
   const { t } = useTranslation();
 
   const handleGetMe = async () => {
-    const resultAction = await dispatch(getMe());
-
-    if (getMe.fulfilled.match(resultAction)) {
-      setUserData(resultAction?.payload?.data);
-    } else {
-      console.log('Error:', resultAction.payload);
-    }
+    await dispatch(getMe());
   };
   useEffect(() => {
-    handleGetMe();
+    if (!authUser) {
+      handleGetMe();
+    }
     refetch();
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      handleGetMe();
       refetch();
     }, []),
   );
+  console.log('authUser', JSON.stringify(authUser, null, 2));
 
   const StatusGrid = () => {
     return (
@@ -63,7 +57,7 @@ const HomeScreen = () => {
             iconName="back-in-time"
             color="#a9a9a9"
             value={statuses?.waiting_barcodes}
-            title={t('homePage.one')}
+            title={t('homePage.currency')}
             label={t('homePage.viewing')}
           />
           <StatusCard
@@ -71,7 +65,7 @@ const HomeScreen = () => {
             iconName="clock-check-outline"
             color="#a9a9a9"
             value={statuses?.approved_barcodes}
-            title={t('homePage.one')}
+            title={t('homePage.currency')}
             label={t('homePage.approved')}
           />
         </View>
@@ -82,7 +76,7 @@ const HomeScreen = () => {
             iconName="clock-remove-outline"
             color="#a9a9a9"
             value={statuses?.rejected_barcodes}
-            title={t('homePage.one')}
+            title={t('homePage.currency')}
             label={t('homePage.rejected')}
           />
           <StatusCard
@@ -90,7 +84,7 @@ const HomeScreen = () => {
             iconName="hand-holding-heart"
             color="#a9a9a9"
             value={0}
-            title={t('homePage.one')}
+            title={t('homePage.currency')}
             label={t('homePage.used')}
           />
         </View>
@@ -107,11 +101,11 @@ const HomeScreen = () => {
           </View>
           <View style={styles.userDetails}>
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-              <Text style={styles.userPhone}>{userData?.name} </Text>
+              <Text style={styles.userPhone}>{authUser?.name} </Text>
 
-              <Text style={styles.userPhone}>{userData?.surname}</Text>
+              <Text style={styles.userPhone}>{authUser?.surname}</Text>
             </View>
-            <Text style={styles.userId}>ID {userData?.id}</Text>
+            <Text style={styles.userId}>ID {authUser?.id}</Text>
           </View>
         </View>
         <Pressable onPress={() => navigation.navigate('Notifications' as any)}>
@@ -124,7 +118,7 @@ const HomeScreen = () => {
           <View>
             <Text style={styles.bonusTitle}>{t('homePage.availableBonuss')}</Text>
             <View style={styles.bonusAmount}>
-              <Text style={styles.bonusValue}>{formatBalance(userData?.balance)}</Text>
+              <Text style={styles.bonusValue}>{formatBalance(authUser?.balance)}</Text>
               <Text style={styles.bonusUnit}>{t('homePage.currency')}</Text>
             </View>
           </View>
@@ -200,7 +194,7 @@ const HomeScreen = () => {
           </TouchableOpacity>
           <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Blogs')}>
             <View style={styles.actionIcon}>
-              <AntDesign name="youtube" size={24} color="#fff" />
+              <AntDesign name="youtube" size={45} color="#fff" />
             </View>
             <View style={styles.actionContent}>
               <View
@@ -219,7 +213,7 @@ const HomeScreen = () => {
             </View>
           </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[
               styles.promotionCard,
               {
@@ -249,7 +243,7 @@ const HomeScreen = () => {
               style={{ width: 130, height: 150 }}
               resizeMode="contain"
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -333,7 +327,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   actionCard: {
-    padding: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 16,
     backgroundColor: '#fff',
     boxShadow: '0 0 5 #dddddd',
     borderRadius: 12,
@@ -341,8 +336,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionIcon: {
-    width: 40,
-    height: 40,
+    width: 70,
+    height: 70,
     borderRadius: 12,
     backgroundColor: 'red',
     justifyContent: 'center',

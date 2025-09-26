@@ -18,7 +18,6 @@ import {
   View,
 } from 'react-native';
 import type { CatalogStackParamList } from '../../navigation/CatalogStack';
-import CatalogPraductScreenHook from './model/CatalogPraductScreenHook';
 
 export const EpaScreen = () => {
   const route = useRoute<RouteProp<CatalogStackParamList, 'EPA'>>();

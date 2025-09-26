@@ -3,7 +3,7 @@ import { Icon } from '@/components/ui/Icon';
 import { Text } from '@/components/ui/Text';
 import { colors } from '@/constants/colors';
 import { SettingsStackParamList } from '@/navigation/SettingsNavigator';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getMe, logout } from '@/store/slices/authSlice';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -21,39 +21,18 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<SettingsStackParamList>;
-type UserPosition = {
-  id: number;
-  name: string;
-};
-
-type UserData = {
-  id: number;
-  name: string;
-  surname: string;
-  phone: string;
-  second_phone: string;
-  vip: number;
-  city: string;
-  created_at: string;
-  positions: UserPosition[];
-};
 
 export const ProfileScreen = () => {
   const navigation = useNavigation<ProfileScreenNavigationProp>();
   const dispatch = useAppDispatch();
-  const [userData, setUserData] = useState<UserData | null>(null);
-
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
   const handleGetMe = async () => {
-    const resultAction = await dispatch(getMe());
-
-    if (getMe.fulfilled.match(resultAction)) {
-      setUserData(resultAction?.payload?.data);
-    } else {
-      console.log('Xatolik:', resultAction.payload);
-    }
+    await dispatch(getMe());
   };
   useEffect(() => {
-    handleGetMe();
+    if (!authUser) {
+      handleGetMe();
+    }
   }, []);
 
   const { i18n, t } = useTranslation();
@@ -85,12 +64,12 @@ export const ProfileScreen = () => {
       icon: 'location-outline' as const,
       onPress: () => navigation.navigate('CityScreen'),
     },
-    {
-      id: 'prizes',
-      title: t('profilePage.prizes'),
-      icon: 'pricetags-outline' as const,
-      onPress: () => {},
-    },
+    // {
+    //   id: 'prizes',
+    //   title: t('profilePage.prizes'),
+    //   icon: 'pricetags-outline' as const,
+    //   onPress: () => {},
+    // },
 
     {
       id: 'logout',
@@ -108,24 +87,14 @@ export const ProfileScreen = () => {
         );
       },
     },
-    {
-      id: 'about',
-      title: t('profilePage.about'),
-      icon: 'information-circle-outline' as const,
-      onPress: () => {},
-    },
+    // {
+    //   id: 'about',
+    //   title: t('profilePage.about'),
+    //   icon: 'information-circle-outline' as const,
+    //   onPress: () => {},
+    // },
   ];
   const insets = useSafeAreaInsets();
-  const makeCall = async () => {
-    const phoneNumber = 'tel:+998951447575';
-    const supported = await Linking.canOpenURL(phoneNumber);
-
-    if (supported) {
-      Linking.openURL(phoneNumber);
-    } else {
-      Alert.alert(t('error'), t('errorDescription'));
-    }
-  };
 
   const formatDate = (dateString: string) => {
     try {
@@ -156,11 +125,11 @@ export const ProfileScreen = () => {
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.firstName}>
-                {userData?.name || 'aziz'} {userData?.surname || 'rametov'}
+                {authUser?.name || 'aziz'} {authUser?.surname || 'rametov'}
               </Text>
               <Text style={styles.date}>
                 {t('profilePage.registered')}:{' '}
-                {userData?.created_at ? formatDate(userData?.created_at) : '17.05.2025; 10:56'}
+                {authUser?.created_at ? formatDate(authUser?.created_at) : '17.05.2025; 10:56'}
               </Text>
               <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
                 <Text style={styles.statusText}>{t('profilePage.status')}:</Text>

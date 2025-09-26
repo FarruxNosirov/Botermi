@@ -24,13 +24,14 @@ const CustomTabBarButton: React.FC<CustomTabBarButtonProps> = ({ children, onPre
       width: 70,
       height: 70,
       alignItems: 'center',
+      top: -25,
     }}
     onPress={onPress}
   >
     <View
       style={{
-        width: 55,
-        height: 53,
+        width: 60,
+        height: 58,
         borderRadius: 35,
         backgroundColor: '#b41818',
         justifyContent: 'center',
@@ -58,7 +59,7 @@ export const MainTabNavigator = () => {
             iconName = focused ? 'grid' : 'grid-outline';
           } else if (route.name === 'Actions') {
             iconName = 'qr-code-outline';
-            color = focused ? '#fff' : '#062B4C';
+            color = '#fff';
           } else if (route.name === 'Operations') {
             iconName = focused ? 'time' : 'time-outline';
           } else if (route.name === 'Profile') {
@@ -70,11 +71,11 @@ export const MainTabNavigator = () => {
               {route.name === 'Actions' ? (
                 <MaterialCommunityIcons
                   name="barcode-scan"
-                  size={30}
+                  size={33}
                   color={color}
                   style={{
-                    width: 30,
-                    height: 30,
+                    width: 33,
+                    height: 33,
                     top: 5,
                   }}
                 />
@@ -120,6 +121,22 @@ export const MainTabNavigator = () => {
         options={{
           tabBarLabel: t('navigation.catalogLable'),
         }}
+        listeners={({ navigation, route }) => ({
+          tabPress: (e) => {
+            const state = navigation.getState();
+            const tabIndex = state.routes.findIndex((r) => r.key === route.key);
+            const tabState = state.routes[tabIndex].state;
+
+            // Agar tab allaqachon active va stack-da birdan ko'p screen bo'lsa
+            if (tabState && tabState.index !== undefined && tabState.index > 0) {
+              e.preventDefault();
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Catalog' }],
+              });
+            }
+          },
+        })}
       />
       <Tab.Screen
         name="Actions"

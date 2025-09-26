@@ -1,5 +1,5 @@
 import { DEVICE_WIDTH, formatPrice } from '@/constants/constants';
-import { usePrizesExchange } from '@/hooks/querys';
+import { useGetMe, usePrizesExchange } from '@/hooks/querys';
 import { CatalogStackParamList } from '@/navigation/CatalogStack';
 import { useAppDispatch } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
@@ -33,36 +33,24 @@ const ProductDetailItem = ({ item }: { item: any }) => {
   const progressValue = useSharedValue(0);
 
   const allImages = [item?.image, ...(item?.foto_gallary || [])].filter(Boolean);
-  const autoPlayCarusel = allImages.length > 1 ? true : false;
+
   const percentage_of_bonus =
     item?.percentage_of_bonus > 0 ? (customerPriceNum / 100) * item?.percentage_of_bonus : 0;
   const { mutate: exchangePrize } = usePrizesExchange();
-  const [userData, setUserData] = useState<UserDataType | null>(null);
+
   const [loadingItems, setLoadingItems] = useState<{ [key: number]: boolean }>({});
+  let { data: userData } = useGetMe();
   const dispatch = useAppDispatch();
 
-  const handleGetMe = async () => {
-    const resultAction = await dispatch(getMe());
-    if (getMe.fulfilled.match(resultAction)) {
-      setUserData(resultAction?.payload?.data);
-    } else {
-      console.log('error:', resultAction.payload);
-    }
-  };
-
-  useEffect(() => {
-    handleGetMe();
-  }, []);
-
   const handleExchangePrize = (item: any) => {
-    if (userData?.balance && userData?.balance) {
+    if (userData?.balance) {
       setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
 
       exchangePrize(
         { product_id: item?.id, type: 'product' },
         {
           onSuccess: async (data) => {
-            await handleGetMe();
+            await dispatch(getMe());
             showToast('success', t('commond.success'), t('actions.scanSuccess'));
             setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
           },
@@ -84,97 +72,100 @@ const ProductDetailItem = ({ item }: { item: any }) => {
   };
 
   return (
-    <TouchableOpacity
-      style={[styles.productItem, { width: productCardWidth }]}
-      onPress={() => navigation.navigate('ProductDetail', { product: item })}
-    >
-      <View style={{ position: 'relative' }}>
-        {allImages.length > 1 ? (
-          <Carousel
-            loop
-            width={productCardWidth - 30}
-            height={150}
-            autoPlay={autoPlayCarusel}
-            data={allImages}
-            scrollAnimationDuration={1500}
-            onProgressChange={(offsetProgress) => {
-              progressValue.value = offsetProgress;
-            }}
-            onSnapToItem={(index) => setActiveIndex(index)}
-            renderItem={({ item: imageUrl }: any) => (
-              <Image source={{ uri: imageUrl }} style={styles.productImage} resizeMode="contain" />
-            )}
-          />
-        ) : (
-          <Image
-            source={{ uri: allImages[0] || item?.image }}
-            style={[styles.productImage, { width: productCardWidth - 30 }]}
-            resizeMode="contain"
-          />
-        )}
-        {allImages.length > 1 ? (
-          <View style={styles.dotsContainer}>
-            {allImages?.map((_: any, index: React.Key | null | undefined) => (
-              <View key={index} style={[styles.dot, activeIndex === index && styles.activeDot]} />
-            ))}
-          </View>
-        ) : null}
+    <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { product: item })}>
+      <View style={[styles.productItem, { width: productCardWidth }]}>
+        <View style={{ position: 'relative' }}>
+          {allImages.length > 1 ? (
+            <Carousel
+              loop
+              width={productCardWidth - 30}
+              height={150}
+              autoPlay={false}
+              data={allImages}
+              scrollAnimationDuration={1500}
+              onProgressChange={(offsetProgress) => {
+                progressValue.value = offsetProgress;
+              }}
+              onSnapToItem={(index) => setActiveIndex(index)}
+              renderItem={({ item: imageUrl }: any) => (
+                <Image
+                  source={{ uri: imageUrl }}
+                  style={styles.productImage}
+                  resizeMode="contain"
+                />
+              )}
+            />
+          ) : (
+            <Image
+              source={{ uri: allImages[0] || item?.image }}
+              style={[styles.productImage, { width: productCardWidth - 30 }]}
+              resizeMode="contain"
+            />
+          )}
+          {allImages.length > 1 ? (
+            <View style={styles.dotsContainer}>
+              {allImages?.map((_: any, index: React.Key | null | undefined) => (
+                <View key={index} style={[styles.dot, activeIndex === index && styles.activeDot]} />
+              ))}
+            </View>
+          ) : null}
 
-        <View style={styles.productDetails}>
-          <Text style={styles.productName} numberOfLines={3}>
-            {planNameLength}
-          </Text>
-          {item?.vendor_code && (
-            <View style={styles.vendorCodeContainer}>
-              <Text style={styles.bonusText}>{t('homePage.vendor_code')}:</Text>
-              <Text style={styles.bonusText}>{item?.vendor_code}</Text>
+          <View style={styles.productDetails}>
+            <Text style={styles.productName} numberOfLines={3}>
+              {planNameLength}
+            </Text>
+            {item?.vendor_code && (
+              <View style={styles.vendorCodeContainer}>
+                <Text style={styles.bonusText}>{t('homePage.vendor_code')}:</Text>
+                <Text style={styles.bonusText}>{item?.vendor_code}</Text>
+              </View>
+            )}
+          </View>
+        </View>
+        <View style={styles.priceContainer}>
+          {percentage_of_bonus > 0 && (
+            <View style={styles.cashbackContainer}>
+              <Text style={styles.cashbackText}>{t('katalog.cashback')}:</Text>
+              <Text style={styles.cashbackValue}>
+                {percentage_of_bonus} {t('homePage.currency')}
+              </Text>
             </View>
           )}
-        </View>
-      </View>
-      <View style={styles.priceContainer}>
-        {percentage_of_bonus > 0 && (
-          <View style={styles.cashbackContainer}>
-            <Text style={styles.cashbackText}>{t('katalog.cashback')}:</Text>
-            <Text style={styles.cashbackValue}>
-              {percentage_of_bonus} {t('homePage.currency')}
+          {priceNum > 0 || customerPriceNum > 0 ? (
+            <View>
+              <View>
+                <Text style={styles.priceText}>
+                  {formatPrice(item?.customer_price)} {t('homePage.currency')}
+                </Text>
+              </View>
+              <View style={styles.priceOld}>
+                <Text style={styles.priceOldText}>
+                  {formatPrice(item?.price)} {t('homePage.currency')}
+                </Text>
+              </View>
+            </View>
+          ) : null}
+
+          <TouchableOpacity
+            style={styles.cartButton}
+            onPress={() => handleExchangePrize(item)}
+            disabled={loadingItems[item?.id]}
+          >
+            <Text style={styles.cartButtonText}>
+              {loadingItems[item?.id] ? (
+                <ActivityIndicator size="small" color="#fff" />
+              ) : (
+                t('homePage.exchange')
+              )}
             </Text>
+          </TouchableOpacity>
+        </View>
+        {discountPercentage < 0 && (
+          <View style={styles.discountContainer}>
+            <Text style={styles.discountText}>{discountPercentage}%</Text>
           </View>
         )}
-        {priceNum > 0 || customerPriceNum > 0 ? (
-          <View>
-            <View>
-              <Text style={styles.priceText}>
-                {formatPrice(item?.customer_price)} {t('homePage.currency')}
-              </Text>
-            </View>
-            <View style={styles.priceOld}>
-              <Text style={styles.priceOldText}>
-                {formatPrice(item?.price)} {t('homePage.currency')}
-              </Text>
-            </View>
-          </View>
-        ) : null}
-
-        <TouchableOpacity
-          style={styles.cartButton}
-          onPress={() => handleExchangePrize(item)}
-          disabled={loadingItems[item?.id]}
-        >
-          <Text style={styles.cartButtonText}>
-            {loadingItems[item?.id] ? (
-              <ActivityIndicator size="small" color="#fff" />
-            ) : (
-              t('homePage.exchange')
-            )}
-          </Text>
-        </TouchableOpacity>
       </View>
-      {discountPercentage < 0 && (
-        <View style={styles.discountContainer}>
-          <Text style={styles.discountText}>{discountPercentage}%</Text>
-        </View>
-      )}
     </TouchableOpacity>
   );
 };
@@ -187,7 +178,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 7,
     marginBottom: 12,
-    boxShadow: 'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px',
+    boxShadow: '0 0 5 #dddddd',
     height: 370,
     flexDirection: 'column',
     justifyContent: 'space-between',

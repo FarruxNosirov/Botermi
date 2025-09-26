@@ -27,29 +27,21 @@ export const CatalogScreen = () => {
 
   const { data, isLoading } = useGetFirstCategories(i18n.language);
 
-  const navigationHandler = useCallback(
-    async (categoryId: number) => {
-      try {
-        const response = await catalogAPI.getSubCategories(categoryId, i18n.language);
-        const hasSubCategories = response?.sub_categories?.length > 0;
-
-        if (hasSubCategories) {
-          navigation.navigate('EPA', { categoryId });
-        } else {
-          navigation.navigate('CatalogPraductScreen', {
-            firstCategoryId: categoryId,
-          });
-        }
-      } catch (error) {
-        console.error('Navigation error:', error);
-
-        navigation.navigate('CatalogPraductScreen', {
-          firstCategoryId: categoryId,
+  const navigationHandler = async (categoryId: number) => {
+    try {
+      const response = await catalogAPI.getSubCategories(categoryId, i18n.language);
+      const hasSubCategories = response?.sub_categories?.length > 0;
+      if (hasSubCategories) {
+        navigation.navigate('EPA', { categoryId });
+      } else {
+        navigation.navigate('FirstCatalogPraductScreen', {
+          categoryId: categoryId,
         });
       }
-    },
-    [navigation, i18n.language],
-  );
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  };
 
   const keyExtractor = useCallback((item: any) => item.id.toString(), []);
 

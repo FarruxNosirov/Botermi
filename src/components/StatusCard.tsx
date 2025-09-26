@@ -7,6 +7,7 @@ import {
   MaterialCommunityIcons,
   FontAwesome5,
 } from '@expo/vector-icons';
+import { formatBalance } from '@/constants/constants';
 
 type Props = {
   iconLib?: 'Feather' | 'AntDesign' | 'Entypo' | 'MaterialCommunityIcons' | 'FontAwesome5';
@@ -55,7 +56,7 @@ const StatusCard: React.FC<Props> = ({
       <View style={{ marginLeft: 10, alignItems: 'flex-end' }}>
         <Text style={{ color: '#000' }}>{label}</Text>
         <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
-          {value} {title}
+          {formatBalance(value as number)} {title}
         </Text>
       </View>
     </View>

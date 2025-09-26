@@ -34,6 +34,7 @@ export const ActionsScreen = () => {
   const [shopCode, setShopCode] = useState('');
   const [avatarUri, setAvatarUri] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [scannedBarcodes, setScannedBarcodes] = useState<Set<string>>(new Set());
   useEffect(() => {
     if (!permission?.granted) {
       requestPermission();
@@ -41,8 +42,15 @@ export const ActionsScreen = () => {
   }, [permission]);
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
+    // Check if this barcode was already scanned in this session
+    if (scannedBarcodes.has(data)) {
+      showToast('error', t('error'), t('actions.barcodeAlreadyScanned'));
+      return;
+    }
+
     setShopCode(data);
     setShowScanner(false);
+    setScannedBarcodes((prev) => new Set(prev).add(data));
   };
   const isValidShopCode = shopCode.length >= 13;
   const { mutate: scanBarcode } = useScanBarcode();
@@ -67,8 +75,7 @@ export const ActionsScreen = () => {
   };
   const takePhoto = async () => {
     const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
+      allowsEditing: false,
       quality: 0.8,
     });
 
@@ -105,9 +112,21 @@ export const ActionsScreen = () => {
       { cancelable: true },
     );
   };
+
+  const handleRemoveImage = () => {
+    Alert.alert(
+      t('removeImage'),
+      t('areYouSureRemoveImage'),
+      [
+        { text: t('cancel'), style: 'cancel' },
+        { text: t('profilePage.delete'), style: 'destructive', onPress: () => setAvatarUri(null) },
+      ],
+      { cancelable: true },
+    );
+  };
   const handleScanBarcode = () => {
     if (!avatarUri) {
-      alert('Iltimos, rasm tanlang!');
+      showToast('error', t('error'), t('actions.pleaseSelectImage'));
       return;
     }
     setIsSubmitting(true);
@@ -216,10 +235,33 @@ export const ActionsScreen = () => {
                     </Text>
                   </TouchableOpacity>
                 ) : (
-                  <Image
-                    style={{ width: '95%', height: '100%', objectFit: 'cover', borderRadius: 10 }}
-                    source={{ uri: avatarUri?.uri }}
-                  />
+                  <View style={{ width: '95%', height: '100%', position: 'relative' }}>
+                    <Image
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        borderRadius: 10,
+                      }}
+                      source={{ uri: avatarUri?.uri }}
+                    />
+                    <TouchableOpacity
+                      style={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                        borderRadius: 15,
+                        width: 30,
+                        height: 30,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
+                      onPress={handleRemoveImage}
+                    >
+                      <Ionicons name="close" size={20} color="#fff" />
+                    </TouchableOpacity>
+                  </View>
                 )}
               </View>
             </View>
@@ -237,12 +279,12 @@ export const ActionsScreen = () => {
                   />
                 </View>
                 <TouchableOpacity style={styles.scanButton} onPress={() => setShowScanner(true)}>
-                  <Ionicons name="qr-code-outline" size={40} color="#000" />
+                  <MaterialCommunityIcons name="barcode-scan" size={40} color="#000" />
                 </TouchableOpacity>
               </View>
               {shopCode.length > 0 && !isValidShopCode && (
                 <Text style={{ color: 'red', marginTop: 4 }}>
-                  {t('storeCodeMinLength', { count: 13 }) /* i18n uchun */}
+                  {t('actions.storeCodeMinLength', { count: 13 })}
                 </Text>
               )}
             </View>

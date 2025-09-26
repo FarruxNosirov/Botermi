@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+// TEMPORARILY DISABLED FOR BUILD - import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 type Location = {
   id: number;
@@ -40,7 +40,7 @@ export const CityScreen = () => {
 
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const filteredCities = citiesData.filter((c: City) => c.locations.length > 0);
+  const filteredCities = citiesData?.filter((c: City) => c.locations.length > 0);
 
   const selectedCity = React.useMemo(() => {
     if (!filteredCities || selectedCityId === null) return null;
@@ -54,7 +54,6 @@ export const CityScreen = () => {
 
   const extractCoordinates = (locationString: string) => {
     try {
-      // locationString ichidan ll=...,... yoki ll=...%2C... ni topamiz
       const llMatch = locationString.match(/ll=([\d.-]+)[,%2C]+([\d.-]+)/);
       if (llMatch) {
         return {
@@ -143,6 +142,7 @@ export const CityScreen = () => {
 
         {/* Map Container */}
         <View style={styles.mapContainer}>
+          {/* TEMPORARILY DISABLED FOR BUILD
           <MapView
             provider={PROVIDER_GOOGLE}
             style={styles.map}
@@ -167,6 +167,12 @@ export const CityScreen = () => {
               </Marker>
             ))}
           </MapView>
+          */}
+          <View style={styles.map}>
+            <Text style={{ textAlign: 'center', paddingTop: 50, color: '#999', fontSize: 16 }}>
+              Xarita vaqtincha ishlamaydi
+            </Text>
+          </View>
 
           {selectedCity && selectedCity.locations.length > 0 && (
             <View style={styles.locationInfo}>

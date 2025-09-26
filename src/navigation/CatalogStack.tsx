@@ -8,6 +8,7 @@ import { Product } from '@/types/product';
 import CatalogPraductScreen from '@/screens/catalog/CatalogPraductScreen';
 import PrizesScreen from '@/screens/catalog/PrizesScreen';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import FirstCatalogPraductScreen from '@/screens/catalog/FirstCatalogPraductScreen';
 
 export type CatalogStackParamList = {
   CatalogMain: undefined;
@@ -24,7 +25,9 @@ export type CatalogStackParamList = {
   CatalogPraductScreen: {
     subCatalogId?: number;
     categoryId?: number;
-    firstCategoryId?: number;
+  };
+  FirstCatalogPraductScreen: {
+    categoryId?: number;
   };
 };
 
@@ -39,6 +42,7 @@ export const CatalogStack = () => {
         <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
         <Stack.Screen name="CatalogPraductScreen" component={CatalogPraductScreen} />
+        <Stack.Screen name="FirstCatalogPraductScreen" component={FirstCatalogPraductScreen} />
         <Stack.Screen name="PrizesScreen" component={PrizesScreen} />
       </Stack.Navigator>
     </ErrorBoundary>
