@@ -3,12 +3,10 @@ import { useGetMe, usePrizesExchange } from '@/hooks/querys';
 import { CatalogStackParamList } from '@/navigation/CatalogStack';
 import { useAppDispatch } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
-import { UserDataType } from '@/types/userType';
 import { showToast } from '@/utils/toastHelper';
-import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
@@ -70,6 +68,11 @@ const ProductDetailItem = ({ item }: { item: any }) => {
       showToast('error', t('error'), t('commond.notEnoughBalance'));
     }
   };
+  const disabled =
+    (Number(userData.balance) >= Number(item?.customer_price) &&
+      Number(item?.customer_price) > 0 &&
+      userData.vip > 0) ||
+    loadingItems[item?.id];
 
   return (
     <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { product: item })}>
@@ -132,24 +135,37 @@ const ProductDetailItem = ({ item }: { item: any }) => {
             </View>
           )}
           {priceNum > 0 || customerPriceNum > 0 ? (
-            <View>
-              <View>
-                <Text style={styles.priceText}>
-                  {formatPrice(item?.customer_price)} {t('homePage.currency')}
-                </Text>
-              </View>
-              <View style={styles.priceOld}>
-                <Text style={styles.priceOldText}>
-                  {formatPrice(item?.price)} {t('homePage.currency')}
-                </Text>
-              </View>
-            </View>
+            <>
+              {userData?.vip > 0 ? (
+                <View>
+                  <Text style={styles.priceText}>
+                    {formatPrice(item?.customer_price)} {t('homePage.currency')}
+                  </Text>
+                </View>
+              ) : (
+                <View>
+                  <Text style={styles.priceText}>
+                    {formatPrice(item?.price)} {t('homePage.currency')}
+                  </Text>
+                </View>
+              )}
+            </>
           ) : null}
 
           <TouchableOpacity
-            style={styles.cartButton}
+            style={[
+              styles.cartButton,
+              {
+                backgroundColor:
+                  Number(userData?.balance) >= Number(item?.customer_price) &&
+                  Number(item?.customer_price) > 0 &&
+                  userData?.vip > 0
+                    ? '#FF3B30'
+                    : '#d5d5d5',
+              },
+            ]}
             onPress={() => handleExchangePrize(item)}
-            disabled={loadingItems[item?.id]}
+            disabled={!disabled}
           >
             <Text style={styles.cartButtonText}>
               {loadingItems[item?.id] ? (
@@ -178,11 +194,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 7,
     marginBottom: 12,
-    boxShadow: '0 0 5 #dddddd',
+    // iOS shadow
+    shadowColor: '#dddddd',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    // Android shadow
+    elevation: 5,
     height: 370,
     flexDirection: 'column',
     justifyContent: 'space-between',
     position: 'relative',
+    backgroundColor: '#fff',
   },
 
   productImage: {
@@ -221,7 +247,6 @@ const styles = StyleSheet.create({
     color: '#0F4D0F',
   },
   cartButton: {
-    backgroundColor: '#FF3B30',
     height: 35,
     borderRadius: 10,
     justifyContent: 'center',

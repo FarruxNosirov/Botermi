@@ -45,7 +45,7 @@ export const EpaScreen = () => {
           <IsLoading />
         ) : (
           <>
-            {filteredCategories.length > 0 && (
+            {data?.sub_categories?.length > 0 && (
               <View style={styles.searchContainer}>
                 <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
                 <TextInput
@@ -57,7 +57,7 @@ export const EpaScreen = () => {
                 />
               </View>
             )}
-            {filteredCategories && filteredCategories.length > 0 ? (
+            {filteredCategories && filteredCategories?.length > 0 ? (
               <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {filteredCategories?.map((category: CatalogItemType, index: number) => {
                   return (

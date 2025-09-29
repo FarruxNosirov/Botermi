@@ -358,7 +358,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 16,
-    color: colors.gray[900],
+    color: '#111827',
     marginBottom: 18,
     justifyContent: 'center',
   },

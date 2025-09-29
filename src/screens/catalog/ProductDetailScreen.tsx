@@ -223,6 +223,12 @@ export const ProductDetailScreen = () => {
     }
   };
 
+  const disabled =
+    (Number(userBalance) >= Number(product?.customer_price) &&
+      Number(product?.customer_price) > 0 &&
+      authUser?.vip > 0) ||
+    loadingItems[product?.id];
+
   return (
     <SafeAreaView style={styles.container}>
       {isLoading ? (
@@ -312,22 +318,25 @@ export const ProductDetailScreen = () => {
             )}
             {priceNum > 0 || customerPriceNum > 0 ? (
               <View style={styles.priceContainer}>
-                <View style={styles.priceContant}>
-                  <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
-                    {t('katalog.retailPrice')}:
-                  </Text>
-                  <Text style={styles.priceText}>
-                    {formatPrice(product?.customer_price)} {t('homePage.currency')}
-                  </Text>
-                </View>
-                <View style={styles.priceContant}>
-                  <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
-                    {t('katalog.masterPrice')}:
-                  </Text>
-                  <Text style={styles.priceOldText}>
-                    {formatPrice(product?.price)} {t('homePage.currency')}
-                  </Text>
-                </View>
+                {authUser?.vip > 0 ? (
+                  <View style={styles.priceContant}>
+                    <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
+                      {t('katalog.retailPrice')}:
+                    </Text>
+                    <Text style={styles.priceText}>
+                      {formatPrice(product?.customer_price)} {t('homePage.currency')}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.priceContant}>
+                    <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
+                      {t('katalog.masterPrice')}:
+                    </Text>
+                    <Text style={styles.priceText}>
+                      {formatPrice(product?.price)} {t('homePage.currency')}
+                    </Text>
+                  </View>
+                )}
               </View>
             ) : null}
             {percentage_of_bonus > 0 && (
@@ -363,9 +372,19 @@ export const ProductDetailScreen = () => {
               }}
             >
               <TouchableOpacity
-                style={styles.cartButton}
+                style={[
+                  styles.cartButton,
+                  {
+                    backgroundColor:
+                      Number(userBalance) >= Number(product?.customer_price) &&
+                      Number(product?.customer_price) > 0 &&
+                      authUser?.vip > 0
+                        ? '#FF3B30'
+                        : '#d5d5d5',
+                  },
+                ]}
                 onPress={() => handleExchangePrize(product)}
-                disabled={loadingItems[product?.id]}
+                disabled={!disabled}
               >
                 <Text style={styles.cartButtonText}>
                   {loadingItems[product?.id] ? (
@@ -563,7 +582,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   cartButton: {
-    backgroundColor: '#FF3B30',
     height: 35,
     borderRadius: 10,
     justifyContent: 'center',

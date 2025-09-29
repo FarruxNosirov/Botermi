@@ -143,6 +143,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     paddingHorizontal: 16,
     marginVertical: 18,
+    color: '#000',
   },
   content: {
     paddingHorizontal: 0,

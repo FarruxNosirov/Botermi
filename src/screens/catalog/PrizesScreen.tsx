@@ -83,16 +83,7 @@ const PrizesScreen = () => {
       ) : (
         <>
           <View style={styles.header}>
-            <TouchableOpacity
-              onPress={() => {
-                const parent = navigation.getParent();
-
-                if (parent) {
-                  parent.navigate('Catalog', { screen: 'CatalogMain' });
-                }
-              }}
-              style={styles.backButton}
-            >
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
               <Ionicons name="chevron-back" size={24} color="#000" />
               <Text style={styles.headerTitle}>{t('back')}</Text>
             </TouchableOpacity>

@@ -7,17 +7,9 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getMe, logout } from '@/store/slices/authSlice';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  Alert,
-  ImageBackground,
-  Linking,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, ImageBackground, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<SettingsStackParamList>;

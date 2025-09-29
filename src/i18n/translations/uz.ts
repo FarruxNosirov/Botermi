@@ -97,7 +97,7 @@ export default {
     messages: 'Xabarlar',
     termsOfUse: 'Foydalanish qoidalari',
     privacyPolicy: "Shaxsiy ma'lumotlarni qayta ishlash siyosati",
-    deleteAccount: 'Akkountni o‘chirish',
+    deleteAccount: "Profilni o'chirish",
     name: 'Ism',
     surname: 'Familiya',
     provinceIsRequired: 'Viloyat tanlash majburiy',

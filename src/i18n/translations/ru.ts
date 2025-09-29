@@ -101,7 +101,7 @@ export default {
     messages: 'Сообщения',
     termsOfUse: 'Условия эксплуатации',
     privacyPolicy: 'Политика обработки персональных данных',
-    deleteAccount: 'Удалить аккаунт',
+    deleteAccount: 'Удалить профиль',
     name: 'Имя',
     surname: 'Фамилия',
     provinceIsRequired: 'Выбор региона обязателен',
