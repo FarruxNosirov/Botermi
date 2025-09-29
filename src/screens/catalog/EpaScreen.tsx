@@ -5,8 +5,7 @@ import { CatalogItemType } from '@/types/catalogItem';
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import LottieView from 'lottie-react-native';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Image,
@@ -24,13 +23,14 @@ export const EpaScreen = () => {
   const route = useRoute<RouteProp<CatalogStackParamList, 'EPA'>>();
   const { t, i18n } = useTranslation();
   const categoryId = route?.params?.categoryId;
-  const { data, isLoading } = useGetSubCategories(categoryId);
+
+  const { data, isLoading } = useGetSubCategories(categoryId, i18n.language);
+
   const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
   const [searchText, setSearchText] = useState('');
-  const filteredCategories = data?.sub_categories.filter((category: CatalogItemType) =>
+  const filteredCategories = data?.sub_categories?.filter((category: CatalogItemType) =>
     category?.name?.toLowerCase().includes(searchText.toLowerCase()),
   );
-  const animation = useRef<LottieView>(null);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -45,20 +45,21 @@ export const EpaScreen = () => {
           <IsLoading />
         ) : (
           <>
-            <View style={styles.searchContainer}>
-              <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
-              <TextInput
-                style={styles.searchInput}
-                placeholder={t('searchProducts')}
-                placeholderTextColor="#666"
-                value={searchText}
-                onChangeText={setSearchText}
-              />
-            </View>
-            {filteredCategories && filteredCategories.length > 0 ? (
+            {data?.sub_categories?.length > 0 && (
+              <View style={styles.searchContainer}>
+                <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder={t('searchProducts')}
+                  placeholderTextColor="#666"
+                  value={searchText}
+                  onChangeText={setSearchText}
+                />
+              </View>
+            )}
+            {filteredCategories && filteredCategories?.length > 0 ? (
               <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
                 {filteredCategories?.map((category: CatalogItemType, index: number) => {
-                  const clearText = category.slug.replace(/-/g, ' ');
                   return (
                     <View key={index} style={styles.categoryContainer}>
                       <TouchableOpacity
@@ -79,9 +80,7 @@ export const EpaScreen = () => {
                             />
                           </View>
                           <View style={{ flex: 1 }}>
-                            <Text style={styles.categoryText}>
-                              {i18n.language === 'uz' ? clearText : category?.name}
-                            </Text>
+                            <Text style={styles.categoryText}>{category?.name}</Text>
                           </View>
                         </View>
                       </TouchableOpacity>

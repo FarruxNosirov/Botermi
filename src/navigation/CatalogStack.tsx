@@ -8,6 +8,7 @@ import { Product } from '@/types/product';
 import CatalogPraductScreen from '@/screens/catalog/CatalogPraductScreen';
 import PrizesScreen from '@/screens/catalog/PrizesScreen';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import FirstCatalogPraductScreen from '@/screens/catalog/FirstCatalogPraductScreen';
 
 export type CatalogStackParamList = {
   CatalogMain: undefined;
@@ -22,8 +23,11 @@ export type CatalogStackParamList = {
   };
   PrizesScreen: undefined;
   CatalogPraductScreen: {
-    subCatalogId: number;
-    categoryId: number;
+    subCatalogId?: number;
+    categoryId?: number;
+  };
+  FirstCatalogPraductScreen: {
+    categoryId?: number;
   };
 };
 
@@ -32,12 +36,13 @@ const Stack = createNativeStackNavigator<CatalogStackParamList>();
 export const CatalogStack = () => {
   return (
     <ErrorBoundary>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="CatalogMain">
         <Stack.Screen name="CatalogMain" component={CatalogScreen} />
         <Stack.Screen name="EPA" component={EpaScreen} />
         <Stack.Screen name="Search" component={SearchScreen} />
         <Stack.Screen name="ProductDetail" component={ProductDetailScreen} />
         <Stack.Screen name="CatalogPraductScreen" component={CatalogPraductScreen} />
+        <Stack.Screen name="FirstCatalogPraductScreen" component={FirstCatalogPraductScreen} />
         <Stack.Screen name="PrizesScreen" component={PrizesScreen} />
       </Stack.Navigator>
     </ErrorBoundary>

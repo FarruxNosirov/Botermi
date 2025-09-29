@@ -1,17 +1,17 @@
-import { Button } from '@/components/ui/Button';
 import { formatBalance } from '@/constants/constants';
-import { useAppDispatch } from '@/store/hooks';
+import { useGetStatuses } from '@/hooks/querys';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
 import { HomeStackParamList } from '@/types/navigation';
 import { Ionicons } from '@expo/vector-icons';
-import AntDesign from '@expo/vector-icons/AntDesign';
-import Feather from '@expo/vector-icons/Feather';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { NavigationProp, useFocusEffect, useNavigation } from '@react-navigation/native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+
 import {
-  Image,
   Linking,
   Pressable,
   SafeAreaView,
@@ -21,75 +21,72 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import StatusCard from '@/components/StatusCard';
 
 const HomeScreen = () => {
   const navigation = useNavigation<NavigationProp<HomeStackParamList>>();
   const dispatch = useAppDispatch();
-  const [userData, setUserData] = useState<any>(null);
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
 
+  const { data: statuses, refetch } = useGetStatuses((authUser as any)?.id);
   const { t } = useTranslation();
 
   const handleGetMe = async () => {
-    const resultAction = await dispatch(getMe());
-
-    if (getMe.fulfilled.match(resultAction)) {
-      setUserData(resultAction?.payload?.data);
-    } else {
-      console.log('Xatolik:', resultAction.payload);
-    }
+    await dispatch(getMe());
   };
   useEffect(() => {
-    handleGetMe();
+    if (!authUser) {
+      handleGetMe();
+    }
+    refetch();
   }, []);
 
   useFocusEffect(
     useCallback(() => {
-      handleGetMe();
+      refetch();
     }, []),
   );
+  console.log('authUser', JSON.stringify(authUser, null, 2));
 
   const StatusGrid = () => {
     return (
-      <View style={[styles.bonusCard, { marginVertical: 0 }]}>
+      <View style={{ width: '100%', paddingHorizontal: 16 }}>
         <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 }}>
-          <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
-            <Feather name="loader" size={24} color="#FFA500" />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
-                0 {t('homePage.one')}
-              </Text>
-              <Text style={{ color: '#000' }}>{t('homePage.viewing')}</Text>
-            </View>
-          </View>
-          <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
-            <AntDesign name="checkcircle" size={24} color="#00C851" />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
-                0 {t('homePage.one')}
-              </Text>
-              <Text style={{ color: '#000' }}>{t('homePage.approved')}</Text>
-            </View>
-          </View>
+          <StatusCard
+            iconLib="Entypo"
+            iconName="back-in-time"
+            color="#a9a9a9"
+            value={statuses?.waiting_barcodes}
+            title={t('homePage.currency')}
+            label={t('homePage.viewing')}
+          />
+          <StatusCard
+            iconLib="MaterialCommunityIcons"
+            iconName="clock-check-outline"
+            color="#a9a9a9"
+            value={statuses?.approved_barcodes}
+            title={t('homePage.currency')}
+            label={t('homePage.approved')}
+          />
         </View>
+
         <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
-            <AntDesign name="closecircle" size={24} color="#FF4444" />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
-                0 {t('homePage.one')}
-              </Text>
-              <Text style={{ color: '#000' }}>{t('homePage.rejected')}</Text>
-            </View>
-          </View>
-          <View style={{ flex: 1, alignItems: 'center', flexDirection: 'row' }}>
-            <AntDesign name="frowno" size={24} color="#FFC107" />
-            <View style={{ marginLeft: 10 }}>
-              <Text style={{ color: '#000', fontWeight: 'bold', fontSize: 16 }}>
-                0 {t('homePage.one')}
-              </Text>
-              <Text style={{ color: '#000' }}>{t('homePage.used')}</Text>
-            </View>
-          </View>
+          <StatusCard
+            iconLib="MaterialCommunityIcons"
+            iconName="clock-remove-outline"
+            color="#a9a9a9"
+            value={statuses?.rejected_barcodes}
+            title={t('homePage.currency')}
+            label={t('homePage.rejected')}
+          />
+          <StatusCard
+            iconLib="FontAwesome5"
+            iconName="hand-holding-heart"
+            color="#a9a9a9"
+            value={0}
+            title={t('homePage.currency')}
+            label={t('homePage.used')}
+          />
         </View>
       </View>
     );
@@ -103,8 +100,12 @@ const HomeScreen = () => {
             <Ionicons name="person-outline" size={40} color="#666" />
           </View>
           <View style={styles.userDetails}>
-            <Text style={styles.userId}>ID {userData?.id}</Text>
-            <Text style={styles.userPhone}>+{userData?.phone}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.userPhone}>{authUser?.name} </Text>
+
+              <Text style={styles.userPhone}>{authUser?.surname}</Text>
+            </View>
+            <Text style={styles.userId}>ID {authUser?.id}</Text>
           </View>
         </View>
         <Pressable onPress={() => navigation.navigate('Notifications' as any)}>
@@ -114,25 +115,34 @@ const HomeScreen = () => {
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.bonusCard}>
-          <Text style={styles.bonusTitle}>{t('homePage.availableBonuss')}</Text>
-          <View style={styles.bonusAmount}>
-            <Ionicons name="card-outline" size={24} color="#00A86B" />
-            <Text style={styles.bonusValue}>{formatBalance(userData?.balance)}</Text>
-            <Text style={styles.bonusUnit}>{t('homePage.currency')}</Text>
+          <View>
+            <Text style={styles.bonusTitle}>{t('homePage.availableBonuss')}</Text>
+            <View style={styles.bonusAmount}>
+              <Text style={styles.bonusValue}>{formatBalance(authUser?.balance)}</Text>
+              <Text style={styles.bonusUnit}>{t('homePage.currency')}</Text>
+            </View>
           </View>
+          <TouchableOpacity
+            onPress={() => navigation.navigate('Catalog' as any, { screen: 'PrizesScreen' })}
+          >
+            <View
+              style={{
+                backgroundColor: '#c5c5c5',
+                padding: 10,
+                borderRadius: 5,
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 5,
+              }}
+            >
+              <FontAwesome6 name="gift" size={20} color="red" />
+              <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>
+                {t('homePage.exchange')}
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
         <StatusGrid />
-
-        <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Blogs')}>
-          <View style={styles.actionIcon}>
-            <AntDesign name="youtube" size={24} color="#fff" />
-          </View>
-          <View style={styles.actionContent}>
-            <Text style={styles.actionTitle}>{t('homePage.noteProject')}</Text>
-            <Text style={styles.actionSubtitle}>{t('homePage.noteProjectDescription')}</Text>
-          </View>
-          <Ionicons name="chevron-forward" size={24} color="#fff" />
-        </TouchableOpacity>
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>{t('homePage.announcements')}</Text>
@@ -182,8 +192,28 @@ const HomeScreen = () => {
               </Text>
             </View>
           </TouchableOpacity>
+          <TouchableOpacity style={styles.actionCard} onPress={() => navigation.navigate('Blogs')}>
+            <View style={styles.actionIcon}>
+              <AntDesign name="youtube" size={45} color="#fff" />
+            </View>
+            <View style={styles.actionContent}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                }}
+              >
+                <Text style={styles.actionTitle}>{t('homePage.noteProject')}</Text>
+                <View style={{ backgroundColor: 'red', padding: 5, borderRadius: 5 }}>
+                  <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>You Tube</Text>
+                </View>
+              </View>
+              <Text style={styles.actionSubtitle}>{t('homePage.noteProjectDescription')}</Text>
+            </View>
+          </TouchableOpacity>
 
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={[
               styles.promotionCard,
               {
@@ -213,7 +243,7 @@ const HomeScreen = () => {
               style={{ width: 130, height: 150 }}
               resizeMode="contain"
             />
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         <View style={{ height: 100 }} />
       </ScrollView>
@@ -224,16 +254,14 @@ const HomeScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA',
+    backgroundColor: '#F2F2F2',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#F1F1F1',
+    backgroundColor: 'transparent',
   },
   content: {
     flex: 1,
@@ -241,8 +269,7 @@ const styles = StyleSheet.create({
   userInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-
-    backgroundColor: '#fff',
+    marginTop: 20,
   },
   avatar: {
     width: 60,
@@ -263,9 +290,10 @@ const styles = StyleSheet.create({
     color: '#000',
   },
   userPhone: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 18,
+    color: '#000',
     marginTop: 4,
+    fontWeight: '600',
   },
   bonusCard: {
     margin: 16,
@@ -273,10 +301,14 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     boxShadow: '0 0 5 #dddddd',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
   bonusTitle: {
     fontSize: 14,
-    color: '#666',
+    color: '#000',
+    fontWeight: '600',
   },
   bonusAmount: {
     flexDirection: 'row',
@@ -286,8 +318,7 @@ const styles = StyleSheet.create({
   bonusValue: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#000',
-    marginLeft: 8,
+    color: '#4CAF50',
   },
   bonusUnit: {
     fontSize: 16,
@@ -296,8 +327,8 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
   },
   actionCard: {
-    margin: 16,
-    padding: 16,
+    paddingHorizontal: 10,
+    paddingVertical: 16,
     backgroundColor: '#fff',
     boxShadow: '0 0 5 #dddddd',
     borderRadius: 12,
@@ -305,8 +336,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionIcon: {
-    width: 40,
-    height: 40,
+    width: 70,
+    height: 70,
     borderRadius: 12,
     backgroundColor: 'red',
     justifyContent: 'center',

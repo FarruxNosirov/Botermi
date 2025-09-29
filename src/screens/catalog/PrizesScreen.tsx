@@ -16,14 +16,15 @@ import { DEVICE_WIDTH, formatBalance } from '@/constants/constants';
 import { showToast } from '@/utils/toastHelper';
 import { UserDataType } from '@/types/userType';
 import { getMe } from '@/store/slices/authSlice';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import IsLoading from '@/components/IsLoading';
 import EmptyState from '@/components/EmptyState';
 
 const PrizesScreen = () => {
   const navigation = useNavigation();
   const { t } = useTranslation();
-  const [userData, setUserData] = useState<UserDataType | null>(null);
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
+  const [userData, setUserData] = useState<UserDataType | null>(authUser || null);
   const [loadingItems, setLoadingItems] = useState<{ [key: number]: boolean }>({});
   const dispatch = useAppDispatch();
 
@@ -32,12 +33,14 @@ const PrizesScreen = () => {
     if (getMe.fulfilled.match(resultAction)) {
       setUserData(resultAction?.payload?.data);
     } else {
-      console.log('Xatolik:', resultAction.payload);
+      console.log('error:', resultAction.payload);
     }
   };
 
   useEffect(() => {
-    handleGetMe();
+    if (!authUser) {
+      handleGetMe();
+    }
   }, []);
 
   const { data, isLoading } = usePrizes();
@@ -48,25 +51,28 @@ const PrizesScreen = () => {
     if (userData?.balance && userData?.balance >= item?.price) {
       setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
 
-      exchangePrize(item?.id, {
-        onSuccess: async (data) => {
-          await handleGetMe();
-          showToast('success', t('commond.success'), t('actions.scanSuccess'));
-          setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
-        },
-        onError: (error: any) => {
-          console.log('error?.response?.data?.message', error?.response?.data?.message);
+      exchangePrize(
+        { prize_id: item?.id, type: 'prize' },
+        {
+          onSuccess: async (data) => {
+            await handleGetMe();
+            showToast('success', t('commond.success'), t('actions.scanSuccess'));
+            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+          },
+          onError: (error: any) => {
+            console.log('error?.response?.data?.message', error?.response?.data?.message);
 
-          showToast(
-            'error',
-            t('commond.error'),
-            error?.response?.data?.message || t('commond.notEnoughBalance'),
-          );
-          setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+            showToast(
+              'error',
+              t('commond.error'),
+              error?.response?.data?.message || t('commond.notEnoughBalance'),
+            );
+            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+          },
         },
-      });
+      );
     } else {
-      showToast('error', t('error'), t('actions.notEnoughBalance'));
+      showToast('error', t('error'), t('commond.notEnoughBalance'));
     }
   };
 
@@ -149,7 +155,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
-    boxShadow: 'rgba(60, 64, 67, 0.3) 0px 1px 2px 0px, rgba(60, 64, 67, 0.15) 0px 1px 3px 1px',
+    boxShadow: '0 0 5 #dddddd',
     height: 280,
     flexDirection: 'column',
     justifyContent: 'space-between',

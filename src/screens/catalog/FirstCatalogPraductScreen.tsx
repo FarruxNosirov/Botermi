@@ -14,11 +14,11 @@ import {
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { DrawerLayout } from 'react-native-gesture-handler';
 import RenderNavigationView from './components/RenderNavigationView';
-import CatalogPraductScreenHook from './model/CatalogPraductScreenHook';
+import FirstCatalogPraductScreenHook from './model/FirstCatalogPraductScreenHook';
 
 const { width } = Dimensions.get('window');
 
-const CatalogPraductScreen = () => {
+const FirstCatalogPraductScreen = () => {
   const {
     renderBrandItem,
     renderManufacturerItem,
@@ -41,7 +41,7 @@ const CatalogPraductScreen = () => {
     isFetchingNextPage,
     hasNextPage,
     error,
-  } = CatalogPraductScreenHook();
+  } = FirstCatalogPraductScreenHook();
 
   return (
     <SafeAreaView style={styles.container}>
@@ -170,7 +170,7 @@ const CatalogPraductScreen = () => {
   );
 };
 
-export default CatalogPraductScreen;
+export default FirstCatalogPraductScreen;
 
 const styles = StyleSheet.create({
   container: {
@@ -192,7 +192,6 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
-    color: '#000',
   },
 
   contentContainerStyle: {

@@ -19,16 +19,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const RootNavigator = () => {
   const { isAuthenticated, isFullyRegistered } = useSelector((state: RootState) => state.auth);
   const locale = useSelector((state: RootState) => state.language.locale);
-  const dispatch = useDispatch<AppDispatch>();
-  useEffect(() => {
-    (async () => {
-      const token = await AsyncStorage.getItem('@auth_token');
-      console.log('token', token);
-      if (token) {
-        dispatch(getMe());
-      }
-    })();
-  }, [dispatch]);
+
   useEffect(() => {
     i18n.changeLanguage(locale);
   }, [locale]);

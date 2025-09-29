@@ -1,9 +1,9 @@
 import CatalogCard from '@/components/CatalogItem';
-import { useGetFirstCategories } from '@/hooks/querys';
+import { useGetFirstCategories, useGetSubCategories } from '@/hooks/querys';
+import { catalogAPI } from '@/services/api';
 import { CatalogStackParamList } from '@/navigation/CatalogStack';
 import { NavigationProp, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import {
@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
+import IsLoading from '@/components/IsLoading';
 
 export const CatalogScreen = () => {
   const navigation = useNavigation<NavigationProp<CatalogStackParamList>>();
@@ -22,43 +23,50 @@ export const CatalogScreen = () => {
   const handleEpamarketPress = () => {
     Linking.openURL('https://botermi.uz/');
   };
-  const { data, isLoading } = useGetFirstCategories();
+  const { t, i18n } = useTranslation();
 
-  const animation = useRef<LottieView>(null);
-  const { t } = useTranslation();
+  const { data, isLoading } = useGetFirstCategories(i18n.language);
 
-  const sortedData = data?.data?.sort((a: { id: number }, b: { id: number }) => a.id - b.id);
-  const filterData = sortedData?.filter(
-    (filter: { id: number }) => ![3, 4, 5].includes(filter?.id),
-  );
+  const navigationHandler = async (categoryId: number) => {
+    try {
+      const response = await catalogAPI.getSubCategories(categoryId, i18n.language);
+      const hasSubCategories = response?.sub_categories?.length > 0;
+      if (hasSubCategories) {
+        navigation.navigate('EPA', { categoryId });
+      } else {
+        navigation.navigate('FirstCatalogPraductScreen', {
+          categoryId: categoryId,
+        });
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  };
+
+  const keyExtractor = useCallback((item: any) => item.id.toString(), []);
+
+  const filterData = useMemo(() => {
+    if (!data?.data) return [];
+
+    const validData = data.data.filter((item: any) => item && item.id);
+
+    const sortedData = validData.sort((a: { id: number }, b: { id: number }) => a.id - b.id);
+    return sortedData.filter((filter: { id: number }) => ![3, 4, 5].includes(filter?.id));
+  }, [data?.data]);
 
   return (
     <SafeAreaView style={styles.container}>
       {isLoading ? (
-        <>
-          <LottieView
-            autoPlay
-            ref={animation}
-            style={{
-              backgroundColor: '#fff',
-              flex: 1,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-            source={require('@assets/loader.json')}
-          />
-        </>
+        <IsLoading />
       ) : (
         <>
           <Text style={styles.header}>{t('katalog.title')}</Text>
           <FlatList
             contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 10 }}
             data={filterData || []}
+            keyExtractor={keyExtractor}
             renderItem={(item) => (
-              <CatalogCard
-                {...item}
-                onPress={() => navigation.navigate('EPA', { categoryId: item.item.id })}
-              />
+              <CatalogCard {...item} onPress={() => navigationHandler(item?.item?.id)} />
             )}
             showsVerticalScrollIndicator={false}
             ListFooterComponent={
@@ -135,6 +143,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     paddingHorizontal: 16,
     marginVertical: 18,
+    color: '#000',
   },
   content: {
     paddingHorizontal: 0,
@@ -157,9 +166,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   menuItemText: {
-    fontSize: 18,
+    fontSize: 14,
     color: '#374151',
     fontWeight: '400',
+    textTransform: 'uppercase',
   },
   epamarketSection: {
     marginTop: 16,

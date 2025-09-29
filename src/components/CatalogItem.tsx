@@ -34,19 +34,20 @@ interface BoilerPartsCardProps {
   onPress?: () => void;
 }
 const CatalogCard: React.FC<BoilerPartsCardProps> = ({ item, onPress }) => {
-  const { i18n } = useTranslation();
-  const cleanedText = item?.slug?.replace(/-/g, ' ');
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <TouchableOpacity style={styles.menuItem} onPress={onPress}>
         <View style={styles.menuItemContent}>
           <View style={{ width: '90%' }}>
-            <Text style={styles.menuItemText}>
-              {i18n.language === 'uz' ? cleanedText : item.name}
-            </Text>
+            <Text style={styles.menuItemText}>{item?.name || 'Unnamed Category'}</Text>
           </View>
           <View>
-            <Image source={{ uri: item?.image }} width={24} height={24} />
+            <Image
+              source={{ uri: item?.image }}
+              width={24}
+              height={24}
+              defaultSource={require('../../assets/adaptive-icon.png')} // Fallback image
+            />
           </View>
         </View>
       </TouchableOpacity>

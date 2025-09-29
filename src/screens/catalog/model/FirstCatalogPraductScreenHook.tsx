@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { usePraducts } from '@/hooks/querys';
+import { usePraducts, usePraductsFirstCategoriesId } from '@/hooks/querys';
 import { CatalogPraductItemType } from '@/types/catalogItem';
 
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
@@ -13,7 +13,7 @@ import ProductDetailItem from '@/components/ProductDetailItem';
 import BrandItem from '../components/BrandItem';
 import FilterItem from '../components/FilterItem';
 
-const CatalogPraductScreenHook = () => {
+const FirstCatalogPraductScreenHook = () => {
   const transformFilters = (filters: any[]) => {
     if (!filters || !Array.isArray(filters)) return [];
 
@@ -44,7 +44,6 @@ const CatalogPraductScreenHook = () => {
       }
     });
 
-    // Kerakli formatga aylantirish
     return Object.keys(groupedFilters).map((filterName) => ({
       filter_name: filterName,
       data: groupedFilters[filterName],
@@ -52,8 +51,8 @@ const CatalogPraductScreenHook = () => {
   };
 
   const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
-  const route = useRoute<RouteProp<CatalogStackParamList, 'CatalogPraductScreen'>>();
-  const subCategoryId = route?.params?.categoryId;
+  const route = useRoute<RouteProp<CatalogStackParamList, 'FirstCatalogPraductScreen'>>();
+  const firstCategoryId = route?.params?.categoryId;
   const [selectedBrand, setSelectedBrand] = useState<number | undefined>(undefined);
   const [selectedManufacturer, setSelectedManufacturer] = useState<number | undefined>(undefined);
   const [selectedFilters, setSelectedFilters] = useState<number | undefined>(undefined);
@@ -62,35 +61,38 @@ const CatalogPraductScreenHook = () => {
   const manufacturerId = selectedManufacturer;
   const language = i18n.language;
 
-  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error } = usePraducts(
-    subCategoryId!,
-    brandId!,
-    manufacturerId!,
-    selectedFilters!,
-    16,
-    language,
-  );
+  const { data, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage, error } =
+    usePraductsFirstCategoriesId(
+      firstCategoryId!,
+      brandId,
+      manufacturerId,
+      selectedFilters,
+      16,
+      language,
+    );
 
   const { t } = useTranslation();
   const drawerRef = useRef<DrawerLayout>(null);
+  const isEndReachedCalled = useRef(false);
 
   const allProducts = useMemo(() => {
-    if (!data?.pages) return [];
+    if (!data?.pages) {
+      console.log('FirstCatalog: No data pages');
+      return [];
+    }
 
     const products: CatalogPraductItemType[] = [];
-    const seenIds = new Set<number>();
-
     data.pages.forEach((page) => {
       if (page?.products?.data) {
         page.products.data.forEach((product: any) => {
-          if (product && product.id && !seenIds.has(product.id)) {
-            seenIds.add(product.id);
+          if (product && product.id && !products.some((p) => p.id === product.id)) {
             products.push(product);
           }
         });
       }
     });
 
+    console.log('FirstCatalog allProducts length:', products.length);
     return products;
   }, [data?.pages]);
 
@@ -207,10 +209,21 @@ const CatalogPraductScreenHook = () => {
   }, []);
 
   const handleEndReached = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
+    if (hasNextPage && !isFetchingNextPage && !isEndReachedCalled.current) {
+      isEndReachedCalled.current = true;
       fetchNextPage();
+
+      // Reset flag after a delay
+      setTimeout(() => {
+        isEndReachedCalled.current = false;
+      }, 3000);
     }
-  }, [hasNextPage, isFetchingNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // Reset flag when data changes
+  useEffect(() => {
+    isEndReachedCalled.current = false;
+  }, [data?.pages]);
 
   return {
     renderBrandItem,
@@ -237,4 +250,4 @@ const CatalogPraductScreenHook = () => {
   };
 };
 
-export default CatalogPraductScreenHook;
+export default FirstCatalogPraductScreenHook;

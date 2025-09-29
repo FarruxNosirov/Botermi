@@ -41,7 +41,7 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(RESEND_TIMEOUT);
-  const inputRef = useRef<TextInput>(null);
+  const inputRefs = useRef<(TextInput | null)[]>([]);
   const [otpValue, setOtpValue] = useState('');
 
   useEffect(() => {
@@ -52,19 +52,29 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleOtpChange = (text: string) => {
+  const handleOtpChange = (text: string, index: number) => {
     // Remove any non-numeric characters
     const numericText = text.replace(/[^0-9]/g, '');
 
-    // Update the hidden input value
-    setOtpValue(numericText);
-
-    // Update the visual OTP array
-    const newOtp = numericText.split('').slice(0, OTP_LENGTH);
-    while (newOtp.length < OTP_LENGTH) {
-      newOtp.push('');
-    }
+    // Update the OTP array
+    const newOtp = [...otp];
+    newOtp[index] = numericText;
     setOtp(newOtp);
+
+    // Update the combined OTP value (but don't trigger hidden input)
+    const combinedOtp = newOtp.join('');
+    setOtpValue(combinedOtp);
+
+    // Auto-focus next input
+    if (numericText && index < OTP_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (key: string, index: number) => {
+    if (key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
   };
 
   const handleSubmit = async (otpString = otp.join('')) => {
@@ -210,29 +220,45 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
                 </Text>
               </Text>
 
-              {/* Hidden input for actual OTP entry */}
+              {/* Hidden SMS Auto-fill Input */}
               <TextInput
-                ref={inputRef}
                 value={otpValue}
-                onChangeText={handleOtpChange}
+                onChangeText={(text) => {
+                  const numericText = text.replace(/[^0-9]/g, '');
+
+                  // Only update if the text is different (avoid loop)
+                  if (numericText !== otpValue) {
+                    setOtpValue(numericText);
+
+                    // Update individual OTP inputs
+                    const newOtp = numericText.split('').slice(0, OTP_LENGTH);
+                    while (newOtp.length < OTP_LENGTH) {
+                      newOtp.push('');
+                    }
+                    setOtp(newOtp);
+                  }
+                }}
                 style={styles.hiddenInput}
                 keyboardType="number-pad"
                 maxLength={OTP_LENGTH}
                 textContentType="oneTimeCode"
+                autoComplete="sms-otp"
                 autoFocus
               />
 
-              {/* Visual OTP display */}
-              <TouchableOpacity
+              {/* OTP Input Fields */}
+              <View
                 style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32 }}
-                onPress={() => {
-                  inputRef.current?.focus();
-                }}
-                activeOpacity={0.8}
               >
                 {otp.map((digit, index) => (
-                  <View
+                  <TextInput
                     key={index}
+                    ref={(ref) => {
+                      inputRefs.current[index] = ref;
+                    }}
+                    value={digit}
+                    onChangeText={(text) => handleOtpChange(text, index)}
+                    onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
                     style={{
                       width: 58,
                       height: 48,
@@ -240,22 +266,17 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
                       borderWidth: 1,
                       borderColor: digit ? '#b60017' : '#E8E8E8',
                       backgroundColor: digit ? '#FFF5F6' : '#F5F5F5',
-                      justifyContent: 'center',
-                      alignItems: 'center',
+                      textAlign: 'center',
+                      fontSize: 24,
+                      fontWeight: '600',
+                      color: '#b60017',
                     }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 24,
-                        fontWeight: '600',
-                        color: '#b60017',
-                      }}
-                    >
-                      {digit}
-                    </Text>
-                  </View>
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    autoFocus={index === 0}
+                  />
                 ))}
-              </TouchableOpacity>
+              </View>
 
               {timeLeft > 0 ? (
                 <Text

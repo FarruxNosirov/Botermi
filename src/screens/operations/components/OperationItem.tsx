@@ -1,12 +1,13 @@
 import { OperationItemTypes } from '@/types/operation';
 import { useTranslation } from 'react-i18next';
 import { View, Image, Text } from 'react-native';
+import { formatDateCompact } from '@/utils/dateHelper';
 
 interface ScanItem {
   id: number;
   barcode: string;
   image: string;
-  status: 'waiting' | 'approved' | 'rejected';
+  status: 'waiting' | 'approved' | 'rejected' | 'new';
   created_at: string;
 }
 
@@ -17,6 +18,7 @@ const OperationItem: React.FC<{ item: OperationItemTypes }> = ({ item }) => {
     waiting: 'orange',
     approved: 'green',
     rejected: 'red',
+    new: 'blue',
   }[item.status];
 
   return (
@@ -39,16 +41,22 @@ const OperationItem: React.FC<{ item: OperationItemTypes }> = ({ item }) => {
       }}
     >
       <Image
-        source={{ uri: item.image }}
+        source={{ uri: item.image ? item.image : item?.product?.image }}
         style={{ width: 80, height: 80, borderRadius: 8 }}
         resizeMode="cover"
       />
       <View style={{ marginLeft: 12, flex: 1 }}>
-        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#000' }}>
-          {t('barcode')}: {item.barcode}
-        </Text>
+        {item.barcode ? (
+          <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#000' }}>
+            {t('barcode')}: {item.barcode}
+          </Text>
+        ) : (
+          <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#000' }}>
+            {t('price')}: {item.price}
+          </Text>
+        )}
         <Text style={{ fontSize: 13, marginTop: 4, color: '#666' }}>
-          {t('uploadedAt')}: {item.created_at}
+          {t('uploadedAt')}: {formatDateCompact(item?.created_at || '')}
         </Text>
         <Text style={{ marginTop: 4, color: statusColor }}>
           {t('status')}: {t(item.status)}

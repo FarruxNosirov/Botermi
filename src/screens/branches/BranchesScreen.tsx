@@ -13,7 +13,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/types/navigation';
 import { useNavigation } from '@react-navigation/native';
 import { colors } from '@/constants/colors';
-import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+// TEMPORARILY DISABLED FOR BUILD - import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 // import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 type BranchesScreenProps = NativeStackScreenProps<RootStackParamList, 'Branches'>;
@@ -78,10 +78,10 @@ export const BranchesScreen: React.FC<BranchesScreenProps> = ({ route }) => {
 
   const handleBranchSelect = (branch: Branch) => {
     setSelectedBranch(branch);
-    if (route.params?.onSelect) {
-      route.params.onSelect(`${branch.name}, ${branch.address}`);
-      navigation.goBack();
-    }
+    // if (route.params?.onSelect) {
+    //   route.params.onSelect(`${branch.name}, ${branch.address}`);
+    //   navigation.goBack();
+    // }
   };
 
   const initialRegion = {
@@ -131,6 +131,7 @@ export const BranchesScreen: React.FC<BranchesScreenProps> = ({ route }) => {
 
       <View style={styles.mapContainer}>
         {/* <MapView style={styles.map} /> */}
+        {/* TEMPORARILY DISABLED FOR BUILD
         <MapView style={styles.map} initialRegion={initialRegion}>
           {branches.map((branch) => (
             <Marker
@@ -146,6 +147,12 @@ export const BranchesScreen: React.FC<BranchesScreenProps> = ({ route }) => {
             </Marker>
           ))}
         </MapView>
+        */}
+        <View style={styles.map}>
+          <Text style={{ textAlign: 'center', paddingTop: 50, color: '#999', fontSize: 16 }}>
+            Xarita vaqtincha ishlamaydi
+          </Text>
+        </View>
       </View>
 
       <Text style={styles.sectionTitle}>Qaysi do'kondan olib ketiladi?</Text>

@@ -1,12 +1,18 @@
 import IsLoading from '@/components/IsLoading';
 import ProductDetailItem from '@/components/ProductDetailItem';
-import { useSingleProduct } from '@/hooks/querys';
+import { formatPrice } from '@/constants/constants';
+import { usePrizesExchange, useSingleProduct } from '@/hooks/querys';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { getMe } from '@/store/slices/authSlice';
 import { CatalogStackParamList } from '@/types/navigation';
+import { UserDataType } from '@/types/userType';
+import { showToast } from '@/utils/toastHelper';
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+  ActivityIndicator,
   Dimensions,
   FlatList,
   Image,
@@ -24,7 +30,6 @@ import RenderHTML from 'react-native-render-html';
 
 const { width } = Dimensions.get('window');
 
-// tagsStyles'ni component tashqarisiga chiqardik - performance uchun
 const tagsStyles = {
   p: {
     fontSize: 16,
@@ -105,6 +110,7 @@ const tagsStyles = {
 } as any;
 
 export const ProductDetailScreen = () => {
+  const { t, i18n } = useTranslation();
   const navigation = useNavigation();
   const route = useRoute<RouteProp<CatalogStackParamList, 'ProductDetail'>>();
   const [isFavorite, setIsFavorite] = useState(false);
@@ -112,10 +118,9 @@ export const ProductDetailScreen = () => {
   const { width: windowWidth } = useWindowDimensions();
 
   const { id } = route?.params?.product;
-  const { data: productAll, error, isLoading } = useSingleProduct(id);
+  const { data: productAll, isLoading } = useSingleProduct(id, i18n.language);
   const product = productAll?.data?.data;
 
-  // getItemLayout'ni useCallback bilan optimize qildik
   const getItemLayout = useCallback(
     (_: any, index: number) => ({
       length: 160,
@@ -125,7 +130,6 @@ export const ProductDetailScreen = () => {
     [],
   );
 
-  // renderProductDescription'ni useCallback bilan optimize qildik
   const renderProductDescription = useCallback(
     (htmlString: string) => (
       <RenderHTML
@@ -137,15 +141,9 @@ export const ProductDetailScreen = () => {
     [windowWidth],
   );
 
-  const { t, i18n } = useTranslation();
-
   const [activeIndex, setActiveIndex] = useState(0);
   const progressValue = useSharedValue(0);
 
-  // clearText'ni useMemo bilan optimize qildik
-  const clearText = useMemo(() => product?.slug?.replace(/-/g, ' '), [product?.slug]);
-
-  // Carousel funksiyalarini optimize qildik
   const handleProgressChange = useCallback(
     (offsetProgress: number) => {
       progressValue.value = offsetProgress;
@@ -156,15 +154,80 @@ export const ProductDetailScreen = () => {
   const handleSnapToItem = useCallback((index: number) => {
     setActiveIndex(index);
   }, []);
+  const priceNum = Number(String(product?.price).replace(/\s/g, ''));
+  const customerPriceNum = Number(String(product?.customer_price).replace(/\s/g, ''));
 
-  // Carousel renderItem'ni optimize qildik
+  const discountPercentage =
+    priceNum > 0 && customerPriceNum > 0
+      ? Math.round(((customerPriceNum - priceNum) / customerPriceNum) * 100)
+      : 0;
   const renderCarouselItem = useCallback(
     ({ item }: any) => (
-      <Image source={{ uri: item }} style={styles.productImage} resizeMode="contain" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+
+          position: 'relative',
+        }}
+      >
+        <Image source={{ uri: item }} style={styles.productImage} resizeMode="contain" />
+        {discountPercentage < 0 && (
+          <View style={styles.discountContainer}>
+            <Text style={styles.discountText}>{discountPercentage}%</Text>
+          </View>
+        )}
+      </View>
     ),
     [],
   );
+
   const allImages = [product?.image, ...(product?.foto_gallary || [])].filter(Boolean);
+
+  const percentage_of_bonus =
+    product?.percentage_of_bonus > 0 ? (customerPriceNum / 100) * product?.percentage_of_bonus : 0;
+  const { mutate: exchangePrize } = usePrizesExchange();
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
+  const [loadingItems, setLoadingItems] = useState<{ [key: number]: boolean }>({});
+  const dispatch = useAppDispatch();
+
+  const userBalance = authUser?.balance;
+
+  const handleExchangePrize = (item: any) => {
+    if (userBalance && userBalance) {
+      setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
+
+      exchangePrize(
+        { product_id: item?.id, type: 'product' },
+        {
+          onSuccess: async (data) => {
+            await dispatch(getMe());
+            showToast('success', t('commond.success'), t('actions.scanSuccess'));
+            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+          },
+          onError: (error: any) => {
+            console.log('error?.response?.data?.message', error?.response?.data?.message);
+
+            showToast(
+              'error',
+              t('commond.error'),
+              error?.response?.data?.message || t('commond.notEnoughBalance'),
+            );
+            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+          },
+        },
+      );
+    } else {
+      showToast('error', t('error'), t('commond.notEnoughBalance'));
+    }
+  };
+
+  const disabled =
+    (Number(userBalance) >= Number(product?.customer_price) &&
+      Number(product?.customer_price) > 0 &&
+      authUser?.vip > 0) ||
+    loadingItems[product?.id];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -184,70 +247,167 @@ export const ProductDetailScreen = () => {
             </TouchableOpacity>
           </View>
 
-          <View style={styles.carouselContainer}>
-            <View style={styles.slideContainer}>
-              {product?.foto_gallary.length > 1 ? (
-                <Carousel
-                  loop
-                  width={width}
-                  height={200}
-                  autoPlay={true}
-                  data={allImages}
-                  scrollAnimationDuration={1500}
-                  onProgressChange={handleProgressChange}
-                  onSnapToItem={handleSnapToItem}
-                  renderItem={renderCarouselItem}
-                />
-              ) : (
-                <Image
-                  source={{ uri: allImages[0] }}
-                  style={styles.productImage}
-                  resizeMode="contain"
-                />
-              )}
-              {allImages.length > 1 ? (
-                <View style={styles.dotsContainer}>
-                  {allImages?.map((_: any, index: React.Key | null | undefined) => (
-                    <View
-                      key={index}
-                      style={[styles.dot, activeIndex === index && styles.activeDot]}
-                    />
-                  ))}
-                </View>
-              ) : null}
-            </View>
-          </View>
-
           <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+            <View style={styles.carouselContainer}>
+              <View style={styles.slideContainer}>
+                {allImages.length > 1 ? (
+                  <Carousel
+                    loop
+                    width={width}
+                    height={250}
+                    autoPlay={false}
+                    data={allImages}
+                    onProgressChange={handleProgressChange}
+                    onSnapToItem={handleSnapToItem}
+                    renderItem={renderCarouselItem}
+                  />
+                ) : (
+                  <View
+                    style={{
+                      flex: 1,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+
+                      position: 'relative',
+                    }}
+                  >
+                    <Image
+                      source={{ uri: allImages[0] }}
+                      style={styles.productImage}
+                      resizeMode="contain"
+                    />
+                    {discountPercentage < 0 && (
+                      <View style={styles.discountContainer}>
+                        <Text style={styles.discountText}>{discountPercentage}%</Text>
+                      </View>
+                    )}
+                  </View>
+                )}
+                {allImages.length > 1 ? (
+                  <View style={styles.dotsContainer}>
+                    {allImages?.map((_: any, index: React.Key | null | undefined) => (
+                      <View
+                        key={index}
+                        style={[styles.dot, activeIndex === index && styles.activeDot]}
+                      />
+                    ))}
+                  </View>
+                ) : null}
+              </View>
+            </View>
             {product?.name && (
               <View style={styles.productInfo}>
-                <Text style={styles.productName}>
-                  {i18n.language === 'uz' ? clearText : product?.name}
+                <Text style={styles.productName}>{product?.name}</Text>
+              </View>
+            )}
+            {product?.vendor_code && (
+              <View style={styles.productInfo}>
+                <Text style={styles.vendor_code}>
+                  <Text style={{ fontWeight: 'bold' }}>{t('homePage.vendor_code')}:</Text>{' '}
+                  {product?.vendor_code}
                 </Text>
               </View>
             )}
-            <View style={styles.productInfo}>
-              <Text style={styles.vendor_code}>
-                <Text style={{ fontWeight: 'bold' }}>Sotuv kodi:</Text> {product?.vendor_code}
-              </Text>
+            {product?.country && (
+              <View style={styles.productInfo}>
+                <Text style={styles.vendor_code}>
+                  <Text style={{ fontWeight: 'bold' }}>{t('katalog.manufacturer')}:</Text>{' '}
+                  {product?.country}
+                </Text>
+              </View>
+            )}
+            {priceNum > 0 || customerPriceNum > 0 ? (
+              <View style={styles.priceContainer}>
+                {authUser?.vip > 0 ? (
+                  <View style={styles.priceContant}>
+                    <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
+                      {t('katalog.retailPrice')}:
+                    </Text>
+                    <Text style={styles.priceText}>
+                      {formatPrice(product?.customer_price)} {t('homePage.currency')}
+                    </Text>
+                  </View>
+                ) : (
+                  <View style={styles.priceContant}>
+                    <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
+                      {t('katalog.masterPrice')}:
+                    </Text>
+                    <Text style={styles.priceText}>
+                      {formatPrice(product?.price)} {t('homePage.currency')}
+                    </Text>
+                  </View>
+                )}
+              </View>
+            ) : null}
+            {percentage_of_bonus > 0 && (
+              <View style={styles.cashbackContainer}>
+                <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
+                  {t('katalog.cashback')}:
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 5,
+                    backgroundColor: '#eceef0',
+                    paddingHorizontal: 4,
+                    paddingVertical: 2,
+                    borderRadius: 5,
+                    borderWidth: 1,
+                    borderColor: '#1373e7',
+                  }}
+                >
+                  <Text style={styles.cashbackValue}>
+                    {formatPrice(percentage_of_bonus)} {t('homePage.currency')}
+                  </Text>
+                </View>
+              </View>
+            )}
+            <View
+              style={{
+                paddingHorizontal: 16,
+                justifyContent: 'flex-start',
+                alignItems: 'flex-start',
+                marginVertical: 10,
+              }}
+            >
+              <TouchableOpacity
+                style={[
+                  styles.cartButton,
+                  {
+                    backgroundColor:
+                      Number(userBalance) >= Number(product?.customer_price) &&
+                      Number(product?.customer_price) > 0 &&
+                      authUser?.vip > 0
+                        ? '#FF3B30'
+                        : '#d5d5d5',
+                  },
+                ]}
+                onPress={() => handleExchangePrize(product)}
+                disabled={!disabled}
+              >
+                <Text style={styles.cartButtonText}>
+                  {loadingItems[product?.id] ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    t('homePage.exchange')
+                  )}
+                </Text>
+              </TouchableOpacity>
             </View>
 
-            <View style={styles.productInfo}>
-              <Text style={styles.vendor_code}>
-                <Text style={{ fontWeight: 'bold' }}>Ishlab chiqaruvchi:</Text> {product?.country}
-              </Text>
-            </View>
-
-            <View style={styles.productInfo}>
-              <Text style={styles.vendor_code}>
-                <Text style={{ fontWeight: 'bold' }}>Mahsulot haqida qisqacha:</Text>
-              </Text>
-              {renderProductDescription(product?.description || '')}
-            </View>
+            {product?.description && (
+              <View style={styles.productInfo}>
+                <Text style={styles.vendor_code}>
+                  <Text style={{ fontWeight: 'bold' }}>{t('katalog.productDescription')}:</Text>
+                </Text>
+                {renderProductDescription(product?.description || '')}
+              </View>
+            )}
 
             {product?.brands && product?.brands.length > 0 && (
               <View style={styles.compatibleBrandsContainer}>
-                <Text style={styles.compatibleBrandsTitle}>{t('fits')}</Text>
+                <Text style={styles.compatibleBrandsTitle}>{t('fits')}:</Text>
                 <FlatList
                   style={{ paddingVertical: 5, paddingLeft: 10 }}
                   horizontal
@@ -301,36 +461,31 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
+    paddingTop: 12,
   },
   backButton: { padding: 8 },
   favoriteButton: { padding: 8 },
   carouselContainer: {
     backgroundColor: '#fff',
-    shadowColor: '#cacaca',
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
+
     marginBottom: 10,
   },
   slideContainer: {
     width: width,
-    height: 230,
+    height: 250,
   },
   productImage: { width: '100%', height: '100%' },
   content: { flex: 1 },
   productInfo: {
     paddingHorizontal: 16,
-
     paddingVertical: 8,
   },
   productName: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-    textTransform: 'uppercase',
+    textTransform: 'capitalize',
+    marginTop: 20,
   },
   compatibleBrandsContainer: {
     padding: 16,
@@ -375,5 +530,68 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
     color: '#333',
+  },
+  discountContainer: {
+    position: 'absolute',
+    bottom: 0,
+    right: 10,
+    backgroundColor: '#FF3B30',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderTopLeftRadius: 6,
+  },
+  discountText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
+  priceText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0F4D0F',
+  },
+
+  priceOld: {},
+  priceOldText: {
+    fontSize: 14,
+    textDecorationLine: 'line-through',
+    color: '#434242',
+    textDecorationColor: 'red',
+  },
+  priceContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    gap: 10,
+  },
+  priceContant: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  cashbackContainer: {
+    flexDirection: 'row',
+    gap: 5,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+  },
+
+  cashbackValue: {
+    fontSize: 14,
+    color: '#1373e7',
+    fontWeight: '600',
+  },
+  cartButton: {
+    height: 35,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    minWidth: 135,
+  },
+  cartButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });

@@ -10,6 +10,8 @@ import { EditBirthdayScreen } from '../screens/settings/EditBirthdayScreen';
 import { EditOccupationScreen } from '@/screens/settings/EditOccupationScreen';
 import { EditAddressScreen } from '@/screens/settings/EditAddressScreen';
 import { CityScreen } from '@/screens/settings/CityScreen';
+import TermsOfUse from '@/screens/settings/TermsOfUse';
+import PrivacyPolicyScreeen from '@/screens/settings/PrivacyPolicyScreeen';
 
 export type SettingsStackParamList = {
   SettingsMain: undefined;
@@ -22,6 +24,8 @@ export type SettingsStackParamList = {
   EditOccupation: undefined;
   EditAddressScreen: undefined;
   CityScreen: undefined;
+  TermsOfUse: undefined;
+  PrivacyPolicy: undefined;
 };
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
@@ -39,6 +43,8 @@ export const SettingsNavigator = () => {
       <Stack.Screen name="EditOccupation" component={EditOccupationScreen} />
       <Stack.Screen name="EditAddressScreen" component={EditAddressScreen} />
       <Stack.Screen name="CityScreen" component={CityScreen} />
+      <Stack.Screen name="TermsOfUse" component={TermsOfUse} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreeen} />
     </Stack.Navigator>
   );
 };
