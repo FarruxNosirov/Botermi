@@ -14,7 +14,18 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-// TEMPORARILY DISABLED FOR BUILD - import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { YaMap, Marker } from 'react-native-yamap';
+import YaMapKit from 'react-native-yamap';
+import { YANDEX_MAPS_API_KEY } from '@/config/constants';
+
+// Initialize Yandex Maps safely
+try {
+  if (YANDEX_MAPS_API_KEY && YANDEX_MAPS_API_KEY !== 'fbb1f150-1a3d-4c9b-9ecc-7a6c6f21ef02') {
+    YaMapKit.init(YANDEX_MAPS_API_KEY);
+  }
+} catch (error) {
+  console.warn('Yandex Maps initialization failed:', error);
+}
 
 type Location = {
   id: number;
@@ -142,37 +153,47 @@ export const CityScreen = () => {
 
         {/* Map Container */}
         <View style={styles.mapContainer}>
-          {/* TEMPORARILY DISABLED FOR BUILD
-          <MapView
-            provider={PROVIDER_GOOGLE}
-            style={styles.map}
-            region={mapRegion}
-            showsUserLocation={false}
-            showsMyLocationButton={false}
-            toolbarEnabled={false}
-          >
-            {markers.map((marker) => (
-              <Marker
-                key={marker.id}
-                coordinate={{
-                  latitude: marker.latitude,
-                  longitude: marker.longitude,
-                }}
-                title={marker.title}
-                description={marker.description}
-              >
-                <View style={styles.markerContainer}>
-                  <Ionicons name="location" size={30} color="#e74c3c" />
-                </View>
-              </Marker>
-            ))}
-          </MapView>
-          */}
-          <View style={styles.map}>
-            <Text style={{ textAlign: 'center', paddingTop: 50, color: '#999', fontSize: 16 }}>
-              Xarita vaqtincha ishlamaydi
-            </Text>
-          </View>
+          {YANDEX_MAPS_API_KEY && YANDEX_MAPS_API_KEY !== 'fbb1f150-1a3d-4c9b-9ecc-7a6c6f21ef02' ? (
+            <YaMap
+              style={styles.map}
+              initialRegion={{
+                lat: mapRegion.latitude,
+                lon: mapRegion.longitude,
+                zoom: 15,
+              }}
+              showUserPosition={false}
+              zoomGesturesEnabled={true}
+              scrollGesturesEnabled={true}
+            >
+              {markers.map((marker) => (
+                <Marker
+                  key={marker.id}
+                  point={{
+                    lat: marker.latitude,
+                    lon: marker.longitude,
+                  }}
+                  source={{
+                    uri: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTUiIGN5PSIxNSIgcj0iMTAiIGZpbGw9IiNlNzRjM2MiLz4KPC9zdmc+',
+                  }}
+                />
+              ))}
+            </YaMap>
+          ) : (
+            <View
+              style={[
+                styles.map,
+                { justifyContent: 'center', alignItems: 'center', backgroundColor: '#f8f9fa' },
+              ]}
+            >
+              <Ionicons name="map-outline" size={50} color="#ccc" />
+              <Text style={{ textAlign: 'center', color: '#666', fontSize: 16, marginTop: 10 }}>
+                Yandex Maps API key kerak
+              </Text>
+              <Text style={{ textAlign: 'center', color: '#999', fontSize: 12, marginTop: 5 }}>
+                Constants faylida API kalitni qo'shing
+              </Text>
+            </View>
+          )}
 
           {selectedCity && selectedCity.locations.length > 0 && (
             <View style={styles.locationInfo}>
