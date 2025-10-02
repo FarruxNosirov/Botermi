@@ -48,6 +48,9 @@
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
         "ITSAppUsesNonExemptEncryption": false
       },
+      "config": {
+        "googleMapsApiKey": "AIzaSyBvKijMMp2rgpADsvB2cpNL6JOBozQ27TE"
+      },
       "icon": {
         "dark": "./assets/ios-dark.png",
         "light": "./assets/ios-light.png",
@@ -61,13 +64,18 @@
         "backgroundColor": "#B3071A"
       },
       "package": "com.botermi.app",
-      "versionCode": 1,
+      "versionCode": 5,
       "permissions": [
-        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.RECEIVE_SMS",
         "android.permission.READ_SMS"
-      ]
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBvKijMMp2rgpADsvB2cpNL6JOBozQ27TE"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"

@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 5.9.1"
+    "version": ">= 5.9.1",
+    "appVersionSource": "local"
   },
   "build": {
     "preview": {
@@ -20,7 +21,37 @@
       "android": {
         "buildType": "app-bundle"
       },
-      "ios": {}
+      "ios": {
+        "buildConfiguration": "Release",
+        "distribution": "store"
+      }
+    },
+    "production-all": {
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "ios": {
+        "buildConfiguration": "Release",
+        "distribution": "store"
+      }
+    },
+    "preview-all": {
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": true,
+        "buildConfiguration": "Release"
+      }
+    },
+    "ios-simulator": {
+      "ios": {
+        "simulator": true,
+        "buildConfiguration": "Release"
+      }
     }
+  },
+  "submit": {
+    "production": {}
   }
 }

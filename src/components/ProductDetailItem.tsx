@@ -69,9 +69,9 @@ const ProductDetailItem = ({ item }: { item: any }) => {
     }
   };
   const disabled =
-    (Number(userData.balance) >= Number(item?.customer_price) &&
+    (Number(userData?.balance) >= Number(item?.customer_price) &&
       Number(item?.customer_price) > 0 &&
-      userData.vip > 0) ||
+      userData?.vip > 0) ||
     loadingItems[item?.id];
 
   return (
