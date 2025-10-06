@@ -92,8 +92,8 @@ android {
         applicationId 'com.botermi.app'
         minSdkVersion 26
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 2
-        versionName "1.1.0"
+        versionCode 5
+        versionName "1.1.1"
     }
     signingConfigs {
         debug {
@@ -174,4 +174,7 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+    
+    // Google Maps for react-native-maps
+    implementation 'com.google.android.gms:play-services-maps:18.2.0'
 }

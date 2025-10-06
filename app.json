@@ -2,7 +2,7 @@
   "expo": {
     "name": "Botermi",
     "slug": "Botermi",
-    "version": "1.1.0",
+    "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -48,10 +48,8 @@
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
         "ITSAppUsesNonExemptEncryption": false
       },
-      "icon": {
-        "dark": "./assets/ios-dark.png",
-        "light": "./assets/ios-light.png",
-        "tinted": "./assets/ios-tinted.png"
+      "config": {
+        "googleMapsApiKey": "AIzaSyBvKijMMp2rgpADsvB2cpNL6JOBozQ27TE"
       }
     },
     "android": {
@@ -61,19 +59,26 @@
         "backgroundColor": "#B3071A"
       },
       "package": "com.botermi.app",
-      "versionCode": 2,
-      "minSdkVersion": 26,
+      "versionCode": 5,
       "permissions": [
-        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.RECEIVE_SMS",
         "android.permission.READ_SMS"
-      ]
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyBvKijMMp2rgpADsvB2cpNL6JOBozQ27TE"
+        }
+      }
     },
     "web": {
       "favicon": "./assets/favicon.png"
     },
     "extra": {
+      "eas": {
+        "projectId": "48d4fc13-aaed-45ed-8833-f2e8f7522a6c"
+      }
     }
   }
 }

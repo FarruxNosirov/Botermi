@@ -198,6 +198,10 @@ export const useGetMe = () => {
   return useQuery({
     queryKey: ['getMe'],
     queryFn: () => getUserData(),
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 };
 

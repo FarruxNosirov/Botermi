@@ -8,7 +8,15 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import Carousel from 'react-native-reanimated-carousel';
 
@@ -21,7 +29,7 @@ const ProductDetailItem = ({ item }: { item: any }) => {
   const customerPriceNum = Number(String(item?.customer_price).replace(/\s/g, ''));
 
   const discountPercentage =
-    priceNum > 0 && customerPriceNum > 0
+    priceNum > 0 && customerPriceNum > 0 && priceNum < customerPriceNum
       ? Math.round(((customerPriceNum - priceNum) / customerPriceNum) * 100)
       : 0;
 
@@ -30,7 +38,10 @@ const ProductDetailItem = ({ item }: { item: any }) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const progressValue = useSharedValue(0);
 
-  const allImages = [item?.image, ...(item?.foto_gallary || [])].filter(Boolean);
+  const allImages = [
+    item?.image,
+    ...(Array.isArray(item?.foto_gallary) ? item.foto_gallary : []),
+  ].filter(Boolean);
 
   const percentage_of_bonus =
     item?.percentage_of_bonus > 0 ? (customerPriceNum / 100) * item?.percentage_of_bonus : 0;
@@ -41,41 +52,55 @@ const ProductDetailItem = ({ item }: { item: any }) => {
   const dispatch = useAppDispatch();
 
   const handleExchangePrize = (item: any) => {
-    if (userData?.balance) {
-      setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
+    const hasEnoughBalance = userData?.balance && Number(userData?.balance) >= customerPriceNum;
+    const hasVip = userData?.vip && userData?.vip > 0;
 
-      exchangePrize(
-        { product_id: item?.id, type: 'product' },
-        {
-          onSuccess: async (data) => {
-            await dispatch(getMe());
-            showToast('success', t('commond.success'), t('actions.scanSuccess'));
-            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
-          },
-          onError: (error: any) => {
-            console.log('error?.response?.data?.message', error?.response?.data?.message);
-
-            showToast(
-              'error',
-              t('commond.error'),
-              error?.response?.data?.message || t('commond.notEnoughBalance'),
-            );
-            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
-          },
-        },
-      );
-    } else {
-      showToast('error', t('error'), t('commond.notEnoughBalance'));
+    if (!hasEnoughBalance) {
+      showToast('error', t('commond.error'), t('commond.notEnoughBalance'));
+      return;
     }
+
+    if (!hasVip) {
+      showToast('error', t('commond.error'), 'VIP status required');
+      return;
+    }
+
+    setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
+
+    exchangePrize(
+      { product_id: item?.id, type: 'product' },
+      {
+        onSuccess: async (data) => {
+          await dispatch(getMe());
+          showToast('success', t('commond.success'), t('actions.scanSuccess'));
+          setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+        },
+        onError: (error: any) => {
+          console.log('error?.response?.data?.message', error?.response?.data?.message);
+
+          showToast(
+            'error',
+            t('commond.error'),
+            error?.response?.data?.message || t('commond.notEnoughBalance'),
+          );
+          setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+        },
+      },
+    );
   };
-  const disabled =
-    (Number(userData.balance) >= Number(item?.customer_price) &&
-      Number(item?.customer_price) > 0 &&
-      userData.vip > 0) ||
-    loadingItems[item?.id];
+
+  const canExchange =
+    Number(userData?.balance) >= customerPriceNum &&
+    customerPriceNum > 0 &&
+    userData?.vip > 0 &&
+    !loadingItems[item?.id] &&
+    userData?.balance !== undefined &&
+    userData?.vip !== undefined;
 
   return (
-    <TouchableOpacity onPress={() => navigation.navigate('ProductDetail', { product: item })}>
+    <TouchableWithoutFeedback
+      onPress={() => navigation.navigate('ProductDetail', { product: item })}
+    >
       <View style={[styles.productItem, { width: productCardWidth }]}>
         <View style={{ position: 'relative' }}>
           {allImages.length > 1 ? (
@@ -134,38 +159,29 @@ const ProductDetailItem = ({ item }: { item: any }) => {
               </Text>
             </View>
           )}
-          {priceNum > 0 || customerPriceNum > 0 ? (
-            <>
-              {userData?.vip > 0 ? (
-                <View>
-                  <Text style={styles.priceText}>
-                    {formatPrice(item?.customer_price)} {t('homePage.currency')}
-                  </Text>
-                </View>
-              ) : (
-                <View>
-                  <Text style={styles.priceText}>
-                    {formatPrice(item?.price)} {t('homePage.currency')}
-                  </Text>
-                </View>
-              )}
-            </>
+          {customerPriceNum > 0 ? (
+            <View>
+              <Text style={styles.priceText}>
+                {formatPrice(item?.customer_price)} {t('homePage.currency')}
+              </Text>
+            </View>
+          ) : priceNum > 0 ? (
+            <View>
+              <Text style={styles.priceText}>
+                {formatPrice(item?.price)} {t('homePage.currency')}
+              </Text>
+            </View>
           ) : null}
 
           <TouchableOpacity
             style={[
               styles.cartButton,
               {
-                backgroundColor:
-                  Number(userData?.balance) >= Number(item?.customer_price) &&
-                  Number(item?.customer_price) > 0 &&
-                  userData?.vip > 0
-                    ? '#FF3B30'
-                    : '#d5d5d5',
+                backgroundColor: canExchange ? '#FF3B30' : '#d5d5d5',
               },
             ]}
             onPress={() => handleExchangePrize(item)}
-            disabled={!disabled}
+            disabled={!canExchange}
           >
             <Text style={styles.cartButtonText}>
               {loadingItems[item?.id] ? (
@@ -176,13 +192,13 @@ const ProductDetailItem = ({ item }: { item: any }) => {
             </Text>
           </TouchableOpacity>
         </View>
-        {discountPercentage < 0 && (
+        {discountPercentage > 0 && (
           <View style={styles.discountContainer}>
-            <Text style={styles.discountText}>{discountPercentage}%</Text>
+            <Text style={styles.discountText}>-{discountPercentage}%</Text>
           </View>
         )}
       </View>
-    </TouchableOpacity>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -194,21 +210,21 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 7,
     marginBottom: 12,
-    // iOS shadow
-    shadowColor: '#dddddd',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    // Android shadow
-    elevation: 5,
     height: 370,
     flexDirection: 'column',
     justifyContent: 'space-between',
     position: 'relative',
     backgroundColor: '#fff',
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    // Android shadow
+    elevation: 6,
   },
 
   productImage: {

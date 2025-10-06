@@ -13,7 +13,7 @@ export const DEVICE_WIDTH = Dimensions.get('window').width;
 
 export const formatBalance = (balance: number | undefined | null): string => {
   if (!balance) return '0';
-  return balance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  return balance?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
 };
 
 export const openUrl = async (
@@ -82,7 +82,7 @@ export const makePhoneCall = (phoneNumber: string, options?: OpenUrlOptions) => 
   return openUrl(phoneNumber, 'phone', options);
 };
 export const formatPrice = (price: number | string) => {
-    const num = Number(String(price).replace(/\s/g, ''));
-    if (isNaN(num) || num === 0) return '0';
-    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
-  };
+  const num = Number(String(price).replace(/\s/g, ''));
+  if (isNaN(num) || num === 0) return '0';
+  return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+};

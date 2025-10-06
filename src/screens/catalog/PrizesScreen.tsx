@@ -155,10 +155,20 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,
-    boxShadow: '0 0 5 #dddddd',
     height: 280,
     flexDirection: 'column',
     justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 5,
+    // Android shadow
+    elevation: 6,
   },
   contentContainerStyle: {
     flexDirection: 'row',

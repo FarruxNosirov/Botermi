@@ -5,11 +5,10 @@ import { usePrizesExchange, useSingleProduct } from '@/hooks/querys';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getMe } from '@/store/slices/authSlice';
 import { CatalogStackParamList } from '@/types/navigation';
-import { UserDataType } from '@/types/userType';
 import { showToast } from '@/utils/toastHelper';
 import { Ionicons } from '@expo/vector-icons';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   ActivityIndicator,
@@ -158,7 +157,7 @@ export const ProductDetailScreen = () => {
   const customerPriceNum = Number(String(product?.customer_price).replace(/\s/g, ''));
 
   const discountPercentage =
-    priceNum > 0 && customerPriceNum > 0
+    priceNum > 0 && customerPriceNum > 0 && priceNum < customerPriceNum
       ? Math.round(((customerPriceNum - priceNum) / customerPriceNum) * 100)
       : 0;
   const renderCarouselItem = useCallback(
@@ -173,9 +172,9 @@ export const ProductDetailScreen = () => {
         }}
       >
         <Image source={{ uri: item }} style={styles.productImage} resizeMode="contain" />
-        {discountPercentage < 0 && (
+        {discountPercentage > 0 && (
           <View style={styles.discountContainer}>
-            <Text style={styles.discountText}>{discountPercentage}%</Text>
+            <Text style={styles.discountText}>-{discountPercentage}%</Text>
           </View>
         )}
       </View>
@@ -183,7 +182,10 @@ export const ProductDetailScreen = () => {
     [],
   );
 
-  const allImages = [product?.image, ...(product?.foto_gallary || [])].filter(Boolean);
+  const allImages = [
+    product?.image,
+    ...(Array.isArray(product?.foto_gallary) ? product.foto_gallary : []),
+  ].filter(Boolean);
 
   const percentage_of_bonus =
     product?.percentage_of_bonus > 0 ? (customerPriceNum / 100) * product?.percentage_of_bonus : 0;
@@ -195,39 +197,50 @@ export const ProductDetailScreen = () => {
   const userBalance = authUser?.balance;
 
   const handleExchangePrize = (item: any) => {
-    if (userBalance && userBalance) {
-      setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
+    const hasEnoughBalance = userBalance && Number(userBalance) >= customerPriceNum;
+    const hasVip = authUser?.vip && authUser?.vip > 0;
 
-      exchangePrize(
-        { product_id: item?.id, type: 'product' },
-        {
-          onSuccess: async (data) => {
-            await dispatch(getMe());
-            showToast('success', t('commond.success'), t('actions.scanSuccess'));
-            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
-          },
-          onError: (error: any) => {
-            console.log('error?.response?.data?.message', error?.response?.data?.message);
-
-            showToast(
-              'error',
-              t('commond.error'),
-              error?.response?.data?.message || t('commond.notEnoughBalance'),
-            );
-            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
-          },
-        },
-      );
-    } else {
-      showToast('error', t('error'), t('commond.notEnoughBalance'));
+    if (!hasEnoughBalance) {
+      showToast('error', t('commond.error'), t('commond.notEnoughBalance'));
+      return;
     }
+
+    if (!hasVip) {
+      showToast('error', t('commond.error'), 'VIP status required');
+      return;
+    }
+
+    setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
+
+    exchangePrize(
+      { product_id: item?.id, type: 'product' },
+      {
+        onSuccess: async (data) => {
+          await dispatch(getMe());
+          showToast('success', t('commond.success'), t('actions.scanSuccess'));
+          setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+        },
+        onError: (error: any) => {
+          console.log('error?.response?.data?.message', error?.response?.data?.message);
+
+          showToast(
+            'error',
+            t('commond.error'),
+            error?.response?.data?.message || t('commond.notEnoughBalance'),
+          );
+          setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+        },
+      },
+    );
   };
 
-  const disabled =
-    (Number(userBalance) >= Number(product?.customer_price) &&
-      Number(product?.customer_price) > 0 &&
-      authUser?.vip > 0) ||
-    loadingItems[product?.id];
+  const canExchange =
+    Number(userBalance) >= customerPriceNum &&
+    customerPriceNum > 0 &&
+    authUser?.vip > 0 &&
+    !loadingItems[product?.id] &&
+    userBalance !== undefined &&
+    authUser?.vip !== undefined;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -276,9 +289,9 @@ export const ProductDetailScreen = () => {
                       style={styles.productImage}
                       resizeMode="contain"
                     />
-                    {discountPercentage < 0 && (
+                    {discountPercentage > 0 && (
                       <View style={styles.discountContainer}>
-                        <Text style={styles.discountText}>{discountPercentage}%</Text>
+                        <Text style={styles.discountText}>-{discountPercentage}%</Text>
                       </View>
                     )}
                   </View>
@@ -375,16 +388,11 @@ export const ProductDetailScreen = () => {
                 style={[
                   styles.cartButton,
                   {
-                    backgroundColor:
-                      Number(userBalance) >= Number(product?.customer_price) &&
-                      Number(product?.customer_price) > 0 &&
-                      authUser?.vip > 0
-                        ? '#FF3B30'
-                        : '#d5d5d5',
+                    backgroundColor: canExchange ? '#FF3B30' : '#d5d5d5',
                   },
                 ]}
                 onPress={() => handleExchangePrize(product)}
-                disabled={!disabled}
+                disabled={!canExchange}
               >
                 <Text style={styles.cartButtonText}>
                   {loadingItems[product?.id] ? (
