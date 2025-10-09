@@ -18,15 +18,10 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import {
-  CodeField,
-  Cursor,
-  useBlurOnFulfill,
-  useClearByFocusCell,
-} from 'react-native-confirmation-code-field';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 
@@ -42,15 +37,12 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
   const { phone } = route.params;
   const { t } = useTranslation();
   const dispatch = useDispatch<AppDispatch>();
-  const [value, setValue] = useState('');
+  const [otp, setOtp] = useState(['', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [timeLeft, setTimeLeft] = useState(RESEND_TIMEOUT);
-  const ref = useBlurOnFulfill({ value, cellCount: OTP_LENGTH });
-  const [props, getCellOnLayoutHandler] = useClearByFocusCell({
-    value,
-    setValue,
-  });
+  const inputRefs = useRef<(TextInput | null)[]>([]);
+  const [otpValue, setOtpValue] = useState('');
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -60,7 +52,32 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const handleSubmit = async (otpString = value) => {
+  const handleOtpChange = (text: string, index: number) => {
+    // Remove any non-numeric characters
+    const numericText = text.replace(/[^0-9]/g, '');
+
+    // Update the OTP array
+    const newOtp = [...otp];
+    newOtp[index] = numericText;
+    setOtp(newOtp);
+
+    // Update the combined OTP value (but don't trigger hidden input)
+    const combinedOtp = newOtp.join('');
+    setOtpValue(combinedOtp);
+
+    // Auto-focus next input
+    if (numericText && index < OTP_LENGTH - 1) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyPress = (key: string, index: number) => {
+    if (key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleSubmit = async (otpString = otp.join('')) => {
     if (otpString.length !== OTP_LENGTH) {
       setError(t('smsError'));
       return;
@@ -203,32 +220,63 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
                 </Text>
               </Text>
 
-              {/* OTP Input Fields with Auto-fill Support */}
-              <CodeField
-                ref={ref}
-                {...props}
-                value={value}
-                onChangeText={setValue}
-                cellCount={OTP_LENGTH}
-                rootStyle={styles.codeFieldRoot}
+              {/* Hidden SMS Auto-fill Input */}
+              <TextInput
+                value={otpValue}
+                onChangeText={(text) => {
+                  const numericText = text.replace(/[^0-9]/g, '');
+
+                  // Only update if the text is different (avoid loop)
+                  if (numericText !== otpValue) {
+                    setOtpValue(numericText);
+
+                    // Update individual OTP inputs
+                    const newOtp = numericText.split('').slice(0, OTP_LENGTH);
+                    while (newOtp.length < OTP_LENGTH) {
+                      newOtp.push('');
+                    }
+                    setOtp(newOtp);
+                  }
+                }}
+                style={styles.hiddenInput}
                 keyboardType="number-pad"
+                maxLength={OTP_LENGTH}
                 textContentType="oneTimeCode"
-                autoComplete={Platform.OS === 'android' ? 'sms-otp' : 'one-time-code'}
-                testID="my-code-input"
-                renderCell={({ index, symbol, isFocused }) => (
-                  <View
-                    key={index}
-                    style={[
-                      styles.cell,
-                      isFocused && styles.focusCell,
-                      symbol && styles.filledCell,
-                    ]}
-                    onLayout={getCellOnLayoutHandler(index)}
-                  >
-                    <Text style={styles.cellText}>{symbol || (isFocused ? <Cursor /> : null)}</Text>
-                  </View>
-                )}
+                autoComplete="sms-otp"
+                autoFocus
               />
+
+              {/* OTP Input Fields */}
+              <View
+                style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 32 }}
+              >
+                {otp.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    ref={(ref) => {
+                      inputRefs.current[index] = ref;
+                    }}
+                    value={digit}
+                    onChangeText={(text) => handleOtpChange(text, index)}
+                    onKeyPress={({ nativeEvent }) => handleKeyPress(nativeEvent.key, index)}
+                    style={{
+                      width: 58,
+                      height: 48,
+                      borderRadius: 12,
+                      borderWidth: 1,
+                      borderColor: digit ? '#b60017' : '#E8E8E8',
+                      backgroundColor: digit ? '#FFF5F6' : '#F5F5F5',
+                      textAlign: 'center',
+                      fontSize: 24,
+                      fontWeight: '600',
+                      color: '#b60017',
+                    }}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    autoFocus={index === 0}
+                  />
+                ))}
+              </View>
 
               {timeLeft > 0 ? (
                 <Text
@@ -271,11 +319,11 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
                 <Pressable
                   style={[
                     styles.button,
-                    (value.length !== OTP_LENGTH || isLoading) && styles.disabledButton,
+                    (otp.some((d) => !d) || isLoading) && styles.disabledButton,
                     { marginTop: 10 },
                   ]}
                   onPress={() => handleSubmit()}
-                  disabled={value.length !== OTP_LENGTH || isLoading}
+                  disabled={otp.some((d) => !d) || isLoading}
                 >
                   {isLoading ? (
                     <ActivityIndicator color="#fff" />
@@ -361,33 +409,26 @@ const styles = StyleSheet.create({
     color: '#000',
     fontWeight: '600',
   },
-  codeFieldRoot: {
+  otpContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginBottom: 32,
-    gap: 8,
   },
-  cell: {
-    width: 58,
-    height: 48,
-    borderRadius: 12,
+  otpInput: {
+    width: 56,
+    height: 56,
     borderWidth: 1,
     borderColor: '#E8E8E8',
-    backgroundColor: '#F5F5F5',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  focusCell: {
-    borderColor: '#b60017',
-    backgroundColor: '#FFF5F6',
-  },
-  filledCell: {
-    borderColor: '#b60017',
-    backgroundColor: '#FFF5F6',
-  },
-  cellText: {
+    borderRadius: 12,
     fontSize: 24,
     fontWeight: '600',
-    color: '#b60017',
     textAlign: 'center',
+    color: '#b60017',
+    backgroundColor: '#fff',
+  },
+  otpInputFilled: {
+    borderColor: '#b60017',
+    backgroundColor: '#FFF5F6',
   },
   timerContainer: {
     alignItems: 'center',
@@ -441,5 +482,12 @@ const styles = StyleSheet.create({
     width: 30,
     height: 30,
     marginRight: 10,
+  },
+  hiddenInput: {
+    position: 'absolute',
+    width: 1,
+    height: 1,
+    opacity: 0,
+    left: -9999,
   },
 });

@@ -41,7 +41,7 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": false,
+      "supportsTablet": true,
       "bundleIdentifier": "com.botermi.app",
       "buildNumber": "1",
       "infoPlist": {

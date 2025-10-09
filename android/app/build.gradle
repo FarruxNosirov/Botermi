@@ -92,8 +92,8 @@ android {
         applicationId 'com.botermi.app'
         minSdkVersion 26
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
-        versionName "1.1.3"
+        versionCode 5
+        versionName "1.1.1"
     }
     signingConfigs {
         debug {
@@ -102,20 +102,15 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
-        release {
-            storeFile file('release.keystore')
-            storePassword 'ce4fc02b1241b11e0f7a7cc39cdf6ca5'
-            keyAlias '32b11bb8fd5ecf89c88f0321197c17ec'
-            keyPassword '9be6315f2a9d31856b6f69bf46d27e45'
-        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Production keystore from EAS
-            signingConfig signingConfigs.release
+            // Caution! In production, you need to generate your own keystore file.
+            // see https://reactnative.dev/docs/signed-apk-android.
+            signingConfig signingConfigs.debug
             shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"

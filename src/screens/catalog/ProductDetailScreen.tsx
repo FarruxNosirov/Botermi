@@ -289,7 +289,7 @@ export const ProductDetailScreen = () => {
                       style={styles.productImage}
                       resizeMode="contain"
                     />
-                    {discountPercentage > 0 && authUser?.vip > 0 && (
+                    {discountPercentage > 0 && (
                       <View style={styles.discountContainer}>
                         <Text style={styles.discountText}>-{discountPercentage}%</Text>
                       </View>
@@ -332,24 +332,14 @@ export const ProductDetailScreen = () => {
             {priceNum > 0 || customerPriceNum > 0 ? (
               <View style={styles.priceContainer}>
                 {authUser?.vip > 0 ? (
-                  <>
-                    <View style={styles.priceContant}>
-                      <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
-                        {t('katalog.retailPrice')}:
-                      </Text>
-                      <Text style={styles.priceText}>
-                        {formatPrice(product?.customer_price)} {t('homePage.currency')}
-                      </Text>
-                    </View>
-                    <View style={styles.priceContant}>
-                      <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
-                        {t('katalog.masterPrice')}:
-                      </Text>
-                      <Text style={styles.priceOldText}>
-                        {formatPrice(product?.price)} {t('homePage.currency')}
-                      </Text>
-                    </View>
-                  </>
+                  <View style={styles.priceContant}>
+                    <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
+                      {t('katalog.retailPrice')}:
+                    </Text>
+                    <Text style={styles.priceText}>
+                      {formatPrice(product?.customer_price)} {t('homePage.currency')}
+                    </Text>
+                  </View>
                 ) : (
                   <View style={styles.priceContant}>
                     <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
@@ -362,7 +352,7 @@ export const ProductDetailScreen = () => {
                 )}
               </View>
             ) : null}
-            {percentage_of_bonus > 0 && authUser?.vip > 0 && (
+            {percentage_of_bonus > 0 && (
               <View style={styles.cashbackContainer}>
                 <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
                   {t('katalog.cashback')}:
