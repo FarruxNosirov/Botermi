@@ -151,7 +151,7 @@ const ProductDetailItem = ({ item }: { item: any }) => {
           </View>
         </View>
         <View style={styles.priceContainer}>
-          {percentage_of_bonus > 0 && (
+          {percentage_of_bonus > 0 && userData?.vip > 0 && (
             <View style={styles.cashbackContainer}>
               <Text style={styles.cashbackText}>{t('katalog.cashback')}:</Text>
               <Text style={styles.cashbackValue}>
@@ -159,19 +159,28 @@ const ProductDetailItem = ({ item }: { item: any }) => {
               </Text>
             </View>
           )}
-          {customerPriceNum > 0 ? (
+          {customerPriceNum > 0 && userData?.vip > 0 && (
             <View>
               <Text style={styles.priceText}>
                 {formatPrice(item?.customer_price)} {t('homePage.currency')}
               </Text>
             </View>
-          ) : priceNum > 0 ? (
-            <View>
-              <Text style={styles.priceText}>
+          )}
+          {priceNum > 0 && userData?.vip > 0 ? (
+            <View style={{ width: '100%', flexDirection: 'row', justifyContent: 'flex-end' }}>
+              <Text style={styles.priceOldText}>
                 {formatPrice(item?.price)} {t('homePage.currency')}
               </Text>
             </View>
-          ) : null}
+          ) : (
+            <View>
+              {priceNum > 0 && (
+                <Text style={styles.priceText}>
+                  {formatPrice(item?.price)} {t('homePage.currency')}
+                </Text>
+              )}
+            </View>
+          )}
 
           <TouchableOpacity
             style={[
@@ -192,7 +201,7 @@ const ProductDetailItem = ({ item }: { item: any }) => {
             </Text>
           </TouchableOpacity>
         </View>
-        {discountPercentage > 0 && (
+        {discountPercentage > 0 && userData?.vip > 0 && (
           <View style={styles.discountContainer}>
             <Text style={styles.discountText}>-{discountPercentage}%</Text>
           </View>
