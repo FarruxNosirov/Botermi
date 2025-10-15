@@ -43,7 +43,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.botermi.app",
-      "buildNumber": 13,
+      "buildNumber": "15",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
         "ITSAppUsesNonExemptEncryption": false
@@ -59,12 +59,10 @@
         "backgroundColor": "#B3071A"
       },
       "package": "com.botermi.app",
-      "versionCode": 5,
+      "versionCode": 9,
       "permissions": [
         "android.permission.CAMERA",
-        "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.RECEIVE_SMS",
-        "android.permission.READ_SMS"
+        "android.permission.ACCESS_FINE_LOCATION"
       ],
       "config": {
         "googleMaps": {
