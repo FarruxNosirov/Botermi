@@ -1,13 +1,14 @@
 import {
   FlatList,
   Image,
+  RefreshControl,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -26,55 +27,110 @@ const PrizesScreen = () => {
   const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
   const [userData, setUserData] = useState<UserDataType | null>(authUser || null);
   const [loadingItems, setLoadingItems] = useState<{ [key: number]: boolean }>({});
+  const [refreshing, setRefreshing] = useState(false);
   const dispatch = useAppDispatch();
 
-  const handleGetMe = async () => {
+  const { data, isLoading, refetch } = usePrizes();
+  const { mutate: exchangePrize } = usePrizesExchange();
+
+  // Sync userData with authUser
+  useEffect(() => {
+    if (authUser) {
+      setUserData(authUser);
+    }
+  }, [authUser]);
+
+  const handleGetMe = useCallback(async () => {
     const resultAction = await dispatch(getMe());
     if (getMe.fulfilled.match(resultAction)) {
       setUserData(resultAction?.payload?.data);
     } else {
       console.log('error:', resultAction.payload);
     }
-  };
+  }, [dispatch]);
 
   useEffect(() => {
     if (!authUser) {
       handleGetMe();
     }
-  }, []);
+  }, [authUser, handleGetMe]);
 
-  const { data, isLoading } = usePrizes();
-  const productCardWidth = DEVICE_WIDTH / 2 - 24;
-  const { mutate: exchangePrize } = usePrizesExchange();
+  // Memoize productCardWidth to avoid recalculation on every render
+  const productCardWidth = useMemo(() => DEVICE_WIDTH / 2 - 24, []);
 
-  const handleExchangePrize = (item: any) => {
-    if (userData?.balance && userData?.balance >= item?.price) {
-      setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
-
-      exchangePrize(
-        { prize_id: item?.id, type: 'prize' },
-        {
-          onSuccess: async (data) => {
-            await handleGetMe();
-            showToast('success', t('commond.success'), t('actions.scanSuccess'));
-            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
-          },
-          onError: (error: any) => {
-            console.log('error?.response?.data?.message', error?.response?.data?.message);
-
-            showToast(
-              'error',
-              t('commond.error'),
-              error?.response?.data?.message || t('commond.notEnoughBalance'),
-            );
-            setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
-          },
-        },
-      );
-    } else {
-      showToast('error', t('error'), t('commond.notEnoughBalance'));
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await handleGetMe();
+      await refetch();
+    } catch (error) {
+      console.log('Refresh error:', error);
+    } finally {
+      setRefreshing(false);
     }
-  };
+  }, [handleGetMe, refetch]);
+
+  const handleExchangePrize = useCallback(
+    (item: any) => {
+      if (userData?.balance && userData?.balance >= item?.price) {
+        setLoadingItems((prev) => ({ ...prev, [item.id]: true }));
+
+        exchangePrize(
+          { prize_id: item?.id, type: 'prize' },
+          {
+            onSuccess: async () => {
+              await handleGetMe();
+              showToast('success', t('commond.success'), t('actions.scanSuccess'));
+              setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+            },
+            onError: (error: any) => {
+              console.log('error?.response?.data?.message', error?.response?.data?.message);
+
+              showToast(
+                'error',
+                t('commond.error'),
+                error?.response?.data?.message || t('commond.notEnoughBalance'),
+              );
+              setLoadingItems((prev) => ({ ...prev, [item.id]: false }));
+            },
+          },
+        );
+      } else {
+        showToast('error', t('error'), t('commond.notEnoughBalance'));
+      }
+    },
+    [userData?.balance, exchangePrize, handleGetMe, t],
+  );
+
+  const renderPrizeItem = useCallback(
+    ({ item }: { item: any }) => {
+      const isItemLoading = loadingItems[item.id] || false;
+
+      return (
+        <View style={[styles.productItem, { width: productCardWidth }]}>
+          <Image
+            source={{ uri: item?.image }}
+            style={[styles.productImage, { width: productCardWidth - 30 }]}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.price}>{formatBalance(item?.price)}</Text>
+            <Text numberOfLines={2}>{item?.name}</Text>
+          </View>
+          <TouchableOpacity
+            style={[styles.cartButton, isItemLoading && styles.cartButtonLoading]}
+            onPress={() => handleExchangePrize(item)}
+            disabled={isItemLoading}
+          >
+            <Text style={styles.buttonText}>
+              {isItemLoading ? t('commond.loading') : t('katalog.exchange')}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      );
+    },
+    [loadingItems, productCardWidth, handleExchangePrize, t],
+  );
 
   return (
     <SafeAreaView style={styles.container}>
@@ -94,38 +150,24 @@ const PrizesScreen = () => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.contentContainerStyle}
             data={data?.data.data || []}
-            renderItem={({ item }) => {
-              const isItemLoading = loadingItems[item.id] || false;
-
-              return (
-                <View style={[styles.productItem, { width: productCardWidth }]}>
-                  <Image
-                    source={{ uri: item?.image }}
-                    style={[styles.productImage, { width: productCardWidth - 30, borderWidth: 1 }]}
-                    resizeMode="contain"
-                  />
-                  <View>
-                    <Text style={styles.price}>{formatBalance(item?.price)}</Text>
-                    <Text>{item?.name}</Text>
-                  </View>
-                  <TouchableOpacity
-                    style={[styles.cartButton, isItemLoading && styles.cartButtonLoading]}
-                    onPress={() => handleExchangePrize(item)}
-                    disabled={isItemLoading}
-                  >
-                    <Text style={styles.buttonText}>
-                      {isItemLoading ? t('commond.loading') : t('katalog.exchange')}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-              );
-            }}
+            renderItem={renderPrizeItem}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#B3071A']}
+                tintColor="#B3071A"
+              />
+            }
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={10}
+            updateCellsBatchingPeriod={50}
+            initialNumToRender={6}
+            windowSize={5}
             ListEmptyComponent={<EmptyState />}
           />
         </>
       )}
-
-      <View style={{ height: 50 }} />
     </SafeAreaView>
   );
 };

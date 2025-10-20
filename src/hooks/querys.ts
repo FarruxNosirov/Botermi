@@ -7,6 +7,7 @@ import {
   getReviews,
   getUserData,
   homeApi,
+  notificationsApi,
   prizesApi,
   profileApi,
 } from '@/services/api';
@@ -210,5 +211,13 @@ export const useGetReviews = (language?: string) => {
     queryKey: ['getReviews', language],
     queryFn: () => getReviews(language),
     enabled: !!language,
+  });
+};
+
+export const useGetNotifications = (userId: number) => {
+  return useQuery({
+    queryKey: ['getNotifications', userId],
+    queryFn: () => notificationsApi.getNotifications(userId),
+    enabled: !!userId,
   });
 };

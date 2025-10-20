@@ -14,6 +14,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import {
   Linking,
   Pressable,
+  RefreshControl,
   SafeAreaView,
   ScrollView,
   StyleSheet,
@@ -30,10 +31,19 @@ const HomeScreen = () => {
 
   const { data: statuses, refetch } = useGetStatuses((authUser as any)?.id);
   const { t } = useTranslation();
+  const [refreshing, setRefreshing] = useState(false);
 
   const handleGetMe = async () => {
     await dispatch(getMe());
   };
+
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    await handleGetMe();
+    await refetch();
+    setRefreshing(false);
+  }, []);
+
   useEffect(() => {
     if (!authUser) {
       handleGetMe();
@@ -46,7 +56,6 @@ const HomeScreen = () => {
       refetch();
     }, []),
   );
-  console.log('authUser', JSON.stringify(authUser, null, 2));
 
   const StatusGrid = () => {
     return (
@@ -83,7 +92,7 @@ const HomeScreen = () => {
             iconLib="FontAwesome5"
             iconName="hand-holding-heart"
             color="#a9a9a9"
-            value={0}
+            value={statuses?.used_amount}
             title={t('homePage.currency')}
             label={t('homePage.used')}
           />
@@ -113,7 +122,13 @@ const HomeScreen = () => {
         </Pressable>
       </View>
 
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#B3071A']} />
+        }
+      >
         <View style={styles.bonusCard}>
           <View>
             <Text style={styles.bonusTitle}>{t('homePage.availableBonuss')}</Text>
@@ -122,9 +137,7 @@ const HomeScreen = () => {
               <Text style={styles.bonusUnit}>{t('homePage.currency')}</Text>
             </View>
           </View>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Catalog' as any, { screen: 'PrizesScreen' })}
-          >
+          <TouchableOpacity onPress={() => navigation.navigate('Catalog' as any)}>
             <View
               style={{
                 backgroundColor: '#c5c5c5',

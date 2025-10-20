@@ -396,6 +396,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 18,
     letterSpacing: 8,
+    color: '#000',
   },
   scanInputContainer: {
     flexDirection: 'row',

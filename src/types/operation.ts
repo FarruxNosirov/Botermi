@@ -1,3 +1,5 @@
+import { PrizeType, Product } from './product';
+
 export interface OperationItemTypes {
   id: number;
   user_id: number;
@@ -9,4 +11,6 @@ export interface OperationItemTypes {
   status: string;
   created_at: string;
   updated_at: string;
+  prize?: Product;
+  product?: PrizeType;
 }

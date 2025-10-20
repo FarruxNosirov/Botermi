@@ -15,6 +15,15 @@ export interface Product {
   brands: Brand[];
 }
 
+export interface PrizeType {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+  is_active: number;
+  created_at: string;
+  updated_at: string;
+}
 export interface PraductsResponse {
   products: {
     data: Product[];

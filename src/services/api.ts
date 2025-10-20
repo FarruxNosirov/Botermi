@@ -258,3 +258,15 @@ export const getReviews = async (language?: string) => {
     throw error;
   }
 };
+
+export const notificationsApi = {
+  getNotifications: async (userId: number) => {
+    try {
+      const response = await api.get(`/users/${userId}/notifications`);
+      return response?.data?.data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
+};

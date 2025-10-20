@@ -2,6 +2,7 @@ import { OperationItemTypes } from '@/types/operation';
 import { useTranslation } from 'react-i18next';
 import { View, Image, Text } from 'react-native';
 import { formatDateCompact } from '@/utils/dateHelper';
+import { formatBalance } from '@/constants/constants';
 
 interface ScanItem {
   id: number;
@@ -36,12 +37,11 @@ const OperationItem: React.FC<{ item: OperationItemTypes }> = ({ item }) => {
         },
         shadowOpacity: 0.22,
         shadowRadius: 2.22,
-
         elevation: 3,
       }}
     >
       <Image
-        source={{ uri: item.image ? item.image : item?.product?.image }}
+        source={{ uri: item.image ? item.image : item?.product?.image || item?.prize?.image }}
         style={{ width: 80, height: 80, borderRadius: 8 }}
         resizeMode="cover"
       />
@@ -52,7 +52,7 @@ const OperationItem: React.FC<{ item: OperationItemTypes }> = ({ item }) => {
           </Text>
         ) : (
           <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#000' }}>
-            {t('price')}: {item.price}
+            {t('price')}: {formatBalance(item.price)}
           </Text>
         )}
         <Text style={{ fontSize: 13, marginTop: 4, color: '#666' }}>

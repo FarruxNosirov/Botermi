@@ -32,7 +32,7 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Botermi to use your location."
+          "locationWhenInUsePermission": "Allow Botermi to use your location."
         }
       ],
       "expo-font"
@@ -43,9 +43,11 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.botermi.app",
-      "buildNumber": "15",
+      "buildNumber": "20",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
+        "NSLocationWhenInUseUsageDescription": "Allow Botermi to use your location.",
+        "NSPhotoLibraryUsageDescription": "Allow Botermi to access your photos",
         "ITSAppUsesNonExemptEncryption": false
       },
       "config": {
