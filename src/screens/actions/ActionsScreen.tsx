@@ -55,48 +55,94 @@ export const ActionsScreen = () => {
   const isValidShopCode = shopCode.length >= 13;
   const { mutate: scanBarcode } = useScanBarcode();
   const pickImage = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled) {
-      const asset = result.assets[0];
+    try {
+      // Request media library permissions first
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-      const file = {
-        uri: asset.uri,
-        name: asset.fileName || 'photo.jpg',
-        type: asset.type || 'image/jpeg',
-      };
+      if (status !== 'granted') {
+        showToast(
+          'error',
+          t('error'),
+          t('actions.photoLibraryPermissionDenied') || 'Photo library permission is required',
+        );
+        return;
+      }
 
-      setAvatarUri(file);
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
+
+        if (!asset || !asset.uri) {
+          showToast('error', t('error'), t('actions.failedToPickImage') || 'Failed to pick image');
+          return;
+        }
+
+        const file = {
+          uri: asset.uri,
+          name: asset.fileName || 'photo.jpg',
+          type: asset.type || 'image/jpeg',
+        };
+
+        setAvatarUri(file);
+      }
+    } catch (error) {
+      console.error('Error picking image:', error);
+      showToast('error', t('error'), t('actions.failedToPickImage') || 'Failed to pick image');
     }
   };
   const takePhoto = async () => {
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: false,
-      quality: 0.8,
-    });
+    try {
+      // Request camera permissions first
+      const { status } = await ImagePicker.requestCameraPermissionsAsync();
 
-    if (!result.canceled) {
-      const asset = result.assets[0];
-      const fileExtension = asset.uri.split('.').pop()?.toLowerCase();
+      if (status !== 'granted') {
+        showToast(
+          'error',
+          t('error'),
+          t('actions.cameraPermissionDenied') || 'Camera permission is required',
+        );
+        return;
+      }
 
-      const mimeType =
-        fileExtension === 'png'
-          ? 'image/png'
-          : fileExtension === 'jpg' || fileExtension === 'jpeg'
-            ? 'image/jpeg'
-            : 'image/jpeg';
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: false,
+        quality: 0.8,
+      });
 
-      const file = {
-        uri: asset.uri,
-        name: `photo.${fileExtension}`,
-        type: mimeType,
-      };
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        const asset = result.assets[0];
 
-      setAvatarUri(file);
+        if (!asset || !asset.uri) {
+          showToast('error', t('error'), t('actions.failedToTakePhoto') || 'Failed to take photo');
+          return;
+        }
+
+        const fileExtension = asset.uri.split('.').pop()?.toLowerCase() || 'jpg';
+
+        const mimeType =
+          fileExtension === 'png'
+            ? 'image/png'
+            : fileExtension === 'jpg' || fileExtension === 'jpeg'
+              ? 'image/jpeg'
+              : 'image/jpeg';
+
+        const file = {
+          uri: asset.uri,
+          name: `photo.${fileExtension}`,
+          type: mimeType,
+        };
+
+        setAvatarUri(file);
+      }
+    } catch (error) {
+      console.error('Error taking photo:', error);
+      showToast('error', t('error'), t('actions.failedToTakePhoto') || 'Failed to take photo');
     }
   };
 
