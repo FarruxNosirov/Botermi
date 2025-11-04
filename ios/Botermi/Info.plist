@@ -19,7 +19,7 @@
 	<key>CFBundlePackageType</key>
 	<string>$(PRODUCT_BUNDLE_PACKAGE_TYPE)</string>
 	<key>CFBundleShortVersionString</key>
-	<string>1.1.4</string>
+	<string>1.1.5</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleURLTypes</key>
@@ -38,7 +38,7 @@
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>20</string>
+	<string>22</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSMinimumSystemVersion</key>
@@ -53,11 +53,11 @@
 		<true/>
 	</dict>
 	<key>NSCameraUsageDescription</key>
-	<string>This app uses the camera to scan QR codes.</string>
+	<string>This app needs camera access to capture product receipt photos for bonus point verification. You can take photos to attach to your barcode submissions.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Allow Botermi to use your location.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
-	<string>Allow $(PRODUCT_NAME) to access your photos</string>
+	<string>This app needs access to your photo library to upload product receipt photos for bonus point verification. You can choose photos to attach to your barcode submissions.</string>
 	<key>UIDeviceFamily</key>
 	<array>
 		<integer>1</integer>

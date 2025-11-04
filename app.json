@@ -43,7 +43,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.botermi.app",
-      "buildNumber": "20",
+      "buildNumber": "22",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
         "NSLocationWhenInUseUsageDescription": "Allow Botermi to use your location.",
