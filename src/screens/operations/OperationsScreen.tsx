@@ -1,5 +1,6 @@
 import IsLoading from '@/components/IsLoading';
 import EmptyState from '@/components/EmptyState';
+import { RequireAuth } from '@/components/RequireAuth';
 import { DEVICE_HEIGHT } from '@/constants/constants';
 import { useBarcodeAll, useBarcodeByBarcode } from '@/hooks/querys';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -137,104 +138,115 @@ export const OperationsScreen: React.FC<OperationsScreenProps> = () => {
   const hasData = dataAll && dataAll.length > 0;
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={{ flex: 1 }}>
-        {/* Search va Filter - faqat data bo'lganda ko'rsat */}
-        {hasData && (
-          <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
-            <View style={{ paddingHorizontal: 2 }}>
-              <View style={styles.searchContainer}>
-                <View style={styles.searchInput}>
-                  <TouchableOpacity onPress={() => searchInputRef.current?.focus()}>
-                    <AntDesign name="search1" size={20} color="black" style={{ marginRight: 6 }} />
+    <RequireAuth
+      fallbackMessage={
+        t('operations.loginToViewOperations') || "Amaliyotlaringizni ko'rish uchun tizimga kiring"
+      }
+    >
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1 }}>
+          {/* Search va Filter - faqat data bo'lganda ko'rsat */}
+          {hasData && (
+            <View style={{ paddingHorizontal: 16, paddingTop: 10 }}>
+              <View style={{ paddingHorizontal: 2 }}>
+                <View style={styles.searchContainer}>
+                  <View style={styles.searchInput}>
+                    <TouchableOpacity onPress={() => searchInputRef.current?.focus()}>
+                      <AntDesign
+                        name="search1"
+                        size={20}
+                        color="black"
+                        style={{ marginRight: 6 }}
+                      />
+                    </TouchableOpacity>
+                    <TextInput
+                      ref={searchInputRef}
+                      placeholder={t('search')}
+                      style={{ flex: 1 }}
+                      value={searchQuery}
+                      onChangeText={handleSearchQueryChange}
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={[styles.filterIcon, filterStatus !== 'all' && styles.filterIconActive]}
+                    onPress={() =>
+                      (navigation as any).navigate('OperationsFilter', {
+                        selectedStatus: filterStatus,
+                        onApplyFilter: handleFilterApply,
+                      })
+                    }
+                  >
+                    <AntDesign
+                      name="filter"
+                      size={20}
+                      color={filterStatus !== 'all' ? '#4CAF50' : 'black'}
+                    />
                   </TouchableOpacity>
-                  <TextInput
-                    ref={searchInputRef}
-                    placeholder={t('search')}
-                    style={{ flex: 1 }}
-                    value={searchQuery}
-                    onChangeText={handleSearchQueryChange}
-                  />
                 </View>
-
-                <TouchableOpacity
-                  style={[styles.filterIcon, filterStatus !== 'all' && styles.filterIconActive]}
-                  onPress={() =>
-                    (navigation as any).navigate('OperationsFilter', {
-                      selectedStatus: filterStatus,
-                      onApplyFilter: handleFilterApply,
-                    })
-                  }
-                >
-                  <AntDesign
-                    name="filter"
-                    size={20}
-                    color={filterStatus !== 'all' ? '#4CAF50' : 'black'}
-                  />
-                </TouchableOpacity>
               </View>
+
+              {filterStatus !== 'all' && (
+                <View style={styles.filterIndicator}>
+                  <Text style={styles.filterIndicatorText}>
+                    Filter:{' '}
+                    {filterStatus === 'waiting'
+                      ? t('waiting')
+                      : filterStatus === 'approved'
+                        ? t('approved')
+                        : filterStatus === 'rejected'
+                          ? t('rejected')
+                          : filterStatus === 'new'
+                            ? t('new')
+                            : ''}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => setFilterStatus('all')}
+                    style={styles.clearFilterButton}
+                  >
+                    <AntDesign name="close" size={16} color="#666" />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
+          )}
 
-            {filterStatus !== 'all' && (
-              <View style={styles.filterIndicator}>
-                <Text style={styles.filterIndicatorText}>
-                  Filter:{' '}
-                  {filterStatus === 'waiting'
-                    ? t('waiting')
-                    : filterStatus === 'approved'
-                      ? t('approved')
-                      : filterStatus === 'rejected'
-                        ? t('rejected')
-                        : filterStatus === 'new'
-                          ? t('new')
-                          : ''}
-                </Text>
-                <TouchableOpacity
-                  onPress={() => setFilterStatus('all')}
-                  style={styles.clearFilterButton}
-                >
-                  <AntDesign name="close" size={16} color="#666" />
-                </TouchableOpacity>
+          {/* Data mavjudligi tekshiruvi */}
+          {hasData ? (
+            filteredData && filteredData.length > 0 ? (
+              <FlatList
+                data={filteredData}
+                keyExtractor={(item) => item.id?.toString() || item.barcode}
+                contentContainerStyle={{ gap: 10, paddingBottom: 100, paddingHorizontal: 18 }}
+                renderItem={renderOperationItem}
+                keyboardShouldPersistTaps="handled"
+                removeClippedSubviews={true}
+                maxToRenderPerBatch={15}
+                updateCellsBatchingPeriod={50}
+                initialNumToRender={10}
+                windowSize={5}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={['#FF3B30']}
+                    tintColor="#FF3B30"
+                  />
+                }
+              />
+            ) : (
+              <View style={{ flex: 1, paddingHorizontal: 16 }}>
+                <EmptyState />
               </View>
-            )}
-          </View>
-        )}
-
-        {/* Data mavjudligi tekshiruvi */}
-        {hasData ? (
-          filteredData && filteredData.length > 0 ? (
-            <FlatList
-              data={filteredData}
-              keyExtractor={(item) => item.id?.toString() || item.barcode}
-              contentContainerStyle={{ gap: 10, paddingBottom: 100, paddingHorizontal: 18 }}
-              renderItem={renderOperationItem}
-              keyboardShouldPersistTaps="handled"
-              removeClippedSubviews={true}
-              maxToRenderPerBatch={15}
-              updateCellsBatchingPeriod={50}
-              initialNumToRender={10}
-              windowSize={5}
-              refreshControl={
-                <RefreshControl
-                  refreshing={refreshing}
-                  onRefresh={onRefresh}
-                  colors={['#FF3B30']}
-                  tintColor="#FF3B30"
-                />
-              }
-            />
+            )
           ) : (
-            <View style={{ flex: 1, paddingHorizontal: 16 }}>
+            <View style={{ flex: 1, paddingHorizontal: 16, justifyContent: 'center' }}>
               <EmptyState />
             </View>
-          )
-        ) : (
-          <View style={{ flex: 1, paddingHorizontal: 16, justifyContent: 'center' }}>
-            <EmptyState />
-          </View>
-        )}
-      </View>
-    </SafeAreaView>
+          )}
+        </View>
+      </SafeAreaView>
+    </RequireAuth>
   );
 };
 

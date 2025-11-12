@@ -215,6 +215,13 @@ export const RegistrationScreen = ({ navigation }: Props) => {
         }),
       );
       if (register.fulfilled.match(resultAction)) {
+        const parentNavigation = navigation.getParent();
+        if (parentNavigation) {
+          parentNavigation.reset({
+            index: 0,
+            routes: [{ name: 'MainApp' }],
+          });
+        }
       } else {
         setError((resultAction.payload as string) || t('registrationError'));
       }

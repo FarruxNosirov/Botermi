@@ -14,6 +14,11 @@ export default {
     phoneRequired: 'Telefon raqam kiritish majburiy',
     phoneInvalid: "Telefon raqam noto'g'ri formatda",
   },
+  auth: {
+    loginRequired: 'Kirish talab qilinadi',
+    loginRequiredMessage: 'Ushbu funksiyadan foydalanish uchun tizimga kirishingiz kerak',
+    login: 'Kirish',
+  },
   agree: 'Roziman',
   done: 'Bajarildi',
   smsError: "SMS kodini to'liq kiriting",
@@ -35,7 +40,7 @@ export default {
   personalInformation: "Shaxsiy ma'lumotlar",
   userIDRegistration: "Ro'yxatdan o'tish uchun foydalanuvchi identifikatori talab qilinadi",
   register: "Ro'yxatdan o'tish",
-  selectBirthDate: 'Tug‘ilgan sanani tanlang',
+  selectBirthDate: "Tug'ilgan sanani tanlang",
   selectRegion: 'Viloyatni tanlang',
   navigation: {
     homeLable: 'Bosh sahifa',
@@ -104,8 +109,10 @@ export default {
     phoneIsRequired: 'Telefon raqam kiritish majburiy',
     surnameIsRequired: 'Familiya kiritish majburiy',
     nameIsRequired: 'Ism kiritish majburiy',
-    dateOfBirthIsRequired: 'Tug‘ilgan sana kiritish majburiy',
+    dateOfBirthIsRequired: "Tug'ilgan sana kiritish majburiy",
     selectCity: 'Shaharni tanlang',
+    user: 'Foydalanuvchi',
+    loginToAccessProfile: "Profilingizni ko'rish uchun tizimga kiring",
     deleteAccountTitle: `Profilni o'chirmoqchimisiz?`,
     deleteAccountDescription: `Bu amalni ortga qaytarib bo'lmaydi!`,
     delete: 'Oʻchirish',
@@ -164,7 +171,7 @@ export default {
   error: 'Xatolik',
   errorDescription: 'Telefon raqamni ochib bo‘lmadi',
   actions: {
-    storeCodeMinLength: 'Do‘kon kodi kamida 13 ta belgidan iborat bo‘lishi kerak',
+    storeCodeMinLength: "Do'kon kodi kamida 13 ta belgidan iborat bo'lishi kerak",
     uploadBoilerPhotoInstruction: `Mahsulot õrnatilgach, "Rasm yuklash"ni bosib, õrnatilingan joyini rasmga olib yuboring`,
     photoExampleLabel: 'Rasm namunasi',
     uploadProductPhoto: 'Mahsulot suratini yuklang',
@@ -172,6 +179,11 @@ export default {
     scanSuccess: 'Muvaffaqiyatli yuborildi!',
     barcodeAlreadyScanned: 'Bu shtrixkod allaqachon skan qilingan',
     pleaseSelectImage: 'Iltimos, rasm tanlang!',
+    loginToScanBarcode: "Mahsulot qo'shish uchun tizimga kiring",
+    cameraPermissionDenied: 'Kamera ruxsati rad etildi',
+    photoLibraryPermissionDenied: 'Rasm kutubxonasiga ruxsat rad etildi',
+    failedToTakePhoto: 'Rasm olishda xatolik yuz berdi',
+    failedToPickImage: 'Rasm tanlashda xatolik yuz berdi',
   },
   barcode: 'Shtrix kod',
   uploadedAt: 'Yuklangan vaqt',
@@ -185,5 +197,14 @@ export default {
     success: 'Muvaffaqiyatli',
     error: 'Xatolik',
     notEnoughBalance: 'Balans yetarli emas',
+  },
+  operations: {
+    loginToViewOperations: "Amaliyotlaringizni ko'rish uchun tizimga kiring",
+  },
+  favorites: {
+    loginToViewFavorites: "Sevimli mahsulotlaringizni ko'rish uchun tizimga kiring",
+  },
+  notificationsPage: {
+    loginToViewNotifications: "Bildirishnomalaringizni ko'rish uchun tizimga kiring",
   },
 };

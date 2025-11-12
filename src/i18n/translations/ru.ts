@@ -18,6 +18,11 @@ export default {
     phoneRequired: 'Введите номер телефона',
     phoneInvalid: 'Неверный формат номера телефона',
   },
+  auth: {
+    loginRequired: 'Требуется вход',
+    loginRequiredMessage: 'Для использования этой функции необходимо войти в систему',
+    login: 'Войти',
+  },
   smsError: 'Коды для отправки СМС',
   errorSms: 'Неверный код СМС.',
   anErrorOccurred: 'Произошла ошибка',
@@ -110,6 +115,8 @@ export default {
     nameIsRequired: 'Имя обязательно',
     dateOfBirthIsRequired: 'Дата рождения обязательна',
     selectCity: 'Выберите город',
+    user: 'Пользователь',
+    loginToAccessProfile: 'Войдите в систему, чтобы просмотреть свой профиль',
     deleteAccountTitle: 'Удалить аккаунт?',
     deleteAccountDescription: 'Это действие не может быть отменено!',
     delete: 'Удалить',
@@ -177,6 +184,11 @@ export default {
     scanSuccess: 'Успешно отправлено!',
     barcodeAlreadyScanned: 'Этот штрих-код уже был отсканирован.',
     pleaseSelectImage: 'Пожалуйста, выберите изображение!',
+    loginToScanBarcode: 'Войдите в систему, чтобы добавить товар',
+    cameraPermissionDenied: 'Доступ к камере отклонен',
+    photoLibraryPermissionDenied: 'Доступ к галерее отклонен',
+    failedToTakePhoto: 'Ошибка при съемке фото',
+    failedToPickImage: 'Ошибка при выборе изображения',
   },
   barcode: 'Штрихкод',
   uploadedAt: 'Время загрузки',
@@ -190,5 +202,14 @@ export default {
     success: 'Успешно',
     error: 'Ошибка',
     notEnoughBalance: 'Недостаточно баланса',
+  },
+  operations: {
+    loginToViewOperations: 'Войдите в систему, чтобы просмотреть свои операции',
+  },
+  favorites: {
+    loginToViewFavorites: 'Войдите в систему, чтобы просмотреть избранные товары',
+  },
+  notificationsPage: {
+    loginToViewNotifications: 'Войдите в систему, чтобы просмотреть уведомления',
   },
 };

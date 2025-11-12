@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useGetNotifications } from '@/hooks/querys';
 import { RootState } from '@/store';
 import { useSelector } from 'react-redux';
+import { RequireAuth } from '@/components/RequireAuth';
 
 type Notification = {
   id: string;
@@ -68,25 +69,32 @@ export const NotificationsScreen = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="chevron-back" size={24} color="black" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{t('notifications')}</Text>
-        <TouchableOpacity>
-          <Ionicons name="notifications-outline" size={24} color="black" />
-        </TouchableOpacity>
-      </View>
+    <RequireAuth
+      fallbackMessage={
+        t('notificationsPage.loginToViewNotifications') ||
+        "Bildirishnomalaringizni ko'rish uchun tizimga kiring"
+      }
+    >
+      <SafeAreaView style={styles.container}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Ionicons name="chevron-back" size={24} color="black" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t('notifications')}</Text>
+          <TouchableOpacity>
+            <Ionicons name="notifications-outline" size={24} color="black" />
+          </TouchableOpacity>
+        </View>
 
-      {/* <FlatList
-        data={notifications}
-        renderItem={renderNotificationItem}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContainer}
-        showsVerticalScrollIndicator={false}
-      /> */}
-    </SafeAreaView>
+        {/* <FlatList
+          data={notifications}
+          renderItem={renderNotificationItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+        /> */}
+      </SafeAreaView>
+    </RequireAuth>
   );
 };
 

@@ -71,17 +71,13 @@ const RootNavigator = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {!isAuthenticated || !isFullyRegistered ? (
-          <Stack.Screen name="Auth" component={AuthNavigator} />
-        ) : (
-          <>
-            <Stack.Screen name="MainApp" component={MainTabNavigator} />
-            <Stack.Screen name="Branches" component={BranchesScreen} />
-            <Stack.Screen name="Notifications" component={NotificationsScreen} />
-            <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
-            <Stack.Screen name="OperationsFilter" component={OperationsFilterScreen} />
-          </>
-        )}
+        {/* Har doim MainApp ochiladi - auth kerak bo'lsa ichida so'raladi */}
+        <Stack.Screen name="MainApp" component={MainTabNavigator} />
+        <Stack.Screen name="Auth" component={AuthNavigator} />
+        <Stack.Screen name="Branches" component={BranchesScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
+        <Stack.Screen name="OperationsFilter" component={OperationsFilterScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -25,6 +25,7 @@ import {
 } from 'react-native';
 import { useScanBarcode } from '@/hooks/querys';
 import { showToast } from '@/utils/toastHelper';
+import { RequireAuth } from '@/components/RequireAuth';
 
 export const ActionsScreen = () => {
   const navigation = useNavigation();
@@ -212,191 +213,198 @@ export const ActionsScreen = () => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <RequireAuth
+      fallbackMessage={t('actions.loginToScanBarcode') || "Mahsulot qo'shish uchun tizimga kiring"}
     >
-      <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
-          </Pressable>
-          <Text style={styles.headerTitle}>{t('newPurchase')}</Text>
-        </View>
-        <ScrollView showsVerticalScrollIndicator={false}>
-          <View style={styles.content}>
-            <View>
-              <Text style={{ color: 'black', fontSize: 18 }}>
-                {t('actions.uploadBoilerPhotoInstruction')}
-              </Text>
-            </View>
-            <View style={{ marginBottom: 20 }}>
-              <Text style={{ marginVertical: 10, fontWeight: '600', fontSize: 18 }}>
-                {t('actions.photoExampleLabel')}:
-              </Text>
-              <View
-                style={{
-                  flexDirection: 'row',
-                  gap: 10,
-                  height: 150,
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <View style={{ height: 150, width: '100%', borderRadius: 10 }}>
-                  <Image
-                    style={{ width: '100%', height: 150, borderRadius: 10 }}
-                    source={require('../../../assets/Namuna.jpg')}
-                  />
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <SafeAreaView style={styles.container}>
+          <View style={styles.header}>
+            <Pressable onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Ionicons name="chevron-back" size={24} color="#000" />
+            </Pressable>
+            <Text style={styles.headerTitle}>{t('newPurchase')}</Text>
+          </View>
+          <ScrollView showsVerticalScrollIndicator={false}>
+            <View style={styles.content}>
+              <View>
+                <Text style={{ color: 'black', fontSize: 18 }}>
+                  {t('actions.uploadBoilerPhotoInstruction')}
+                </Text>
+              </View>
+              <View style={{ marginBottom: 20 }}>
+                <Text style={{ marginVertical: 10, fontWeight: '600', fontSize: 18 }}>
+                  {t('actions.photoExampleLabel')}:
+                </Text>
+                <View
+                  style={{
+                    flexDirection: 'row',
+                    gap: 10,
+                    height: 150,
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <View style={{ height: 150, width: '100%', borderRadius: 10 }}>
+                    <Image
+                      style={{ width: '100%', height: 150, borderRadius: 10 }}
+                      source={require('../../../assets/Namuna.jpg')}
+                    />
+                  </View>
                 </View>
               </View>
-            </View>
-            <View style={{ gap: 10 }}>
-              <Text style={{ marginVertical: 10, fontWeight: '600', fontSize: 18 }}>
-                <Text>{t('actions.uploadProductPhoto')}</Text>
-              </Text>
-              <View
-                style={{
-                  width: '100%',
-                  height: 180,
-                  borderWidth: 3,
-                  borderRadius: 10,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  borderColor: 'red',
-                  borderStyle: 'dashed',
-                  backgroundColor: !avatarUri?.uri ? 'rgba(250, 230, 230, 0.6)90' : '',
-                  marginBottom: 15,
-                  padding: 5,
-                }}
-              >
-                {!avatarUri?.uri ? (
-                  <TouchableOpacity
-                    style={{ flexDirection: 'column', alignItems: 'center', gap: 10 }}
-                    onPress={handleImagePick}
-                  >
-                    <MaterialCommunityIcons name="image-plus" size={28} color="red" />
-                    <Text style={{ color: 'red', fontSize: 20, textAlign: 'center' }}>
-                      {t('actions.uploadImage')}
-                    </Text>
-                  </TouchableOpacity>
-                ) : (
-                  <View style={{ width: '95%', height: '100%', position: 'relative' }}>
-                    <Image
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        borderRadius: 10,
-                      }}
-                      source={{ uri: avatarUri?.uri }}
-                    />
+              <View style={{ gap: 10 }}>
+                <Text style={{ marginVertical: 10, fontWeight: '600', fontSize: 18 }}>
+                  <Text>{t('actions.uploadProductPhoto')}</Text>
+                </Text>
+                <View
+                  style={{
+                    width: '100%',
+                    height: 180,
+                    borderWidth: 3,
+                    borderRadius: 10,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    borderColor: 'red',
+                    borderStyle: 'dashed',
+                    backgroundColor: !avatarUri?.uri ? 'rgba(250, 230, 230, 0.6)90' : '',
+                    marginBottom: 15,
+                    padding: 5,
+                  }}
+                >
+                  {!avatarUri?.uri ? (
                     <TouchableOpacity
-                      style={{
-                        position: 'absolute',
-                        top: 8,
-                        right: 8,
-                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-                        borderRadius: 15,
-                        width: 30,
-                        height: 30,
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                      }}
-                      onPress={handleRemoveImage}
+                      style={{ flexDirection: 'column', alignItems: 'center', gap: 10 }}
+                      onPress={handleImagePick}
                     >
-                      <Ionicons name="close" size={20} color="#fff" />
+                      <MaterialCommunityIcons name="image-plus" size={28} color="red" />
+                      <Text style={{ color: 'red', fontSize: 20, textAlign: 'center' }}>
+                        {t('actions.uploadImage')}
+                      </Text>
                     </TouchableOpacity>
+                  ) : (
+                    <View style={{ width: '95%', height: '100%', position: 'relative' }}>
+                      <Image
+                        style={{
+                          width: '100%',
+                          height: '100%',
+                          objectFit: 'cover',
+                          borderRadius: 10,
+                        }}
+                        source={{ uri: avatarUri?.uri }}
+                      />
+                      <TouchableOpacity
+                        style={{
+                          position: 'absolute',
+                          top: 8,
+                          right: 8,
+                          backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                          borderRadius: 15,
+                          width: 30,
+                          height: 30,
+                          justifyContent: 'center',
+                          alignItems: 'center',
+                        }}
+                        onPress={handleRemoveImage}
+                      >
+                        <Ionicons name="close" size={20} color="#fff" />
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.label}>{t('enterStoreCode')}</Text>
+                <View style={styles.scanInputContainer}>
+                  <View style={{ width: '80%' }}>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="_ _ _ _ _ _ _ _ _"
+                      placeholderTextColor="#999"
+                      value={shopCode}
+                      onChangeText={setShopCode}
+                    />
                   </View>
+                  <TouchableOpacity style={styles.scanButton} onPress={() => setShowScanner(true)}>
+                    <MaterialCommunityIcons name="barcode-scan" size={40} color="#000" />
+                  </TouchableOpacity>
+                </View>
+                {shopCode.length > 0 && !isValidShopCode && (
+                  <Text style={{ color: 'red', marginTop: 4 }}>
+                    {t('actions.storeCodeMinLength', { count: 13 })}
+                  </Text>
                 )}
               </View>
-            </View>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.label}>{t('enterStoreCode')}</Text>
-              <View style={styles.scanInputContainer}>
-                <View style={{ width: '80%' }}>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="_ _ _ _ _ _ _ _ _"
-                    placeholderTextColor="#999"
-                    value={shopCode}
-                    onChangeText={setShopCode}
-                  />
-                </View>
-                <TouchableOpacity style={styles.scanButton} onPress={() => setShowScanner(true)}>
-                  <MaterialCommunityIcons name="barcode-scan" size={40} color="#000" />
-                </TouchableOpacity>
-              </View>
-              {shopCode.length > 0 && !isValidShopCode && (
-                <Text style={{ color: 'red', marginTop: 4 }}>
-                  {t('actions.storeCodeMinLength', { count: 13 })}
-                </Text>
-              )}
-            </View>
-
-            {/* <TouchableOpacity style={styles.cameraUploadButton} >
+              {/* <TouchableOpacity style={styles.cameraUploadButton} >
           <Ionicons name="camera-outline" size={24} color="#fff" />
           <Text style={styles.cameraUploadText}>Maxsulot rasmini yuklang</Text>
         </TouchableOpacity> */}
 
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                {
-                  backgroundColor: isValidShopCode && avatarUri ? '#2cbd15' : '#A9A9A9',
-                },
-              ]}
-              disabled={!(isValidShopCode && avatarUri)}
-              onPress={handleScanBarcode}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <>
-                  <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
-                  <Text style={styles.submitButtonText}>{t('confirm')}</Text>
-                </>
-              )}
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.submitButton,
+                  {
+                    backgroundColor: isValidShopCode && avatarUri ? '#2cbd15' : '#A9A9A9',
+                  },
+                ]}
+                disabled={!(isValidShopCode && avatarUri)}
+                onPress={handleScanBarcode}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Ionicons name="checkmark-circle-outline" size={24} color="#fff" />
+                    <Text style={styles.submitButtonText}>{t('confirm')}</Text>
+                  </>
+                )}
+              </TouchableOpacity>
 
-            {/* <TouchableOpacity style={styles.sampleButton}>
+              {/* <TouchableOpacity style={styles.sampleButton}>
           <Text style={styles.sampleButtonText}>{t('sample')}</Text>
         </TouchableOpacity> */}
 
-            <View style={styles.sampleImageContainer}>
-              {/* <Image
+              <View style={styles.sampleImageContainer}>
+                {/* <Image
             source={require('@/assets/images/bonus-code-sample.png')}
             style={styles.sampleImage}
             resizeMode="contain"
           /> */}
-            </View>
-          </View>
-        </ScrollView>
-        <Modal visible={showScanner} transparent={true} animationType="slide">
-          <View style={styles.scannerContainer}>
-            <SafeAreaView style={styles.scannerContent}>
-              <View style={styles.scannerHeader}>
-                <TouchableOpacity onPress={() => setShowScanner(false)} style={styles.closeButton}>
-                  <Ionicons name="close" size={24} color="#000" />
-                </TouchableOpacity>
-                <Text style={styles.scannerTitle}>{t('scanQRCode')}</Text>
               </View>
-              {permission?.granted && (
-                <CameraView
-                  facing="back"
-                  onBarcodeScanned={handleBarCodeScanned}
-                  barcodeScannerSettings={{
-                    barcodeTypes: ['ean13', 'code128', 'upc_a'],
-                  }}
-                  style={styles.scanner}
-                />
-              )}
-            </SafeAreaView>
-          </View>
-        </Modal>
-      </SafeAreaView>
-    </KeyboardAvoidingView>
+            </View>
+          </ScrollView>
+          <Modal visible={showScanner} transparent={true} animationType="slide">
+            <View style={styles.scannerContainer}>
+              <SafeAreaView style={styles.scannerContent}>
+                <View style={styles.scannerHeader}>
+                  <TouchableOpacity
+                    onPress={() => setShowScanner(false)}
+                    style={styles.closeButton}
+                  >
+                    <Ionicons name="close" size={24} color="#000" />
+                  </TouchableOpacity>
+                  <Text style={styles.scannerTitle}>{t('scanQRCode')}</Text>
+                </View>
+                {permission?.granted && (
+                  <CameraView
+                    facing="back"
+                    onBarcodeScanned={handleBarCodeScanned}
+                    barcodeScannerSettings={{
+                      barcodeTypes: ['ean13', 'code128', 'upc_a'],
+                    }}
+                    style={styles.scanner}
+                  />
+                )}
+              </SafeAreaView>
+            </View>
+          </Modal>
+        </SafeAreaView>
+      </KeyboardAvoidingView>
+    </RequireAuth>
   );
 };
 

@@ -11,6 +11,7 @@ import React, { useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, ImageBackground, SafeAreaView, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { RequireAuth } from '@/components/RequireAuth';
 
 type ProfileScreenNavigationProp = NativeStackNavigationProp<SettingsStackParamList>;
 
@@ -104,46 +105,52 @@ export const ProfileScreen = () => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ImageBackground
-        source={require('../../../assets/Apk1.png')}
-        resizeMode="cover"
-        style={{ flex: 1 }}
-      >
-        <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
-          <View style={styles.headerBox}>
-            <View style={styles.personBox}>
-              <Icon name="person-outline" size={36} color={colors.white} />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.firstName}>
-                {authUser?.name || 'aziz'} {authUser?.surname || 'rametov'}
-              </Text>
-              <Text style={styles.date}>
-                {t('profilePage.registered')}:{' '}
-                {authUser?.created_at ? formatDate(authUser?.created_at) : '17.05.2025; 10:56'}
-              </Text>
-              <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-                <Text style={styles.statusText}>{t('profilePage.status')}:</Text>
-                <View style={styles.status}>
-                  <Icon name="checkmark-circle" size={18} color={colors.successColor} />
-                  <Text style={styles.statusTitle}>{t('profilePage.active')}</Text>
+    <RequireAuth
+      fallbackMessage={
+        t('profilePage.loginToAccessProfile') || "Profilingizni ko'rish uchun tizimga kiring"
+      }
+    >
+      <SafeAreaView style={styles.container}>
+        <ImageBackground
+          source={require('../../../assets/Apk1.png')}
+          resizeMode="cover"
+          style={{ flex: 1 }}
+        >
+          <View style={[styles.headerContainer, { paddingTop: insets.top + 10 }]}>
+            <View style={styles.headerBox}>
+              <View style={styles.personBox}>
+                <Icon name="person-outline" size={36} color={colors.white} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.firstName}>
+                  {authUser?.name || 'aziz'} {authUser?.surname || 'rametov'}
+                </Text>
+                <Text style={styles.date}>
+                  {t('profilePage.registered')}:{' '}
+                  {authUser?.created_at ? formatDate(authUser?.created_at) : '17.05.2025; 10:56'}
+                </Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                  <Text style={styles.statusText}>{t('profilePage.status')}:</Text>
+                  <View style={styles.status}>
+                    <Icon name="checkmark-circle" size={18} color={colors.successColor} />
+                    <Text style={styles.statusTitle}>{t('profilePage.active')}</Text>
+                  </View>
                 </View>
               </View>
             </View>
           </View>
-        </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} style={styles.contentContainerStyle}>
-          <View style={styles.renderBox}>
-            {navData.map((item, idx, arr) => (
-              <ProfileItem key={idx} item={item} arr={arr} idx={idx} />
-            ))}
-          </View>
-          <View style={{ height: 100 }} />
-        </ScrollView>
-      </ImageBackground>
-    </SafeAreaView>
+          <ScrollView showsVerticalScrollIndicator={false} style={styles.contentContainerStyle}>
+            <View style={styles.renderBox}>
+              {navData.map((item, idx, arr) => (
+                <ProfileItem key={idx} item={item} arr={arr} idx={idx} />
+              ))}
+            </View>
+            <View style={{ height: 100 }} />
+          </ScrollView>
+        </ImageBackground>
+      </SafeAreaView>
+    </RequireAuth>
   );
 };
 
