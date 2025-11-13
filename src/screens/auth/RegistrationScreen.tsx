@@ -292,6 +292,8 @@ export const RegistrationScreen = ({ navigation }: Props) => {
                   style={styles.dropdown}
                   placeholderStyle={styles.placeholderStyle}
                   selectedTextStyle={styles.selectedTextStyle}
+                  itemTextStyle={styles.itemTextStyle}
+                  containerStyle={styles.dropdownContainer}
                   data={field.key === 'region' ? regionDropdownData : []}
                   maxHeight={300}
                   labelField="label"
@@ -531,6 +533,22 @@ const styles = StyleSheet.create({
   selectedTextStyle: {
     fontSize: 16,
     color: '#000',
+  },
+  itemTextStyle: {
+    fontSize: 16,
+    color: '#000',
+  },
+  dropdownContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
   footer: {
     padding: 16,

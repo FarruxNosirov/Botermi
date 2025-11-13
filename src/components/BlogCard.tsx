@@ -24,7 +24,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 8,
     overflow: 'hidden',
-    boxShadow: '0px 0px 5px #cacaca',
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.15,
+    shadowRadius: 3.84,
+    // Android shadow
+    elevation: 5,
   },
   image: {
     width: '100%',

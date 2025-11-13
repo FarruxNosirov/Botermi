@@ -188,13 +188,13 @@ const HomeScreen = () => {
               <FontAwesome name="telegram" size={45} color="#229ED9" />
             </View>
             <View style={styles.promotionContent}>
-              <View style={{ justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+              {/* <View style={{ justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                 <View style={[styles.promotionBadge, { backgroundColor: '#fff' }]}>
                   <Text style={[styles.promotionBadgeText, { color: '#229ED9' }]}>
                     {t('homePage.telegram')}
                   </Text>
                 </View>
-              </View>
+              </View> */}
               <View style={styles.promotionHeader}>
                 <Text style={[styles.promotionTitle, { color: '#fff' }]}>
                   {t('homePage.joinOurTelegramChannel')}
@@ -217,10 +217,10 @@ const HomeScreen = () => {
                   justifyContent: 'space-between',
                 }}
               >
-                <Text style={styles.actionTitle}>{t('homePage.noteProject')}</Text>
-                <View style={{ backgroundColor: 'red', padding: 5, borderRadius: 5 }}>
+                <Text style={styles.actionTitle}>{t('homePage.projectName')}</Text>
+                {/* <View style={{ backgroundColor: 'red', padding: 5, borderRadius: 5 }}>
                   <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>You Tube</Text>
-                </View>
+                </View> */}
               </View>
               <Text style={styles.actionSubtitle}>{t('homePage.noteProjectDescription')}</Text>
             </View>

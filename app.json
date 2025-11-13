@@ -2,7 +2,7 @@
   "expo": {
     "name": "Botermi",
     "slug": "Botermi",
-    "version": "1.1.4",
+    "version": "1.1.6",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -43,7 +43,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.botermi.app",
-      "buildNumber": "22",
+      "buildNumber": "24",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
         "NSLocationWhenInUseUsageDescription": "Allow Botermi to use your location.",

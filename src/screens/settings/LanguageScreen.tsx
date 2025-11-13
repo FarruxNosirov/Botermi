@@ -18,8 +18,16 @@ export const LanguageScreen = () => {
     navigation.goBack();
   };
   const languages = [
-    { code: 'uz', title: "O'zbek tili", selected: i18n.language === 'uz' },
-    { code: 'ru', title: 'Русский язык', selected: i18n.language === 'ru' },
+    {
+      code: 'uz',
+      title: i18n.language === 'uz' ? "O'zbek tili" : 'Узбекский язык',
+      selected: i18n.language === 'uz',
+    },
+    {
+      code: 'ru',
+      title: i18n.language === 'ru' ? 'Русский язык' : 'Rus tili',
+      selected: i18n.language === 'ru',
+    },
   ];
 
   const renderLanguageItem = ({ item }: { item: (typeof languages)[0] }) => (

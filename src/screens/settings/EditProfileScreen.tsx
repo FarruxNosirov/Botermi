@@ -248,6 +248,10 @@ export const EditProfileScreen = () => {
               value={value}
               onChange={(item) => onChange(item.value)}
               placeholder={t('profilePage.selectRegion')}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              itemTextStyle={styles.itemTextStyle}
+              containerStyle={styles.dropdownContainer}
               maxHeight={250}
               renderRightIcon={() => (
                 <Ionicons name="chevron-down-outline" size={20} color={colors.gray[400]} />
@@ -361,6 +365,30 @@ const styles = StyleSheet.create({
     color: '#111827',
     marginBottom: 18,
     justifyContent: 'center',
+  },
+  placeholderStyle: {
+    fontSize: 16,
+    color: colors.gray[400],
+  },
+  selectedTextStyle: {
+    fontSize: 16,
+    color: '#111827',
+  },
+  itemTextStyle: {
+    fontSize: 16,
+    color: '#111827',
+  },
+  dropdownContainer: {
+    backgroundColor: colors.white,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
   saveButtonContainer: {
     backgroundColor: colors.white,
