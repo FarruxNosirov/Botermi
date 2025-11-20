@@ -171,8 +171,31 @@ const HomeScreen = () => {
                 padding: 16,
               },
             ]}
-            onPress={() => {
-              Linking.openURL('https://t.me/duca_uzb');
+            onPress={async () => {
+              const telegramUrl = 'https://t.me/duca_uzb';
+              const telegramAppUrl = 'tg://resolve?domain=duca_uzb';
+
+              try {
+                const canOpenApp = await Linking.canOpenURL(telegramAppUrl);
+                if (canOpenApp) {
+                  await Linking.openURL(telegramAppUrl);
+                } else {
+                  const canOpenBrowser = await Linking.canOpenURL(telegramUrl);
+                  if (canOpenBrowser) {
+                    await Linking.openURL(telegramUrl);
+                  } else {
+                    console.log("Can't open Telegram");
+                  }
+                }
+              } catch (error) {
+                console.error('Error opening Telegram:', error);
+
+                try {
+                  await Linking.openURL(telegramUrl);
+                } catch (e) {
+                  console.error('Final fallback failed:', e);
+                }
+              }
             }}
           >
             <View

@@ -14,6 +14,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getMe, logout } from '@/store/slices/authSlice';
 import i18n from '@/i18n';
 import { ActivityIndicator, View } from 'react-native';
+import { NetworkProvider } from '@/components/NetworkProvider';
+import { NoInternetScreen } from '@/components/NoInternetScreen';
+import NetInfo from '@react-native-community/netinfo';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -22,28 +26,32 @@ const RootNavigator = () => {
   const locale = useSelector((state: RootState) => state.language.locale);
   const dispatch = useDispatch<AppDispatch>();
   const [isInitializing, setIsInitializing] = useState(true);
+  const { isConnected, hasBeenConnected } = useNetworkStatus();
 
   useEffect(() => {
     i18n.changeLanguage(locale);
   }, [locale]);
 
-  // App ochilganda token tekshirish va validation
   useEffect(() => {
     const initializeAuth = async () => {
       try {
+        const netInfo = await NetInfo.fetch();
+
+        if (!netInfo.isConnected) {
+          console.log('No internet, skipping token validation');
+          setIsInitializing(false);
+          return;
+        }
         const token = await AsyncStorage.getItem('@auth_token');
 
         if (token) {
-          // Token bor bo'lsa, serverdan user ma'lumotlarini olish
           try {
             await dispatch(getMe()).unwrap();
           } catch (error: any) {
-            // Faqat 401 (Unauthorized) xatosida logout qilish
             if (error?.response?.status === 401 || error?.status === 401) {
               console.log('Token invalid, logging out');
               dispatch(logout());
             } else {
-              // Boshqa xatolar (network, server error) da login saqlansin
               console.log('Network error, keeping user logged in:', error);
             }
           }
@@ -67,19 +75,30 @@ const RootNavigator = () => {
       </View>
     );
   }
+  if (!hasBeenConnected && isConnected === false) {
+    return (
+      <NoInternetScreen
+        onRetry={() => {
+          setIsInitializing(true);
+          setTimeout(() => setIsInitializing(false), 500);
+        }}
+      />
+    );
+  }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* Har doim MainApp ochiladi - auth kerak bo'lsa ichida so'raladi */}
-        <Stack.Screen name="MainApp" component={MainTabNavigator} />
-        <Stack.Screen name="Auth" component={AuthNavigator} />
-        <Stack.Screen name="Branches" component={BranchesScreen} />
-        <Stack.Screen name="Notifications" component={NotificationsScreen} />
-        <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
-        <Stack.Screen name="OperationsFilter" component={OperationsFilterScreen} />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <NetworkProvider>
+      <NavigationContainer>
+        <Stack.Navigator screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="MainApp" component={MainTabNavigator} />
+          <Stack.Screen name="Auth" component={AuthNavigator} />
+          <Stack.Screen name="Branches" component={BranchesScreen} />
+          <Stack.Screen name="Notifications" component={NotificationsScreen} />
+          <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
+          <Stack.Screen name="OperationsFilter" component={OperationsFilterScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </NetworkProvider>
   );
 };
 

@@ -83,9 +83,11 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
+    color: '#000',
   },
 });

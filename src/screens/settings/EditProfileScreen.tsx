@@ -42,25 +42,11 @@ export const EditProfileScreen = () => {
   const navigation = useNavigation<NavigationProp>();
   const dispatch = useAppDispatch();
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const [userData, setUserData] = useState<UserDataType | null>(null);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
-
-  const handleGetMe = async () => {
-    setUserData(authUser);
-    setValue('name', authUser?.name || '');
-    setValue('surname', authUser?.surname || '');
-    setValue('phone', authUser?.phone || '');
-    setValue('region', authUser?.city || '');
-    setValue('date_of_birth', authUser?.date_of_birth || '');
-    await dispatch(getMe());
-  };
-  useEffect(() => {
-    handleGetMe();
-  }, []);
 
   const {
     control,
@@ -77,6 +63,24 @@ export const EditProfileScreen = () => {
     },
     mode: 'onChange',
   });
+  const handleGetMe = async () => {
+    const resultAction = await dispatch(getMe());
+    if (getMe.fulfilled.match(resultAction)) {
+      const user = (resultAction?.payload as any)?.data || resultAction?.payload;
+      console.log('👤 User data:', user);
+      console.log('🏙️ User city:', user?.city);
+      setUserData(user);
+      setValue('name', user?.name || '');
+      setValue('surname', user?.surname || '');
+      setValue('phone', user?.phone || '');
+      setValue('date_of_birth', user?.date_of_birth || '');
+      console.log('✅ Set other fields (without region)');
+    }
+  };
+
+  useEffect(() => {
+    handleGetMe();
+  }, []);
 
   const formatDate = (date: Date) => {
     const day = String(date.getDate()).padStart(2, '0');
@@ -85,15 +89,30 @@ export const EditProfileScreen = () => {
     return `${day}.${month}.${year}`;
   };
 
-  const { data } = useCities();
+  const { data } = useCities(i18n.language);
   const regions = data?.data?.data;
   const regionDropdownData = useMemo(() => {
     if (!regions) return [];
-    return regions.map((region: { id: any; name: any }) => ({
+    const data = regions.map((region: { id: any; name: any }) => ({
       label: region.name,
       value: region.name,
     }));
+    console.log('📋 Regions dropdown data:', data);
+    return data;
   }, [regions]);
+
+  // ✅ Regions yuklanganda viloyatni set qilamiz
+  useEffect(() => {
+    if (userData?.city && regionDropdownData.length > 0) {
+      console.log('🔄 Setting region after regions loaded');
+      console.log('🏙️ Looking for:', userData.city);
+      console.log(
+        '📋 In options:',
+        regionDropdownData.map((r: any) => r.value),
+      );
+      setValue('region', userData.city);
+    }
+  }, [userData?.city, regionDropdownData, setValue]);
 
   useEffect(() => {
     //@ts-ignore
@@ -239,25 +258,32 @@ export const EditProfileScreen = () => {
           control={control}
           name="region"
           rules={{ required: t('profilePage.provinceIsRequired') }}
-          render={({ field: { onChange, value } }) => (
-            <Dropdown
-              style={styles.input}
-              data={regionDropdownData}
-              labelField="label"
-              valueField="value"
-              value={value}
-              onChange={(item) => onChange(item.value)}
-              placeholder={t('profilePage.selectRegion')}
-              placeholderStyle={styles.placeholderStyle}
-              selectedTextStyle={styles.selectedTextStyle}
-              itemTextStyle={styles.itemTextStyle}
-              containerStyle={styles.dropdownContainer}
-              maxHeight={250}
-              renderRightIcon={() => (
-                <Ionicons name="chevron-down-outline" size={20} color={colors.gray[400]} />
-              )}
-            />
-          )}
+          render={({ field: { onChange, value } }) => {
+            console.log('🎯 Dropdown current value:', value);
+            console.log('🎯 Available options:', regionDropdownData.length);
+            return (
+              <Dropdown
+                style={styles.input}
+                data={regionDropdownData}
+                labelField="label"
+                valueField="value"
+                value={value}
+                onChange={(item) => {
+                  console.log('🔄 Dropdown onChange:', item);
+                  onChange(item.value);
+                }}
+                placeholder={t('profilePage.selectRegion')}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                itemTextStyle={styles.itemTextStyle}
+                containerStyle={styles.dropdownContainer}
+                maxHeight={250}
+                renderRightIcon={() => (
+                  <Ionicons name="chevron-down-outline" size={20} color={colors.gray[400]} />
+                )}
+              />
+            );
+          }}
         />
         {errors.region && (
           <Text style={{ color: 'red', marginTop: -12, marginBottom: 12 }}>

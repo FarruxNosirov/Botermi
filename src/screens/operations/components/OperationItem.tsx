@@ -15,12 +15,13 @@ interface ScanItem {
 const OperationItem: React.FC<{ item: OperationItemTypes }> = ({ item }) => {
   const { t } = useTranslation();
 
+  const displayStatus = item.status === 'new' ? 'waiting' : item.status;
+
   const statusColor = {
     waiting: 'orange',
     approved: 'green',
     rejected: 'red',
-    new: 'blue',
-  }[item.status];
+  }[displayStatus];
 
   return (
     <View
@@ -43,7 +44,7 @@ const OperationItem: React.FC<{ item: OperationItemTypes }> = ({ item }) => {
       <Image
         source={{ uri: item.image ? item.image : item?.product?.image || item?.prize?.image }}
         style={{ width: 80, height: 80, borderRadius: 8 }}
-        resizeMode="cover"
+        resizeMode="contain"
       />
       <View style={{ marginLeft: 12, flex: 1 }}>
         {item.barcode ? (
@@ -59,7 +60,7 @@ const OperationItem: React.FC<{ item: OperationItemTypes }> = ({ item }) => {
           {t('uploadedAt')}: {formatDateCompact(item?.created_at || '')}
         </Text>
         <Text style={{ marginTop: 4, color: statusColor }}>
-          {t('status')}: {t(item.status)}
+          {t('status')}: {t(displayStatus)}
         </Text>
       </View>
     </View>

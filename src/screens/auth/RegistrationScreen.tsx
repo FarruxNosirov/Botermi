@@ -284,7 +284,9 @@ export const RegistrationScreen = ({ navigation }: Props) => {
               <Text style={styles.label}>{field.label}</Text>
               {field.key === 'birthDate' ? (
                 <Pressable style={[styles.input, styles.dateInput]} onPress={showDatePickerModal}>
-                  <Text style={styles.dateText}>{formData.birthDate || t('selectBirthDate')}</Text>
+                  <Text style={[styles.dateText, formData.birthDate && { color: '#000' }]}>
+                    {formData.birthDate || t('selectBirthDate')}
+                  </Text>
                   <Ionicons name="calendar-outline" size={24} color="#666" />
                 </Pressable>
               ) : field.type === 'select' ? (
@@ -314,6 +316,7 @@ export const RegistrationScreen = ({ navigation }: Props) => {
                   value={field.value}
                   onChangeText={(value) => handleInputChange(field.key, value)}
                   placeholder={field.placeholder || field.label}
+                  placeholderTextColor="#999"
                   multiline={field.multiline}
                   numberOfLines={field.multiline ? 3 : 1}
                 />
@@ -412,6 +415,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
+    color: '#000',
     backgroundColor: '#fff',
   },
 

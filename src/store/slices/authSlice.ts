@@ -24,7 +24,6 @@ const initialState: AuthState = {
   isAgreementChecked: false,
 };
 
-// PHONE yuborish (login-sms)
 export const loginWithSms = createAsyncThunk(
   'auth/loginWithSms',
   async (phone: string, { rejectWithValue }) => {
@@ -37,7 +36,6 @@ export const loginWithSms = createAsyncThunk(
   },
 );
 
-// KODni verify qilish
 export const verifyCode = createAsyncThunk(
   'auth/verifyCode',
   async ({ phone, code }: { phone: string; code: string }, { rejectWithValue }) => {

@@ -115,7 +115,9 @@ const PrizesScreen = () => {
           />
           <View>
             <Text style={styles.price}>{formatBalance(item?.price)}</Text>
-            <Text numberOfLines={2}>{item?.name}</Text>
+            <Text style={styles.productNameText} numberOfLines={2}>
+              {item?.name}
+            </Text>
           </View>
           <TouchableOpacity
             style={[styles.cartButton, isItemLoading && styles.cartButtonLoading]}
@@ -188,10 +190,12 @@ const styles = StyleSheet.create({
   backButton: {
     padding: 8,
     flexDirection: 'row',
+    alignItems: 'center',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: '600',
+    color: '#000',
   },
   productItem: {
     borderRadius: 12,
@@ -242,6 +246,11 @@ const styles = StyleSheet.create({
   price: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: 'red',
+    color: '#0F4D0F',
+  },
+  productNameText: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#000',
   },
 });

@@ -109,10 +109,11 @@ export const useBrands = () => {
     queryFn: catalogAPI.getBrands,
   });
 };
-export const useCities = () => {
+export const useCities = (language?: string) => {
   return useQuery({
-    queryKey: ['getCities'],
-    queryFn: authAPI.getCities,
+    queryKey: ['getCities', language],
+    queryFn: () => authAPI.getCities(language),
+    enabled: !!language,
   });
 };
 export const useManufacturers = () => {

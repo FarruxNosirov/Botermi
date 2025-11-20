@@ -26,6 +26,7 @@ import {
 import { useSharedValue } from 'react-native-reanimated';
 import Carousel from 'react-native-reanimated-carousel';
 import RenderHTML from 'react-native-render-html';
+import RelatedProductsItem from './components/RelatedProductsItem';
 
 const { width } = Dimensions.get('window');
 
@@ -119,6 +120,7 @@ export const ProductDetailScreen = () => {
   const { id } = route?.params?.product;
   const { data: productAll, isLoading } = useSingleProduct(id, i18n.language);
   const product = productAll?.data?.data;
+  console.log('product', JSON.stringify(product, null, 2));
 
   const getItemLayout = useCallback(
     (_: any, index: number) => ({
@@ -157,8 +159,8 @@ export const ProductDetailScreen = () => {
   const customerPriceNum = Number(String(product?.customer_price).replace(/\s/g, ''));
 
   const discountPercentage =
-    priceNum > 0 && customerPriceNum > 0 && priceNum < customerPriceNum
-      ? Math.round(((customerPriceNum - priceNum) / customerPriceNum) * 100)
+    priceNum > 0 && customerPriceNum > 0 && priceNum > customerPriceNum
+      ? Math.round(((priceNum - customerPriceNum) / priceNum) * 100)
       : 0;
   const renderCarouselItem = useCallback(
     ({ item }: any) => (
@@ -179,7 +181,7 @@ export const ProductDetailScreen = () => {
         )}
       </View>
     ),
-    [],
+    [discountPercentage],
   );
 
   const allImages = [
@@ -420,6 +422,24 @@ export const ProductDetailScreen = () => {
                   <Text style={{ fontWeight: 'bold' }}>{t('katalog.productDescription')}:</Text>
                 </Text>
                 {renderProductDescription(product?.description || '')}
+              </View>
+            )}
+            {product?.related_products && (
+              <View style={{ padding: 16 }}>
+                <Text style={styles.compatibleBrandsTitle}>{t('similarProducts')}</Text>
+                <FlatList
+                  horizontal
+                  data={product?.related_products}
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item, index) => `${item.id}-${index}`}
+                  getItemLayout={getItemLayout}
+                  style={{ paddingVertical: 5, paddingLeft: 10 }}
+                  renderItem={({ item }) => (
+                    <View style={{ marginRight: 10 }}>
+                      <RelatedProductsItem item={item} />
+                    </View>
+                  )}
+                />
               </View>
             )}
 

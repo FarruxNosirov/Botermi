@@ -33,7 +33,7 @@ export const SettingsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <GoBackHeader title="Sozlamalar" />
+      <GoBackHeader title={t('profilePage.settings')} />
       <View style={styles.list}>
         <View style={styles.item}>
           <Text style={styles.text}>{t('profilePage.messages')}</Text>

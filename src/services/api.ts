@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NetInfo from '@react-native-community/netinfo';
-
+import i18n from '@/i18n';
 const BASE_URL = 'https://administration.wottex.uz/api';
 
 export const api = axios.create({
@@ -20,7 +20,6 @@ api.interceptors.request.use(
     }
 
     const token = await AsyncStorage.getItem('@auth_token');
-    console.log('token', token);
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -36,9 +35,14 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
+    if (!error.response) {
+      return Promise.reject(error);
+    }
+
     if (error.response?.status === 401) {
       await AsyncStorage.removeItem('@auth_token');
     }
+
     return Promise.reject(error);
   },
 );
@@ -63,8 +67,12 @@ export const authAPI = {
     const response = await api.patch(`/update/${id}`, data);
     return response.data;
   },
-  getCities: async () => {
-    const response = await api.get('/getCities');
+  getCities: async (language?: string) => {
+    const response = await api.get('/getCities', {
+      headers: {
+        'Accept-Language': language,
+      },
+    });
     return response;
   },
 };
@@ -73,7 +81,11 @@ export const getUserData = async () => {
   if (!token) {
     throw new Error('No token found');
   }
-  const response = await api.get('/getMe');
+  const response = await api.get('/getMe', {
+    headers: {
+      'Accept-Language': i18n.language,
+    },
+  });
   return response.data.data;
 };
 export const profileApi = {
