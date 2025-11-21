@@ -151,7 +151,7 @@ export const ProductDetailScreen = () => {
     },
     [progressValue],
   );
-
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
   const handleSnapToItem = useCallback((index: number) => {
     setActiveIndex(index);
   }, []);
@@ -174,14 +174,14 @@ export const ProductDetailScreen = () => {
         }}
       >
         <Image source={{ uri: item }} style={styles.productImage} resizeMode="contain" />
-        {discountPercentage > 0 && (
+        {discountPercentage > 0 && authUser?.vip > 0 && (
           <View style={styles.discountContainer}>
             <Text style={styles.discountText}>-{discountPercentage}%</Text>
           </View>
         )}
       </View>
     ),
-    [discountPercentage],
+    [discountPercentage, authUser?.vip],
   );
 
   const allImages = [
@@ -192,7 +192,7 @@ export const ProductDetailScreen = () => {
   const percentage_of_bonus =
     product?.percentage_of_bonus > 0 ? (customerPriceNum / 100) * product?.percentage_of_bonus : 0;
   const { mutate: exchangePrize } = usePrizesExchange();
-  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
+
   const [loadingItems, setLoadingItems] = useState<{ [key: number]: boolean }>({});
   const dispatch = useAppDispatch();
 
