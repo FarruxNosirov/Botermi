@@ -201,7 +201,7 @@ const ProductDetailItem = ({ item }: { item: any }) => {
             </Text>
           </TouchableOpacity>
         </View>
-        {discountPercentage > 0 && (
+        {discountPercentage > 0 && userData?.vip > 0 && (
           <View style={styles.discountContainer}>
             <Text style={styles.discountText}>-{discountPercentage}%</Text>
           </View>
