@@ -18,6 +18,7 @@ import { NetworkProvider } from '@/components/NetworkProvider';
 import { NoInternetScreen } from '@/components/NoInternetScreen';
 import NetInfo from '@react-native-community/netinfo';
 import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { UpdateProvider } from '@/components/UpdateProvider';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -87,18 +88,20 @@ const RootNavigator = () => {
   }
 
   return (
-    <NetworkProvider>
-      <NavigationContainer>
-        <Stack.Navigator screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="MainApp" component={MainTabNavigator} />
-          <Stack.Screen name="Auth" component={AuthNavigator} />
-          <Stack.Screen name="Branches" component={BranchesScreen} />
-          <Stack.Screen name="Notifications" component={NotificationsScreen} />
-          <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
-          <Stack.Screen name="OperationsFilter" component={OperationsFilterScreen} />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </NetworkProvider>
+    <UpdateProvider>
+      <NetworkProvider>
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="MainApp" component={MainTabNavigator} />
+        <Stack.Screen name="Auth" component={AuthNavigator} />
+        <Stack.Screen name="Branches" component={BranchesScreen} />
+        <Stack.Screen name="Notifications" component={NotificationsScreen} />
+        <Stack.Screen name="NotificationDetail" component={NotificationDetailScreen} />
+        <Stack.Screen name="OperationsFilter" component={OperationsFilterScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
+      </NetworkProvider>
+    </UpdateProvider>
   );
 };
 

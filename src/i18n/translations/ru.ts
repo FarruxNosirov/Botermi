@@ -222,4 +222,18 @@ export default {
   notificationsPage: {
     loginToViewNotifications: 'Войдите в систему, чтобы просмотреть уведомления',
   },
+  // Version Update
+  updateRequired: 'Требуется обновление',
+  updateRequiredMessage:
+    'Пожалуйста, обновите приложение до новой версии, чтобы продолжить использование.',
+  updateRequiredInfo: 'Старая версия больше не поддерживается. Обновление обязательно.',
+  updateAvailable: 'Доступна новая версия',
+  updateAvailableMessage:
+    'Доступна новая версия приложения. Обновитесь, чтобы получить последние функции и исправления.',
+  updateLaterInfo: 'Если нажмете "Позже", это сообщение не будет показано в течение 7 дней.',
+  updateNow: 'Обновить сейчас',
+  later: 'Позже',
+  currentVersion: 'Текущая версия',
+  latestVersion: 'Последняя версия',
+  newVersion: 'Новая версия',
 };

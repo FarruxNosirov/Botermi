@@ -217,4 +217,18 @@ export default {
   notificationsPage: {
     loginToViewNotifications: "Bildirishnomalaringizni ko'rish uchun tizimga kiring",
   },
+  // Version Update
+  updateRequired: 'Yangilanish talab qilinadi',
+  updateRequiredMessage:
+    'Ilovadan foydalanishni davom ettirish uchun iltimos yangi versiyaga yangilang.',
+  updateRequiredInfo: "Eski versiya bilan davom ettirib bo'lmaydi. Store'dan yangilash majburiy.",
+  updateAvailable: 'Yangi versiya mavjud',
+  updateAvailableMessage:
+    "Ilovaning yangi versiyasi mavjud. Eng so'nggi funksiyalar va tuzatishlardan bahramand bo'lish uchun yangilang.",
+  updateLaterInfo: '"Keyinroq" tugmasini bossangiz, 7 kun davomida bu xabar ko\'rsatilmaydi.',
+  updateNow: 'Hozir yangilash',
+  later: 'Keyinroq',
+  currentVersion: 'Hozirgi versiya',
+  latestVersion: "Eng so'nggi versiya",
+  newVersion: 'Yangi versiya',
 };
