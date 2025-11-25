@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/constants/colors';
 import { useCities } from '@/hooks/querys';
-import { AppDispatch } from '@/store';
+import { AppDispatch, RootState } from '@/store';
 import { register } from '@/store/slices/authSlice';
 import { AuthStackParamList, RootStackParamList } from '@/types/navigation';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,7 +24,7 @@ import {
   View,
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const { height } = Dimensions.get('window');
 
@@ -106,7 +106,8 @@ type Props = {
 
 export const RegistrationScreen = ({ navigation }: Props) => {
   const route = useRoute<RouteProp<AuthStackParamList, 'Registration'>>();
-  const { data } = useCities();
+  const { i18n } = useTranslation();
+  const { data } = useCities(i18n.language);
 
   const regions = data?.data?.data;
 
