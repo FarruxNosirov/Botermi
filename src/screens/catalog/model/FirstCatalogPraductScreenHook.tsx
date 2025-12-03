@@ -56,6 +56,8 @@ const FirstCatalogPraductScreenHook = () => {
   const [selectedBrand, setSelectedBrand] = useState<number | undefined>(undefined);
   const [selectedManufacturer, setSelectedManufacturer] = useState<number | undefined>(undefined);
   const [selectedFilters, setSelectedFilters] = useState<number | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const brandId = selectedBrand;
   const { i18n } = useTranslation();
   const manufacturerId = selectedManufacturer;
@@ -95,6 +97,20 @@ const FirstCatalogPraductScreenHook = () => {
     console.log('FirstCatalog allProducts length:', products.length);
     return products;
   }, [data?.pages]);
+
+  // Search query bo'yicha filter qilish
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return allProducts;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return allProducts.filter((product: any) => {
+      const name = product?.name?.toLowerCase() || '';
+      const vendorCode = product?.vendor_code?.toLowerCase() || '';
+      return name.includes(query) || vendorCode.includes(query);
+    });
+  }, [allProducts, searchQuery]);
 
   const firstPageData = data?.pages?.[0];
 
@@ -157,6 +173,19 @@ const FirstCatalogPraductScreenHook = () => {
     const filterIdNum = Number(filterId);
     setSelectedFilters((prev) => (prev === filterIdNum ? undefined : filterIdNum));
     drawerRef.current?.closeDrawer();
+  }, []);
+
+  const handleSearchQueryChange = useCallback((text: string) => {
+    setSearchQuery(text);
+  }, []);
+
+  const handleSearchExpand = useCallback(() => {
+    setIsSearchExpanded(true);
+  }, []);
+
+  const handleSearchCollapse = useCallback(() => {
+    setIsSearchExpanded(false);
+    setSearchQuery('');
   }, []);
 
   const renderBrandItem = useCallback(
@@ -237,7 +266,7 @@ const FirstCatalogPraductScreenHook = () => {
     brandsFromFilters,
     manufacturersFromFilters,
     isLoading,
-    allProducts,
+    allProducts: filteredProducts,
     drawerRef,
     navigation,
     route,
@@ -247,6 +276,11 @@ const FirstCatalogPraductScreenHook = () => {
     isFetchingNextPage,
     hasNextPage,
     error,
+    searchQuery,
+    isSearchExpanded,
+    handleSearchQueryChange,
+    handleSearchExpand,
+    handleSearchCollapse,
   };
 };
 

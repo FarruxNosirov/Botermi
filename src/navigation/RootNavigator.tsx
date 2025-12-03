@@ -49,12 +49,9 @@ const RootNavigator = () => {
           try {
             await dispatch(getMe()).unwrap();
           } catch (error: any) {
-            if (error?.response?.status === 401 || error?.status === 401) {
-              console.log('Token invalid, logging out');
-              dispatch(logout());
-            } else {
-              console.log('Network error, keeping user logged in:', error);
-            }
+            // Internet yoki serverdagi muammolarda avtomatik logout qilmaymiz.
+            // Token faqat foydalanuvchi o‘zi logout bosganda o‘chadi.
+            console.log('Error while validating token, keeping user logged in:', error);
           }
         }
       } catch (error) {

@@ -57,6 +57,8 @@ const CatalogPraductScreenHook = () => {
   const [selectedBrand, setSelectedBrand] = useState<number | undefined>(undefined);
   const [selectedManufacturer, setSelectedManufacturer] = useState<number | undefined>(undefined);
   const [selectedFilters, setSelectedFilters] = useState<number | undefined>(undefined);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const brandId = selectedBrand;
   const { i18n } = useTranslation();
   const manufacturerId = selectedManufacturer;
@@ -157,6 +159,19 @@ const CatalogPraductScreenHook = () => {
     drawerRef.current?.closeDrawer();
   }, []);
 
+  const handleSearchQueryChange = useCallback((text: string) => {
+    setSearchQuery(text);
+  }, []);
+
+  const handleSearchExpand = useCallback(() => {
+    setIsSearchExpanded(true);
+  }, []);
+
+  const handleSearchCollapse = useCallback(() => {
+    setIsSearchExpanded(false);
+    setSearchQuery('');
+  }, []);
+
   const renderBrandItem = useCallback(
     ({ item }: { item: any }) => (
       <BrandItem brand={item} isSelected={selectedBrand === item.id} onSelect={handleBrandSelect} />
@@ -212,6 +227,19 @@ const CatalogPraductScreenHook = () => {
     }
   }, [hasNextPage, isFetchingNextPage]);
 
+  const filteredProducts = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return allProducts;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return allProducts.filter((product: any) => {
+      const name = product?.name?.toLowerCase() || '';
+      const vendorCode = product?.vendor_code?.toLowerCase() || '';
+      return name.includes(query) || vendorCode.includes(query);
+    });
+  }, [allProducts, searchQuery]);
+
   return {
     renderBrandItem,
     renderManufacturerItem,
@@ -224,7 +252,7 @@ const CatalogPraductScreenHook = () => {
     brandsFromFilters,
     manufacturersFromFilters,
     isLoading,
-    allProducts,
+    allProducts: filteredProducts,
     drawerRef,
     navigation,
     route,
@@ -234,6 +262,11 @@ const CatalogPraductScreenHook = () => {
     isFetchingNextPage,
     hasNextPage,
     error,
+    searchQuery,
+    isSearchExpanded,
+    handleSearchQueryChange,
+    handleSearchExpand,
+    handleSearchCollapse,
   };
 };
 

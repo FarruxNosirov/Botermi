@@ -36,24 +36,22 @@ export const ActionsScreen = () => {
   const [avatarUri, setAvatarUri] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [scannedBarcodes, setScannedBarcodes] = useState<Set<string>>(new Set());
-  useEffect(() => {
-    if (!permission?.granted) {
-      requestPermission();
-    }
-  }, [permission]);
+  const sanitizeBarcode = (value: string) => value?.replace(/\D/g, '') || '';
 
   const handleBarCodeScanned = ({ data }: { data: string }) => {
+    const sanitizedData = sanitizeBarcode(data);
     // Check if this barcode was already scanned in this session
-    if (scannedBarcodes.has(data)) {
+    if (scannedBarcodes.has(sanitizedData)) {
       showToast('error', t('error'), t('actions.barcodeAlreadyScanned'));
       return;
     }
 
-    setShopCode(data);
+    setShopCode(sanitizedData);
     setShowScanner(false);
-    setScannedBarcodes((prev) => new Set(prev).add(data));
+    setScannedBarcodes((prev) => new Set(prev).add(sanitizedData));
   };
-  const isValidShopCode = shopCode.length >= 13;
+  const cleanedShopCode = sanitizeBarcode(shopCode);
+  const isValidShopCode = cleanedShopCode.length === 12 || cleanedShopCode.length === 13;
   const { mutate: scanBarcode } = useScanBarcode();
   const pickImage = async () => {
     try {
@@ -147,6 +145,25 @@ export const ActionsScreen = () => {
     }
   };
 
+  const handleOpenScanner = async () => {
+    if (permission?.granted) {
+      setShowScanner(true);
+      return;
+    }
+
+    const result = await requestPermission();
+
+    if (result?.granted) {
+      setShowScanner(true);
+    } else {
+      showToast(
+        'error',
+        t('error'),
+        t('actions.cameraPermissionDenied') || 'Camera permission is required',
+      );
+    }
+  };
+
   const handleImagePick = () => {
     Alert.alert(
       t('imageSelection'),
@@ -188,7 +205,7 @@ export const ActionsScreen = () => {
     };
     const { mimeType } = getFileInfo(avatarUri.uri);
     const formData: any = new FormData();
-    formData.append('barcode', shopCode);
+    formData.append('barcode', cleanedShopCode);
     formData.append('image', {
       uri: avatarUri.uri,
       name: `photo.${avatarUri?.uri?.split('.')?.pop()}`,
@@ -325,16 +342,22 @@ export const ActionsScreen = () => {
                       placeholder="_ _ _ _ _ _ _ _ _"
                       placeholderTextColor="#999"
                       value={shopCode}
-                      onChangeText={setShopCode}
+                      keyboardType="number-pad"
+                      maxLength={13}
+                      onChangeText={(text) => setShopCode(sanitizeBarcode(text))}
                     />
                   </View>
-                  <TouchableOpacity style={styles.scanButton} onPress={() => setShowScanner(true)}>
+                  <TouchableOpacity style={styles.scanButton} onPress={handleOpenScanner}>
                     <MaterialCommunityIcons name="barcode-scan" size={40} color="#000" />
                   </TouchableOpacity>
                 </View>
-                {shopCode.length > 0 && !isValidShopCode && (
+                {cleanedShopCode.length > 0 && !isValidShopCode && (
                   <Text style={{ color: 'red', marginTop: 4 }}>
-                    {t('actions.storeCodeMinLength', { count: 13 })}
+                    {t(
+                      'actions.storeCodeLengthRange',
+                      'QR kodi {min} yoki {max} ta raqam bo‘lishi kerak',
+                      { min: 12, max: 13 },
+                    )}
                   </Text>
                 )}
               </View>

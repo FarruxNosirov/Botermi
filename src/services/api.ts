@@ -1,6 +1,5 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import NetInfo from '@react-native-community/netinfo';
 import i18n from '@/i18n';
 const BASE_URL = 'https://administration.wottex.uz/api';
 
@@ -14,11 +13,6 @@ export const api = axios.create({
 
 api.interceptors.request.use(
   async (config) => {
-    const netInfo = await NetInfo.fetch();
-    if (!netInfo.isConnected) {
-      throw new Error('No internet connection');
-    }
-
     const token = await AsyncStorage.getItem('@auth_token');
 
     if (token) {
@@ -35,14 +29,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (!error.response) {
-      return Promise.reject(error);
-    }
-
-    if (error.response?.status === 401) {
-      await AsyncStorage.removeItem('@auth_token');
-    }
-
     return Promise.reject(error);
   },
 );
@@ -106,6 +92,18 @@ export const catalogAPI = {
   },
   getSubCategories: async (categoryId: number, language: string) => {
     const response = await api.get(`/filterSubCategory?category_id=${categoryId}`, {
+      headers: {
+        'Accept-Language': language,
+      },
+    });
+    return response.data;
+  },
+  getSearchProducts: async (
+    search: string,
+    language?: string,
+  ) => {
+    const response = await api.get(`/searchProducts`, {
+      params: { search },
       headers: {
         'Accept-Language': language,
       },

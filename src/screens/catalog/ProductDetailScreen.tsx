@@ -339,16 +339,16 @@ export const ProductDetailScreen = () => {
                       <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
                         {t('katalog.retailPrice')}:
                       </Text>
-                      <Text style={styles.priceText}>
-                        {formatPrice(product?.customer_price)} {t('homePage.currency')}
+                      <Text style={styles.priceOldText}>
+                        {formatPrice(product?.price)} {t('homePage.currency')}
                       </Text>
                     </View>
                     <View style={styles.priceContant}>
                       <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
                         {t('katalog.masterPrice')}:
                       </Text>
-                      <Text style={styles.priceOldText}>
-                        {formatPrice(product?.price)} {t('homePage.currency')}
+                      <Text style={styles.priceText}>
+                        {formatPrice(product?.customer_price)} {t('homePage.currency')}
                       </Text>
                     </View>
                   </>
@@ -358,7 +358,7 @@ export const ProductDetailScreen = () => {
                       {t('katalog.masterPrice')}:
                     </Text>
                     <Text style={styles.priceText}>
-                      {formatPrice(product?.price)} {t('homePage.currency')}
+                      {formatPrice(product?.customer_price)} {t('homePage.currency')}
                     </Text>
                   </View>
                 )}
