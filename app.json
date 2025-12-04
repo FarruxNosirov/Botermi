@@ -2,7 +2,7 @@
   "expo": {
     "name": "Botermi",
     "slug": "Botermi",
-    "version": "1.2.0",
+    "version": "1.2.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -37,13 +37,11 @@
       ],
       "expo-font"
     ],
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.botermi.app",
-      "buildNumber": "28",
+      "buildNumber": "30",
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to scan QR codes.",
         "NSLocationWhenInUseUsageDescription": "Allow Botermi to use your location.",
@@ -61,7 +59,7 @@
         "backgroundColor": "#B3071A"
       },
       "package": "com.botermi.app",
-      "versionCode": 19,
+      "versionCode": 21,
       "permissions": [
         "android.permission.CAMERA",
         "android.permission.ACCESS_FINE_LOCATION",
