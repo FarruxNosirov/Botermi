@@ -358,7 +358,7 @@ export const ProductDetailScreen = () => {
                       {t('katalog.masterPrice')}:
                     </Text>
                     <Text style={styles.priceText}>
-                      {formatPrice(product?.customer_price)} {t('homePage.currency')}
+                      {formatPrice(product?.price)} {t('homePage.currency')}
                     </Text>
                   </View>
                 )}

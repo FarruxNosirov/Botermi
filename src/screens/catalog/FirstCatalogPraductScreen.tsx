@@ -315,6 +315,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     backgroundColor: '#F5F5F5',
     borderRadius: 8,
+    color: '#000',
   },
   drawerContainer: {
     flex: 1,

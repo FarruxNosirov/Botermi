@@ -137,6 +137,7 @@ const styles = StyleSheet.create({
     height: 40,
     fontSize: 16,
     justifyContent: 'center',
+    color: '#000',
   },
   searchPlaceholder: {
     fontSize: 16,
