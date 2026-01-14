@@ -250,7 +250,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
-    textTransform: 'capitalize',
   },
   brandName: {
     fontSize: 14,

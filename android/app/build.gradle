@@ -92,8 +92,8 @@ android {
         applicationId 'com.botermi.app'
         minSdkVersion 26
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 22
-        versionName "1.2.3"
+        versionCode 23
+        versionName "1.2.4"
     }
     signingConfigs {
         debug {

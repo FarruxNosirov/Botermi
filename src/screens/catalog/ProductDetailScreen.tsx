@@ -120,7 +120,6 @@ export const ProductDetailScreen = () => {
   const { id } = route?.params?.product;
   const { data: productAll, isLoading } = useSingleProduct(id, i18n.language);
   const product = productAll?.data?.data;
-  console.log('product', JSON.stringify(product, null, 2));
 
   const getItemLayout = useCallback(
     (_: any, index: number) => ({
@@ -522,7 +521,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-    textTransform: 'capitalize',
     marginTop: 20,
   },
   compatibleBrandsContainer: {
