@@ -245,6 +245,8 @@ export const RegistrationScreen = ({ navigation }: Props) => {
                 onChange={handleDateChange}
                 maximumDate={new Date()}
                 minimumDate={new Date(1900, 0, 1)}
+                textColor="#000000"
+                themeVariant="light"
               />
             </View>
           </View>

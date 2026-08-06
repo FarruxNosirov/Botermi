@@ -6,6 +6,9 @@ import { colors } from '@/constants/colors';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/types/navigation';
 import { useTranslation } from 'react-i18next';
+import { useGetNotifications } from '@/hooks/querys';
+import { RootState } from '@/store';
+import { useSelector } from 'react-redux';
 
 type Notification = {
   id: string;
@@ -29,21 +32,24 @@ const notifications: Notification[] = [
 
 export const NotificationsScreen = () => {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { user } = useSelector((state: RootState) => state.auth);
+  const { data: notifications } = useGetNotifications(user?.id as number);
+  console.log(JSON.stringify(notifications, null, 2));
 
-  const handleNotificationPress = (notification: Notification) => {
-    navigation.navigate('NotificationDetail', {
-      title: notification.title,
-      message: notification.message,
-      date: notification.date,
-      time: notification.time,
-    });
-  };
+  // const handleNotificationPress = (notification: Notification) => {
+  //   navigation.navigate('NotificationDetail', {
+  //     title: notification.title,
+  //     message: notification.message,
+  //     date: notification.date,
+  //     time: notification.time,
+  //   });
+  // };
   const { t } = useTranslation();
 
   const renderNotificationItem = ({ item }: { item: Notification }) => (
     <TouchableOpacity
       style={[styles.notificationItem, !item.isRead && styles.unreadItem]}
-      onPress={() => handleNotificationPress(item)}
+      // onPress={() => handleNotificationPress(item)}
     >
       <View style={styles.iconContainer}>
         <Ionicons name="notifications-outline" size={24} color={colors.primary} />
@@ -73,13 +79,13 @@ export const NotificationsScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <FlatList
+      {/* <FlatList
         data={notifications}
         renderItem={renderNotificationItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContainer}
         showsVerticalScrollIndicator={false}
-      />
+      /> */}
     </SafeAreaView>
   );
 };

@@ -20,6 +20,8 @@ api.interceptors.request.use(
     }
 
     const token = await AsyncStorage.getItem('@auth_token');
+    console.log('token', token);
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -255,4 +257,16 @@ export const getReviews = async (language?: string) => {
     console.log(error);
     throw error;
   }
+};
+
+export const notificationsApi = {
+  getNotifications: async (userId: number) => {
+    try {
+      const response = await api.get(`/users/${userId}/notifications`);
+      return response?.data?.data;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
+  },
 };

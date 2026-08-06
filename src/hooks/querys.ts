@@ -7,6 +7,7 @@ import {
   getReviews,
   getUserData,
   homeApi,
+  notificationsApi,
   prizesApi,
   profileApi,
 } from '@/services/api';
@@ -198,6 +199,10 @@ export const useGetMe = () => {
   return useQuery({
     queryKey: ['getMe'],
     queryFn: () => getUserData(),
+    staleTime: 0,
+    gcTime: 0,
+    refetchOnMount: 'always',
+    refetchOnWindowFocus: true,
   });
 };
 
@@ -206,5 +211,13 @@ export const useGetReviews = (language?: string) => {
     queryKey: ['getReviews', language],
     queryFn: () => getReviews(language),
     enabled: !!language,
+  });
+};
+
+export const useGetNotifications = (userId: number) => {
+  return useQuery({
+    queryKey: ['getNotifications', userId],
+    queryFn: () => notificationsApi.getNotifications(userId),
+    enabled: !!userId,
   });
 };

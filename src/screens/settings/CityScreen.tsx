@@ -14,7 +14,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-// TEMPORARILY DISABLED FOR BUILD - import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
 
 type Location = {
   id: number;
@@ -34,13 +34,19 @@ export const CityScreen = () => {
   const { t, i18n } = useTranslation();
   const { data: citiesData, refetch } = useGetCities(i18n.language);
 
+  const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const filteredCities = citiesData?.filter((c: City) => c.locations.length > 0);
+
   useEffect(() => {
     refetch();
   }, [i18n.language]);
 
-  const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const filteredCities = citiesData?.filter((c: City) => c.locations.length > 0);
+  useEffect(() => {
+    if (filteredCities && filteredCities.length > 0 && selectedCityId === null) {
+      setSelectedCityId(filteredCities[0].id);
+    }
+  }, [filteredCities, selectedCityId]);
 
   const selectedCity = React.useMemo(() => {
     if (!filteredCities || selectedCityId === null) return null;
@@ -142,7 +148,6 @@ export const CityScreen = () => {
 
         {/* Map Container */}
         <View style={styles.mapContainer}>
-          {/* TEMPORARILY DISABLED FOR BUILD
           <MapView
             provider={PROVIDER_GOOGLE}
             style={styles.map}
@@ -167,12 +172,6 @@ export const CityScreen = () => {
               </Marker>
             ))}
           </MapView>
-          */}
-          <View style={styles.map}>
-            <Text style={{ textAlign: 'center', paddingTop: 50, color: '#999', fontSize: 16 }}>
-              Xarita vaqtincha ishlamaydi
-            </Text>
-          </View>
 
           {selectedCity && selectedCity.locations.length > 0 && (
             <View style={styles.locationInfo}>
