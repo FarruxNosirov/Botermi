@@ -33,7 +33,7 @@ export const SettingsScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
-      <GoBackHeader title="Sozlamalar" />
+      <GoBackHeader title={t('profilePage.settings')} />
       <View style={styles.list}>
         <View style={styles.item}>
           <Text style={styles.text}>{t('profilePage.messages')}</Text>
@@ -45,20 +45,37 @@ export const SettingsScreen = () => {
           />
         </View>
         <View style={styles.divider} />
-        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('TermsOfUse')}>
-          <Text style={styles.text}>{t('profilePage.termsOfUse')}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#bbb" />
-        </TouchableOpacity>
+        <View style={{ width: '100%' }}>
+          <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('TermsOfUse')}>
+            <View style={{ width: '80%' }}>
+              <Text style={styles.text}>{t('profilePage.termsOfUse')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#bbb" />
+          </TouchableOpacity>
+        </View>
         <View style={styles.divider} />
-        <TouchableOpacity style={styles.item} onPress={() => navigation.navigate('PrivacyPolicy')}>
-          <Text style={styles.text}>{t('profilePage.privacyPolicy')}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#bbb" />
-        </TouchableOpacity>
+        <View style={{ width: '100%' }}>
+          <TouchableOpacity
+            style={styles.item}
+            onPress={() => navigation.navigate('PrivacyPolicy')}
+          >
+            <View style={{ width: '80%' }}>
+              <Text style={styles.text}>{t('profilePage.privacyPolicy')}</Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#bbb" />
+          </TouchableOpacity>
+        </View>
         <View style={styles.divider} />
-        <TouchableOpacity style={styles.item} onPress={onDeleteProfile}>
-          <Text style={[styles.text, { color: '#E32F45' }]}>{t('profilePage.deleteAccount')}</Text>
-          <Ionicons name="chevron-forward" size={20} color="#E32F45" />
-        </TouchableOpacity>
+        <View style={{ width: '100%' }}>
+          <TouchableOpacity style={styles.item} onPress={onDeleteProfile}>
+            <View style={{ width: '80%' }}>
+              <Text style={[styles.text, { color: '#E32F45' }]}>
+                {t('profilePage.deleteAccount')}
+              </Text>
+            </View>
+            <Ionicons name="chevron-forward" size={20} color="#E32F45" />
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );

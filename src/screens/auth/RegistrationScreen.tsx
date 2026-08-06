@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/Button';
 import { colors } from '@/constants/colors';
 import { useCities } from '@/hooks/querys';
-import { AppDispatch } from '@/store';
+import { AppDispatch, RootState } from '@/store';
 import { register } from '@/store/slices/authSlice';
 import { AuthStackParamList, RootStackParamList } from '@/types/navigation';
 import { Ionicons } from '@expo/vector-icons';
@@ -24,7 +24,7 @@ import {
   View,
 } from 'react-native';
 import { Dropdown } from 'react-native-element-dropdown';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 const { height } = Dimensions.get('window');
 
@@ -106,7 +106,8 @@ type Props = {
 
 export const RegistrationScreen = ({ navigation }: Props) => {
   const route = useRoute<RouteProp<AuthStackParamList, 'Registration'>>();
-  const { data } = useCities();
+  const { i18n } = useTranslation();
+  const { data } = useCities(i18n.language);
 
   const regions = data?.data?.data;
 
@@ -215,6 +216,13 @@ export const RegistrationScreen = ({ navigation }: Props) => {
         }),
       );
       if (register.fulfilled.match(resultAction)) {
+        const parentNavigation = navigation.getParent();
+        if (parentNavigation) {
+          parentNavigation.reset({
+            index: 0,
+            routes: [{ name: 'MainApp' }],
+          });
+        }
       } else {
         setError((resultAction.payload as string) || t('registrationError'));
       }
@@ -277,7 +285,9 @@ export const RegistrationScreen = ({ navigation }: Props) => {
               <Text style={styles.label}>{field.label}</Text>
               {field.key === 'birthDate' ? (
                 <Pressable style={[styles.input, styles.dateInput]} onPress={showDatePickerModal}>
-                  <Text style={styles.dateText}>{formData.birthDate || t('selectBirthDate')}</Text>
+                  <Text style={[styles.dateText, formData.birthDate && { color: '#000' }]}>
+                    {formData.birthDate || t('selectBirthDate')}
+                  </Text>
                   <Ionicons name="calendar-outline" size={24} color="#666" />
                 </Pressable>
               ) : field.type === 'select' ? (
@@ -285,6 +295,8 @@ export const RegistrationScreen = ({ navigation }: Props) => {
                   style={styles.dropdown}
                   placeholderStyle={styles.placeholderStyle}
                   selectedTextStyle={styles.selectedTextStyle}
+                  itemTextStyle={styles.itemTextStyle}
+                  containerStyle={styles.dropdownContainer}
                   data={field.key === 'region' ? regionDropdownData : []}
                   maxHeight={300}
                   labelField="label"
@@ -305,6 +317,7 @@ export const RegistrationScreen = ({ navigation }: Props) => {
                   value={field.value}
                   onChangeText={(value) => handleInputChange(field.key, value)}
                   placeholder={field.placeholder || field.label}
+                  placeholderTextColor="#999"
                   multiline={field.multiline}
                   numberOfLines={field.multiline ? 3 : 1}
                 />
@@ -403,6 +416,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     fontSize: 16,
+    color: '#000',
     backgroundColor: '#fff',
   },
 
@@ -524,6 +538,22 @@ const styles = StyleSheet.create({
   selectedTextStyle: {
     fontSize: 16,
     color: '#000',
+  },
+  itemTextStyle: {
+    fontSize: 16,
+    color: '#000',
+  },
+  dropdownContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
   },
   footer: {
     padding: 16,

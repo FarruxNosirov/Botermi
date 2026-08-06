@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -41,7 +42,20 @@ const FirstCatalogPraductScreen = () => {
     isFetchingNextPage,
     hasNextPage,
     error,
+    searchQuery,
+    isSearchExpanded,
+    handleSearchQueryChange,
+    handleSearchExpand,
+    handleSearchCollapse,
   } = FirstCatalogPraductScreenHook();
+
+  const searchInputRef = useRef<TextInput>(null);
+
+  useEffect(() => {
+    if (isSearchExpanded) {
+      setTimeout(() => searchInputRef.current?.focus(), 100);
+    }
+  }, [isSearchExpanded]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -65,28 +79,57 @@ const FirstCatalogPraductScreen = () => {
           />
         )}
       >
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-            <Ionicons name="chevron-back" size={24} color="#000" />
-            <Text style={{ fontSize: 20, fontWeight: '600' }}>{t('back')}</Text>
-          </TouchableOpacity>
-          <View
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              width: '40%',
-              justifyContent: 'flex-start',
-            }}
-          >
-            <Text style={styles.headerTitle}>{t('products')}</Text>
+        {!isSearchExpanded ? (
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Ionicons name="chevron-back" size={24} color="#000" />
+              <Text style={{ fontSize: 20, fontWeight: '600' }}>{t('back')}</Text>
+            </TouchableOpacity>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+
+                justifyContent: 'flex-start',
+              }}
+            >
+              <Text style={styles.headerTitle}>{t('products')}</Text>
+            </View>
+            <View style={styles.headerActions}>
+              {allProducts.length > 0 && (
+                <TouchableOpacity style={styles.headerIconButton} onPress={handleSearchExpand}>
+                  <AntDesign name="search1" size={22} color="#000" />
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                onPress={() => drawerRef.current?.openDrawer()}
+                style={styles.filterButton}
+              >
+                <AntDesign name="filter" size={20} color="black" />
+              </TouchableOpacity>
+            </View>
           </View>
-          <TouchableOpacity
-            onPress={() => drawerRef.current?.openDrawer()}
-            style={styles.filterButton}
-          >
-            <AntDesign name="filter" size={20} color="black" />
-          </TouchableOpacity>
-        </View>
+        ) : (
+          <View style={styles.searchBarContainer}>
+            <TouchableOpacity style={styles.backButton} onPress={handleSearchCollapse}>
+              <Ionicons name="chevron-back" size={24} color="#000" />
+            </TouchableOpacity>
+            <TextInput
+              ref={searchInputRef}
+              placeholder={t('searchProducts') || 'Qidirish'}
+              style={styles.expandedSearchInput}
+              value={searchQuery}
+              onChangeText={handleSearchQueryChange}
+              autoFocus
+            />
+            <TouchableOpacity
+              onPress={() => drawerRef.current?.openDrawer()}
+              style={styles.filterButton}
+            >
+              <AntDesign name="filter" size={20} color="black" />
+            </TouchableOpacity>
+          </View>
+        )}
 
         <FlatList
           data={allProducts}
@@ -187,7 +230,6 @@ const styles = StyleSheet.create({
   },
   backButton: {
     flexDirection: 'row',
-    width: '30%',
   },
   headerTitle: {
     fontSize: 20,
@@ -249,6 +291,31 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     padding: 8,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerIconButton: {
+    padding: 8,
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+    backgroundColor: '#fff',
+    gap: 8,
+  },
+  expandedSearchInput: {
+    flex: 1,
+    height: 40,
+    fontSize: 16,
+    paddingHorizontal: 12,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 8,
+    color: '#000',
   },
   drawerContainer: {
     flex: 1,

@@ -81,7 +81,7 @@ export const CatalogScreen = () => {
                     <Ionicons name="tv-outline" size={28} color="#4B5563" />
                   </View>
                 </TouchableOpacity>
-                <View style={styles.epamarketSection}>
+                {/* <View style={styles.epamarketSection}>
                   <Text style={styles.epamarketLabel}>{t('katalog.description')}</Text>
                   <TouchableOpacity style={styles.epamarketButton} onPress={handleEpamarketPress}>
                     <Text style={styles.epamarketButtonText}>botermi.uz</Text>
@@ -92,7 +92,7 @@ export const CatalogScreen = () => {
                       style={{ marginLeft: 8 }}
                     />
                   </TouchableOpacity>
-                </View>
+                </View> */}
               </>
             }
           />

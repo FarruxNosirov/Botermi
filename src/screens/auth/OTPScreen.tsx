@@ -83,6 +83,14 @@ export const OTPScreen: React.FC<OTPScreenProps> = ({ navigation, route }) => {
               id: resultAction?.payload?.user?.id,
             },
           });
+        } else {
+          const parentNavigation = navigation.getParent();
+          if (parentNavigation) {
+            parentNavigation.reset({
+              index: 0,
+              routes: [{ name: 'MainApp' }],
+            });
+          }
         }
       } else {
         setError((resultAction.payload as string) || t('errorSms'));

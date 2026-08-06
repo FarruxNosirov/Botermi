@@ -32,11 +32,13 @@ type City = {
 
 export const CityScreen = () => {
   const { t, i18n } = useTranslation();
-  const { data: citiesData, refetch } = useGetCities(i18n.language);
+  const { data: citiesData, refetch, isLoading } = useGetCities(i18n.language);
 
   const [selectedCityId, setSelectedCityId] = useState<number | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const filteredCities = citiesData?.filter((c: City) => c.locations.length > 0);
+  const filteredCities: City[] = Array.isArray(citiesData)
+    ? (citiesData as City[]).filter((c) => Array.isArray(c.locations) && c.locations.length > 0)
+    : [];
 
   useEffect(() => {
     refetch();

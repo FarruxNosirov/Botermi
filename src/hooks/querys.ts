@@ -30,6 +30,13 @@ export const useGetSubCategories = (categoryId: number, language: string) => {
     enabled: !!categoryId && !!language && categoryId > 0,
   });
 };
+export const useGetSearchProducts = (search: string, language: string) => {
+  return useQuery({
+    queryKey: ['getSearchProducts', search, language],
+    queryFn: () => catalogAPI.getSearchProducts(search, language),
+    enabled: !!search && !!language && search.length > 0,
+  });
+};
 export const usePraducts = (
   subCategoryId: number,
   brandId?: number,
@@ -109,10 +116,11 @@ export const useBrands = () => {
     queryFn: catalogAPI.getBrands,
   });
 };
-export const useCities = () => {
+export const useCities = (language?: string) => {
   return useQuery({
-    queryKey: ['getCities'],
-    queryFn: authAPI.getCities,
+    queryKey: ['getCities', language],
+    queryFn: () => authAPI.getCities(language),
+    enabled: !!language,
   });
 };
 export const useManufacturers = () => {

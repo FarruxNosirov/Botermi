@@ -26,6 +26,7 @@ import {
 import { useSharedValue } from 'react-native-reanimated';
 import Carousel from 'react-native-reanimated-carousel';
 import RenderHTML from 'react-native-render-html';
+import RelatedProductsItem from './components/RelatedProductsItem';
 
 const { width } = Dimensions.get('window');
 
@@ -149,7 +150,7 @@ export const ProductDetailScreen = () => {
     },
     [progressValue],
   );
-
+  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
   const handleSnapToItem = useCallback((index: number) => {
     setActiveIndex(index);
   }, []);
@@ -157,8 +158,8 @@ export const ProductDetailScreen = () => {
   const customerPriceNum = Number(String(product?.customer_price).replace(/\s/g, ''));
 
   const discountPercentage =
-    priceNum > 0 && customerPriceNum > 0 && priceNum < customerPriceNum
-      ? Math.round(((customerPriceNum - priceNum) / customerPriceNum) * 100)
+    priceNum > 0 && customerPriceNum > 0 && priceNum > customerPriceNum
+      ? Math.round(((priceNum - customerPriceNum) / priceNum) * 100)
       : 0;
   const renderCarouselItem = useCallback(
     ({ item }: any) => (
@@ -172,14 +173,14 @@ export const ProductDetailScreen = () => {
         }}
       >
         <Image source={{ uri: item }} style={styles.productImage} resizeMode="contain" />
-        {discountPercentage > 0 && (
+        {discountPercentage > 0 && authUser?.vip > 0 && (
           <View style={styles.discountContainer}>
             <Text style={styles.discountText}>-{discountPercentage}%</Text>
           </View>
         )}
       </View>
     ),
-    [],
+    [discountPercentage, authUser?.vip],
   );
 
   const allImages = [
@@ -190,7 +191,7 @@ export const ProductDetailScreen = () => {
   const percentage_of_bonus =
     product?.percentage_of_bonus > 0 ? (customerPriceNum / 100) * product?.percentage_of_bonus : 0;
   const { mutate: exchangePrize } = usePrizesExchange();
-  const authUser = useAppSelector((state) => state.auth.user?.data || state.auth.user);
+
   const [loadingItems, setLoadingItems] = useState<{ [key: number]: boolean }>({});
   const dispatch = useAppDispatch();
 
@@ -337,16 +338,16 @@ export const ProductDetailScreen = () => {
                       <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
                         {t('katalog.retailPrice')}:
                       </Text>
-                      <Text style={styles.priceText}>
-                        {formatPrice(product?.customer_price)} {t('homePage.currency')}
+                      <Text style={styles.priceOldText}>
+                        {formatPrice(product?.price)} {t('homePage.currency')}
                       </Text>
                     </View>
                     <View style={styles.priceContant}>
                       <Text style={[styles.vendor_code, { fontWeight: 'bold' }]}>
                         {t('katalog.masterPrice')}:
                       </Text>
-                      <Text style={styles.priceOldText}>
-                        {formatPrice(product?.price)} {t('homePage.currency')}
+                      <Text style={styles.priceText}>
+                        {formatPrice(product?.customer_price)} {t('homePage.currency')}
                       </Text>
                     </View>
                   </>
@@ -420,6 +421,24 @@ export const ProductDetailScreen = () => {
                   <Text style={{ fontWeight: 'bold' }}>{t('katalog.productDescription')}:</Text>
                 </Text>
                 {renderProductDescription(product?.description || '')}
+              </View>
+            )}
+            {product?.related_products && (
+              <View style={{ padding: 16 }}>
+                <Text style={styles.compatibleBrandsTitle}>{t('similarProducts')}</Text>
+                <FlatList
+                  horizontal
+                  data={product?.related_products}
+                  showsHorizontalScrollIndicator={false}
+                  keyExtractor={(item, index) => `${item.id}-${index}`}
+                  getItemLayout={getItemLayout}
+                  style={{ paddingVertical: 5, paddingLeft: 10 }}
+                  renderItem={({ item }) => (
+                    <View style={{ marginRight: 10 }}>
+                      <RelatedProductsItem item={item} />
+                    </View>
+                  )}
+                />
               </View>
             )}
 
@@ -502,7 +521,6 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
-    textTransform: 'capitalize',
     marginTop: 20,
   },
   compatibleBrandsContainer: {

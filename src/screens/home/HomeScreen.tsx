@@ -10,7 +10,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-
 import {
   Linking,
   Pressable,
@@ -171,8 +170,31 @@ const HomeScreen = () => {
                 padding: 16,
               },
             ]}
-            onPress={() => {
-              Linking.openURL('https://t.me/duca_uzb');
+            onPress={async () => {
+              const telegramUrl = 'https://t.me/duca_uzb';
+              const telegramAppUrl = 'tg://resolve?domain=duca_uzb';
+
+              try {
+                const canOpenApp = await Linking.canOpenURL(telegramAppUrl);
+                if (canOpenApp) {
+                  await Linking.openURL(telegramAppUrl);
+                } else {
+                  const canOpenBrowser = await Linking.canOpenURL(telegramUrl);
+                  if (canOpenBrowser) {
+                    await Linking.openURL(telegramUrl);
+                  } else {
+                    console.log("Can't open Telegram");
+                  }
+                }
+              } catch (error) {
+                console.error('Error opening Telegram:', error);
+
+                try {
+                  await Linking.openURL(telegramUrl);
+                } catch (e) {
+                  console.error('Final fallback failed:', e);
+                }
+              }
             }}
           >
             <View
@@ -188,13 +210,13 @@ const HomeScreen = () => {
               <FontAwesome name="telegram" size={45} color="#229ED9" />
             </View>
             <View style={styles.promotionContent}>
-              <View style={{ justifyContent: 'flex-end', alignItems: 'flex-end' }}>
+              {/* <View style={{ justifyContent: 'flex-end', alignItems: 'flex-end' }}>
                 <View style={[styles.promotionBadge, { backgroundColor: '#fff' }]}>
                   <Text style={[styles.promotionBadgeText, { color: '#229ED9' }]}>
                     {t('homePage.telegram')}
                   </Text>
                 </View>
-              </View>
+              </View> */}
               <View style={styles.promotionHeader}>
                 <Text style={[styles.promotionTitle, { color: '#fff' }]}>
                   {t('homePage.joinOurTelegramChannel')}
@@ -217,10 +239,10 @@ const HomeScreen = () => {
                   justifyContent: 'space-between',
                 }}
               >
-                <Text style={styles.actionTitle}>{t('homePage.noteProject')}</Text>
-                <View style={{ backgroundColor: 'red', padding: 5, borderRadius: 5 }}>
+                <Text style={styles.actionTitle}>{t('homePage.projectName')}</Text>
+                {/* <View style={{ backgroundColor: 'red', padding: 5, borderRadius: 5 }}>
                   <Text style={{ color: '#fff', fontWeight: '600', fontSize: 14 }}>You Tube</Text>
-                </View>
+                </View> */}
               </View>
               <Text style={styles.actionSubtitle}>{t('homePage.noteProjectDescription')}</Text>
             </View>

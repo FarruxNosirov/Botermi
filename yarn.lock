@@ -1404,7 +1404,7 @@
   dependencies:
     invariant "^2.2.4"
 
-"@react-native-community/netinfo@^11.4.1":
+"@react-native-community/netinfo@11.4.1":
   version "11.4.1"
   resolved "https://registry.yarnpkg.com/@react-native-community/netinfo/-/netinfo-11.4.1.tgz#a3c247aceab35f75dd0aa4bfa85d2be5a4508688"
   integrity sha512-B0BYAkghz3Q2V09BF88RA601XursIEA111tnc2JOaN7axJWmNefmfjZqw/KdSxKZp7CZUuPpjBmz/WCR9uaHYg==
@@ -5269,6 +5269,14 @@ react-native-toast-message@^2.3.2:
   resolved "https://registry.yarnpkg.com/react-native-toast-message/-/react-native-toast-message-2.3.3.tgz#e301508d386a9902ff6b4559ecc6674f8cfdf97a"
   integrity sha512-4IIUHwUPvKHu4gjD0Vj2aGQzqPATiblL1ey8tOqsxOWRPGGu52iIbL8M/mCz4uyqecvPdIcMY38AfwRuUADfQQ==
 
+react-native-version-check@3.5.0:
+  version "3.5.0"
+  resolved "https://registry.yarnpkg.com/react-native-version-check/-/react-native-version-check-3.5.0.tgz#129c5d2bb3abe757c7eec1e3b9ca4c907b960f12"
+  integrity sha512-JJbOQjCcbUvh9wceb6kn4GXwsKWM1TKg8ZDuwhk8pqhSsnrLKn9VtBfw9qLChhx7caHy0gqeKUiH3C1kgZUpMw==
+  dependencies:
+    lodash "^4.17.21"
+    semver "^6.1.1"
+
 react-native-webview@13.16.0:
   version "13.16.0"
   resolved "https://registry.yarnpkg.com/react-native-webview/-/react-native-webview-13.16.0.tgz#c995148f944a7eaf12389f0e6d5c6f5e6a775686"
@@ -5505,7 +5513,7 @@ scheduler@0.25.0:
   resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.25.0.tgz#336cd9768e8cceebf52d3c80e3dcf5de23e7e015"
   integrity sha512-xFVuu11jh+xcO7JOAGJNOXld8/TcEHK/4CituBUeUb5hqxJLj9YuemAEuvm9gQ/+pgXYfbQuqAkiYu+u7YEsNA==
 
-semver@^6.3.0, semver@^6.3.1:
+semver@^6.1.1, semver@^6.3.0, semver@^6.3.1:
   version "6.3.1"
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.1.tgz#556d2ef8689146e46dcea4bfdd095f3434dffcb4"
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==

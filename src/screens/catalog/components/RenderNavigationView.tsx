@@ -36,6 +36,11 @@ const RenderNavigationView = ({
   transformedFilters,
   renderFilterItem,
 }: RenderNavigationViewProps) => {
+  const hasBrands = brandsFromFilters?.length > 0;
+  const hasManufacturers = manufacturersFromFilters?.length > 0;
+  const transformedFiltersMaxHeight =
+    hasBrands && hasManufacturers ? DEVICE_HEIGHT / 3 : DEVICE_HEIGHT / 2;
+
   return (
     <View style={[styles.drawerContainer]}>
       <View style={styles.drawerHeader}>
@@ -48,48 +53,48 @@ const RenderNavigationView = ({
         </TouchableOpacity>
       </View>
 
-      <View style={styles.filterSection}>
-        {brandsFromFilters.length > 0 ? (
-          <View style={{ maxHeight: DEVICE_HEIGHT / 3 }}>
+      <ScrollView style={styles.filterSection}>
+        {hasBrands ? (
+          <View style={{ maxHeight: DEVICE_HEIGHT / 3, marginBottom: 10 }}>
             <Text style={styles.sectionTitle}>{t('brand')}</Text>
             <FlatList
               data={brandsFromFilters}
               showsVerticalScrollIndicator={false}
               renderItem={renderBrandItem}
               keyExtractor={brandKeyExtractor}
-              nestedScrollEnabled={true}
-              scrollEnabled={false}
+              nestedScrollEnabled
             />
           </View>
         ) : null}
-        {manufacturersFromFilters.length > 0 ? (
-          <View style={{ maxHeight: DEVICE_HEIGHT / 3, marginTop: 10 }}>
+        {hasManufacturers ? (
+          <View style={{ maxHeight: DEVICE_HEIGHT / 3, marginBottom: 10 }}>
             <Text style={styles.sectionTitle}>{t('manufacturer')}</Text>
             <FlatList
               data={manufacturersFromFilters}
               showsVerticalScrollIndicator={false}
               renderItem={renderManufacturerItem}
               keyExtractor={manufacturerKeyExtractor}
-              nestedScrollEnabled={true}
-              scrollEnabled={false}
+              nestedScrollEnabled
             />
           </View>
         ) : null}
-        {transformedFilters?.length > 0
-          ? transformedFilters?.map((filter: any) => (
+
+        {transformedFilters?.length > 0 ? (
+          <ScrollView style={{ maxHeight: transformedFiltersMaxHeight }}>
+            {transformedFilters?.map((filter: any) => (
               <View key={filter?.filter_name} style={{ marginTop: 10 }}>
                 <Text style={styles.sectionTitle}>{filter?.filter_name}</Text>
                 <FlatList
                   data={filter.data}
                   renderItem={renderFilterItem}
                   keyExtractor={(item) => item.id.toString()}
-                  nestedScrollEnabled={true}
-                  scrollEnabled={false}
+                  nestedScrollEnabled
                 />
               </View>
-            ))
-          : null}
-      </View>
+            ))}
+          </ScrollView>
+        ) : null}
+      </ScrollView>
 
       <View style={styles.drawerFooter}>
         <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
@@ -107,8 +112,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingTop: 20,
-    marginBottom: Platform.OS === 'ios' ? 70 : 70,
-    paddingBottom: 20,
   },
   drawerHeader: {
     flexDirection: 'row',
@@ -143,7 +146,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: '#eee',
     paddingTop: 15,
-    paddingBottom: 20,
+    paddingBottom: 50,
   },
   resetButton: {
     backgroundColor: '#F0F0F0',

@@ -1742,6 +1742,8 @@ PODS:
     - React-Core
   - react-native-safe-area-context (5.4.0):
     - React-Core
+  - react-native-version-check (3.5.0):
+    - React-Core
   - react-native-webview (13.16.0):
     - DoubleConversion
     - glog
@@ -2344,6 +2346,7 @@ DEPENDENCIES:
   - react-native-pager-view (from `../node_modules/react-native-pager-view`)
   - react-native-render-html (from `../node_modules/react-native-render-html`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - react-native-version-check (from `../node_modules/react-native-version-check`)
   - react-native-webview (from `../node_modules/react-native-webview`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
@@ -2526,6 +2529,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-render-html"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-version-check:
+    :path: "../node_modules/react-native-version-check"
   react-native-webview:
     :path: "../node_modules/react-native-webview"
   React-NativeModulesApple:
@@ -2675,6 +2680,7 @@ SPEC CHECKSUMS:
   react-native-pager-view: e4cf30bc28e3ccf864f6cfb90590d8cea13b7393
   react-native-render-html: 984dfe2294163d04bf5fe25d7c9f122e60e05ebe
   react-native-safe-area-context: 8870dc3e45c8d241336cd8ee3fa3fc76f3a040ac
+  react-native-version-check: 54a471d70dadf0f72fc142e70f16e4bf473a91a5
   react-native-webview: 0be13e6771328023c1b2203d4141f4e74b59a7c6
   React-NativeModulesApple: 3ecc647742d33ad617bd2805902e3f91f2b3008f
   React-oscompat: 0592889a9fcf0eacb205532028e4a364e22907dd
@@ -2717,6 +2723,6 @@ SPEC CHECKSUMS:
   Yoga: adb397651e1c00672c12e9495babca70777e411e
   ZXingObjC: 8898711ab495761b2dbbdec76d90164a6d7e14c5
 
-PODFILE CHECKSUM: c06b5ae3a58635c907b555c215c760814df2ebd5
+PODFILE CHECKSUM: ad8a8a397f075720fc56794f125707d88e094475
 
 COCOAPODS: 1.16.2

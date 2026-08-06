@@ -1,4 +1,5 @@
 import GoBackHeader from '@/components/GoBackHeader';
+import { RequireAuth } from '@/components/RequireAuth';
 import { Icon } from '@/components/ui/Icon';
 import { Text } from '@/components/ui/Text';
 import { colors } from '@/constants/colors';
@@ -7,6 +8,7 @@ import { AppDrawerScreenProps } from '@/types/navigation';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Alert,
   FlatList,
@@ -52,6 +54,7 @@ const mockFavorites: FavoriteProduct[] = [
 export const FavoritesScreen: React.FC<FavoritesScreenProps> = () => {
   const [favorites, setFavorites] = useState<FavoriteProduct[]>(mockFavorites);
   const navigation = useNavigation<NativeStackNavigationProp<CatalogStackParamList>>();
+  const { t } = useTranslation();
 
   const handleDelete = (id: string) => {
     Alert.alert("O'chirish", 'Ushbu mahsulotni sevimlilardan olib tashlamoqchimisiz?', [
@@ -100,22 +103,29 @@ export const FavoritesScreen: React.FC<FavoritesScreenProps> = () => {
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      <GoBackHeader title="Sevimlilar" />
-      {favorites.length > 0 ? (
-        <FlatList
-          data={favorites}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContainer}
-        />
-      ) : (
-        <View style={styles.emptyContainer}>
-          <Icon name="heart-outline" size={64} color={colors.gray[400]} />
-          <Text style={styles.emptyText}>Sevimli mahsulotlar mavjud emas</Text>
-        </View>
-      )}
-    </SafeAreaView>
+    <RequireAuth
+      fallbackMessage={
+        t('favorites.loginToViewFavorites') ||
+        "Sevimli mahsulotlaringizni ko'rish uchun tizimga kiring"
+      }
+    >
+      <SafeAreaView style={styles.container}>
+        <GoBackHeader title="Sevimlilar" />
+        {favorites.length > 0 ? (
+          <FlatList
+            data={favorites}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContainer}
+          />
+        ) : (
+          <View style={styles.emptyContainer}>
+            <Icon name="heart-outline" size={64} color={colors.gray[400]} />
+            <Text style={styles.emptyText}>Sevimli mahsulotlar mavjud emas</Text>
+          </View>
+        )}
+      </SafeAreaView>
+    </RequireAuth>
   );
 };
 

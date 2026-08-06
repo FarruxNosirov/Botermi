@@ -29,8 +29,8 @@ const ProductDetailItem = ({ item }: { item: any }) => {
   const customerPriceNum = Number(String(item?.customer_price).replace(/\s/g, ''));
 
   const discountPercentage =
-    priceNum > 0 && customerPriceNum > 0 && priceNum < customerPriceNum
-      ? Math.round(((customerPriceNum - priceNum) / customerPriceNum) * 100)
+    priceNum > 0 && customerPriceNum > 0 && priceNum > customerPriceNum
+      ? Math.round(((priceNum - customerPriceNum) / priceNum) * 100)
       : 0;
 
   const { t } = useTranslation();
@@ -250,7 +250,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
-    textTransform: 'capitalize',
   },
   brandName: {
     fontSize: 14,
